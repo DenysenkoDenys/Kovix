@@ -252,7 +252,9 @@ export const tierListsAPI = {
     getAllForModeration: (status = null, page = 1, pageSize = 10) => 
         api.get('/admin/tierlists', { params: { status, page, pageSize } }),
     moderate: (id, data) => api.post(`/admin/tierlists/${id}/moderate`, data),
-    adminDelete: (id) => api.delete(`/admin/tierlists/${id}`)
+    adminDelete: (id) => api.delete(`/admin/tierlists/${id}`),
+    getReactions: (id) => api.get(`/tierlists/${id}/reactions`),
+    toggleReaction: (id, reactionType) => api.post(`/tierlists/${id}/react`, { reactionType })
 };
 
 export const forumAPI = {
@@ -270,6 +272,11 @@ export const forumAPI = {
     updateCategory: (id, data) => api.put(`/forum/categories/${id}`, data),
     updateTopic: (id, data) => api.put(`/forum/topics/${id}`, data),
     updatePost: (id, data) => api.put(`/forum/posts/${id}`, data),
+};
+
+export const subscriptionAPI = {
+    createCheckout: (data) => api.post('/subscription/create-checkout', data),
+    confirmPayment: (data) => api.post('/subscription/confirm-payment', data) 
 };
 
 export default api;

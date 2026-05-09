@@ -3,6 +3,7 @@ import { Container, Row, Col, Card, Button, Spinner, Alert, Badge } from 'react-
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { tierListsAPI } from '../services/api';
+import TierListReactions from '../components/TierListReactions';
 import '../style/TierListDetailPage.css';
 
 const DEFAULT_TIERS = [
@@ -222,6 +223,7 @@ function TierListDetailPage() {
           </div>
         </Col>
       </Row>
+      <TierListReactions tierListId={tierList.id} />
     </Container>
   );
 }

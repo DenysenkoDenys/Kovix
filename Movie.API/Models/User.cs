@@ -36,5 +36,7 @@ namespace Movie.API.Models
         public List<UserAward> Awards { get; set; } = new List<UserAward>();
         public int? SelectedAwardId { get; set; }
         public UserAward? SelectedAward { get; set; }
+        public bool IsPremium { get; set; } = false;
+        public DateTime? PremiumUntil { get; set; }
     }
 }

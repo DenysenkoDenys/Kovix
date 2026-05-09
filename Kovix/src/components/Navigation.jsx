@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Navbar, Nav, Container, Button, NavDropdown } from 'react-bootstrap';
+import { Navbar, Container, Nav, NavDropdown, Button, Badge } from 'react-bootstrap';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import AdminMovieModal from './AdminMovieModal';
@@ -11,7 +11,8 @@ import { FaNewspaper } from 'react-icons/fa';
 import '../style/App.css';
 import defaultAvatarImg from '../assets/NotFoundAvatar.png';
 import { API_BASE_URL } from '../utils/apiConfig';
-const DEFAULT_AVATAR = defaultAvatarImg
+import logoImg from '../assets/Logo.png';
+const DEFAULT_AVATAR = defaultAvatarImg;
 
 function Navigation() {
   const { user, logout, isAdmin } = useAuth();
@@ -70,8 +71,15 @@ function Navigation() {
         className="mb-4 sticky-top shadow-sm"
       >
         <Container>
-          <Navbar.Brand as={Link} to="/" className="fw-bold text-warning">
-            🎬 Kovix
+          <Navbar.Brand as={Link} to="/" className="d-flex align-items-center gap-2 text-warning">
+            <img
+              src={logoImg}
+              alt="Kovix Logo"
+              height="50" 
+              className="d-inline-block align-top"
+              style={{ objectFit: 'contain' }}
+            />
+            <span className="fw-bold">Kovix</span>
           </Navbar.Brand>
 
           <Navbar.Toggle />
@@ -96,6 +104,10 @@ function Navigation() {
 
               <Nav.Link as={Link} to="/tierlists" className="fw-semibold">
                 🏆 Тір Лісти
+              </Nav.Link>
+
+              <Nav.Link as={Link} to="/membership" className="fw-semibold">
+                KovixPRO
               </Nav.Link>
               <Nav.Link as={Link} to="/forum">Форум</Nav.Link>
             </Nav>
@@ -164,12 +176,18 @@ function Navigation() {
                         />
                         <span className="d-none d-md-inline fw-semibold">
                           {user.username}
+                          {user.isPremium && (
+                            <span className="ms-1" title="Kovix Premium">👑</span>
+                          )}
                         </span>
                       </div>
                     }
                   >
                     <NavDropdown.Header>
                       Привіт, {user.username} 👋
+                      {user.isPremium ? (
+                        <Badge bg="warning" text="dark" className="ms-2">👑 VIP</Badge>
+                      ) : null}
                     </NavDropdown.Header>
 
                     <NavDropdown.Item as={Link} to="/profile">

@@ -46,6 +46,7 @@ namespace Movie.API.Data
         public DbSet<ForumCategory> ForumCategories { get; set; }
         public DbSet<ForumTopic> ForumTopics { get; set; }
         public DbSet<ForumPost> ForumPosts { get; set; }
+        public DbSet<TierListReaction> TierListReactions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -363,6 +364,16 @@ namespace Movie.API.Data
                 .WithMany()
                 .HasForeignKey(p => p.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<TierListReaction>()
+                .HasIndex(r => new { r.TierListId, r.UserId })
+                .IsUnique();
+
+            modelBuilder.Entity<TierListReaction>()
+                .HasOne(r => r.User)
+                .WithMany()
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
 
 
             modelBuilder.Entity<MovieEntity>().HasData(

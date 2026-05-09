@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Movie.API.Data;
 
@@ -11,9 +12,11 @@ using Movie.API.Data;
 namespace Movie.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260509121024_AddTierListReactions")]
+    partial class AddTierListReactions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1027,7 +1030,7 @@ namespace Movie.API.Migrations
                             IsBlocked = false,
                             IsOnline = false,
                             IsPremium = false,
-                            PasswordHash = "$2a$11$ky4IATpTT/g8Y45W7D76ieV8rX/SSkCmYN.m2n3u/O2Vh7jaIy77S",
+                            PasswordHash = "$2a$11$TiOvqI10TxBowdj58eFj5.g9QKgA5nbPczGNuq4VN.WG97MWslO7y",
                             Role = "Admin",
                             Username = "admin"
                         });

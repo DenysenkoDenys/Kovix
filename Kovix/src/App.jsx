@@ -54,6 +54,8 @@ import ForumPage from './pages/ForumPage';
 import ForumCategoryPage from './pages/ForumCategoryPage';
 import ForumTopicPage from './pages/ForumTopicPage';
 import AdminForumModerationPage from './pages/AdminForumModerationPage';
+import MembershipPage from './pages/MembershipPage';
+import PaymentSuccessPage from './pages/PaymentSuccessPage';
 
 import { useEffect } from 'react';
 
@@ -101,6 +103,8 @@ function App() {
                   <Route path="/forum/category/:id" element={<ForumCategoryPage />} />
                   <Route path="/forum/topic/:id" element={<ForumTopicPage />} />
                   <Route path="/admin/forum-moderation" element={<AdminForumModerationPage />} />
+                  <Route path="/membership" element={<MembershipPage />} />
+                  <Route path="/payment/success" element={<PaymentSuccessPage />} />
                   <Route
                     path="/movies/:movieId"
                     element={

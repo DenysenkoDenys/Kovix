@@ -430,6 +430,71 @@ namespace Movie.API.Controllers
             };
         }
 
+        [HttpPost("{id}/react")]
+        [Authorize]
+        public async Task<IActionResult> ToggleReaction(int id, [FromBody] ReactionRequestDto request)
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdStr, out int userId)) return Unauthorized();
+
+            var tierList = await _context.TierLists.FindAsync(id);
+            if (tierList == null) return NotFound("Тір-ліст не знайдено");
+
+            var existingReaction = await _context.TierListReactions
+                .FirstOrDefaultAsync(r => r.TierListId == id && r.UserId == userId);
+
+            if (existingReaction != null)
+            {
+                if (existingReaction.ReactionType == request.ReactionType)
+                {
+                    _context.TierListReactions.Remove(existingReaction);
+                }
+                else
+                {
+                    existingReaction.ReactionType = request.ReactionType;
+                }
+            }
+            else
+            {
+                var newReaction = new TierListReaction
+                {
+                    TierListId = id,
+                    UserId = userId,
+                    ReactionType = request.ReactionType
+                };
+                _context.TierListReactions.Add(newReaction);
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpGet("{id}/reactions")]
+        [AllowAnonymous]
+        public async Task<ActionResult<ReactionStatsDto>> GetReactions(int id)
+        {
+            var reactions = await _context.TierListReactions
+                .Where(r => r.TierListId == id)
+                .ToListAsync();
+
+            var stats = new ReactionStatsDto
+            {
+                Likes = reactions.Count(r => r.ReactionType == "Like"),
+                Dislikes = reactions.Count(r => r.ReactionType == "Dislike"),
+                Fire = reactions.Count(r => r.ReactionType == "Fire"),
+                UserReaction = null
+            };
+
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdStr, out int userId))
+            {
+                var userReact = reactions.FirstOrDefault(r => r.UserId == userId);
+                if (userReact != null) stats.UserReaction = userReact.ReactionType;
+            }
+
+            return Ok(stats);
+        }
+
         private async Task<TierListDetailDto> MapTierListToDetailDto(int tierListId)
         {
             var tierList = await _context.TierLists

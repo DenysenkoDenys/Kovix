@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Movie.API.Data;
 
@@ -11,9 +12,11 @@ using Movie.API.Data;
 namespace Movie.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260509093350_AddPremiumStatus")]
+    partial class AddPremiumStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -917,34 +920,6 @@ namespace Movie.API.Migrations
                     b.ToTable("TierListItems");
                 });
 
-            modelBuilder.Entity("Movie.API.Models.TierListReaction", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ReactionType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("TierListId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("TierListId", "UserId")
-                        .IsUnique();
-
-                    b.ToTable("TierListReactions");
-                });
-
             modelBuilder.Entity("Movie.API.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -1027,7 +1002,7 @@ namespace Movie.API.Migrations
                             IsBlocked = false,
                             IsOnline = false,
                             IsPremium = false,
-                            PasswordHash = "$2a$11$ky4IATpTT/g8Y45W7D76ieV8rX/SSkCmYN.m2n3u/O2Vh7jaIy77S",
+                            PasswordHash = "$2a$11$toP6QwNySNRZ6KNjmtSELeDhB3XfUZTqZZlQUMTC.xhRRx7Q7u2Lm",
                             Role = "Admin",
                             Username = "admin"
                         });
@@ -1615,25 +1590,6 @@ namespace Movie.API.Migrations
                     b.Navigation("Movie");
 
                     b.Navigation("TierList");
-                });
-
-            modelBuilder.Entity("Movie.API.Models.TierListReaction", b =>
-                {
-                    b.HasOne("Movie.API.Models.TierList", "TierList")
-                        .WithMany()
-                        .HasForeignKey("TierListId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Movie.API.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("TierList");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Movie.API.Models.User", b =>
