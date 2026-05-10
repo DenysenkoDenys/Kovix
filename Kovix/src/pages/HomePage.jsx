@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import MovieCard from '../components/MovieCard';
 import RecentlyViewed from '../components/RecentlyViewed';
 import PopularActors from '../components/PopularActors';
+import HeroBanner from '../components/HeroBanner';
 import SlickSlider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -145,6 +146,8 @@ function HomePage() {
       )}
 
       {error && <Alert variant="danger">{error}</Alert>}
+
+      <HeroBanner />
 
       <section className="mb-5 slider-section">
         <div className="d-flex justify-content-between align-items-center mb-3">

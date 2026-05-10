@@ -117,3 +117,8 @@
   font-size: 11px;
   color: #9ca3af;
 }
+
+.similar-movies-section .slick-track {
+    margin-left: 0 !important;
+    margin-right: auto !important;
+}

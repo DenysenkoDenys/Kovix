@@ -1,0 +1,177 @@
+.banner-item {
+    height: 500px;
+    background: #000;
+}
+
+.banner-image-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #111;
+}
+
+.banner-img-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    filter: blur(18px) brightness(0.4) saturate(1.2);
+    transform: scale(1.05);
+}
+
+.banner-img-poster {
+    position: absolute;
+    right: 5%;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 90%;
+    width: auto;
+    object-fit: contain;
+    z-index: 1;
+    border-radius: 8px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.7);
+    animation: posterIn 0.7s ease forwards;
+}
+
+@keyframes posterIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50%) translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(-50%) translateX(0);
+    }
+}
+
+.banner-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: 
+        linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 45%, transparent 70%),
+        linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 40%);
+}
+
+.banner-caption {
+    z-index: 3;
+    bottom: 40px;
+    left: 2%;
+    right: 45%;
+    animation: captionIn 0.6s ease 0.15s both;
+}
+
+@keyframes captionIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.hero-banner-container .carousel-control-prev,
+.hero-banner-container .carousel-control-next {
+    width: 4%;
+    z-index: 10;
+    transition: transform 0.2s ease;
+}
+
+.hero-banner-container .carousel-control-prev:hover,
+.hero-banner-container .carousel-control-next:hover {
+    transform: scale(1.15);
+}
+
+.hero-banner-container .carousel-control-prev-icon,
+.hero-banner-container .carousel-control-next-icon {
+    width: 2.8rem;
+    height: 2.8rem;
+    background-image: none !important; 
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero-banner-container .carousel-control-prev-icon::after,
+.hero-banner-container .carousel-control-next-icon::after {
+    content: '';
+    display: block;
+    width: 20px; 
+    height: 20px;
+    border-top: 4px solid #ffc107; 
+    border-right: 4px solid #ffc107;
+    border-radius: 2px;
+    filter: drop-shadow(0 0 6px rgba(255, 193, 7, 0.7));
+    transition: filter 0.2s ease, border-color 0.2s ease;
+}
+
+.hero-banner-container .carousel-control-prev-icon::after {
+    transform: rotate(-135deg);
+    margin-left: 8px;
+}
+
+.hero-banner-container .carousel-control-next-icon::after {
+    transform: rotate(45deg);
+    margin-right: 8px;
+}
+
+.hero-banner-container .carousel-control-prev:hover .carousel-control-prev-icon::after,
+.hero-banner-container .carousel-control-next:hover .carousel-control-next-icon::after {
+    border-color: #ffcd39; 
+    filter: drop-shadow(0 0 12px rgba(255, 193, 7, 1));
+}
+
+.hero-banner-container .carousel-indicators [data-bs-target] {
+    background-color: rgba(255, 193, 7, 0.4);
+    border: 1px solid #ffc107;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.hero-banner-container .carousel-indicators .active {
+    background-color: #ffc107;
+    transform: scaleX(1.4);
+}
+
+.hero-carousel .carousel-item {
+    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.banner-description {
+    display: -webkit-box;
+    line-clamp: 4;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.5;
+    max-height: calc(1.5em * 4);
+    font-size: 1.1rem;
+    max-width: 600px;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+}
+
+@media (max-width: 768px) {
+    .banner-item {
+        height: 420px;
+    }
+
+    .banner-img-poster {
+        right: 0;
+        height: 75%;
+        opacity: 0.4;
+    }
+
+    .banner-caption {
+        right: 5%;
+    }
+
+    .hero-banner-container .carousel-control-prev,
+    .hero-banner-container .carousel-control-next {
+        width: 8%;
+    }
+}

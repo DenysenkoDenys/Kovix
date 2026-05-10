@@ -55,6 +55,8 @@ export const moviesAPI = {
   getLatest: () => api.get('/movies/latest'),
   incrementView: (id) => api.post(`/movies/${id}/increment-view`),
   getFranchises: () => api.get('/movies/franchises'),
+  getLatestReleases: () => api.get('/movies/latest-releases'),
+  getSimilar: (id) => api.get(`/movies/${id}/similar`)
 };
 
 export const reviewsAPI = {

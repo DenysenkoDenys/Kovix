@@ -10,6 +10,7 @@ import AdminEpisodeModal from '../components/AdminEpisodeModal';
 import CharactersList from '../components/CharactersList';
 import MoviePhotos from '../components/MoviePhotos';
 import CriticReviewsSection from '../components/CriticReviewsSection';
+import SimilarMovies from '../components/SimilarMovies';
 import defaultPosterImg from '../assets/NotFoundPoster.webp';
 import defaultAvatarImg from '../assets/NotFoundAvatar.png';
 import '../style/App.css';
@@ -893,6 +894,7 @@ function MovieDetailPage() {
         onAwardAdded={loadMovieData}
         awardToEdit={awardToEdit}
       />
+      <SimilarMovies movieId={movie.id} />
     </Container>
   );
 }

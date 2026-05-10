@@ -1176,6 +1176,105 @@ namespace Movie.API.Controllers
             }
         }
 
+        [HttpGet("latest-releases")]
+        [AllowAnonymous]
+        public async Task<ActionResult<IEnumerable<object>>> GetLatestReleases()
+        {
+            var latestMovies = await _context.Movies
+                .Include(m => m.Episodes)
+                .OrderByDescending(m => m.CreatedAt)
+                .Take(5)
+                .ToListAsync();
+
+            var result = latestMovies.Select(m => new
+            {
+                m.Id,
+                m.Title,
+                m.Description,
+                m.PosterUrl,
+                BannerUrl = m.PosterUrl, 
+                Type = m.IsSeries ? "Series" : "Movie",
+
+                LatestSeason = m.IsSeries && m.Episodes != null && m.Episodes.Any()
+                    ? m.Episodes.Max(e => e.SeasonNumber)
+                    : (int?)null,
+
+                LatestEpisode = m.IsSeries && m.Episodes != null && m.Episodes.Any()
+                    ? m.Episodes
+                        .Where(e => e.SeasonNumber == m.Episodes.Max(s => s.SeasonNumber))
+                        .Max(e => e.EpisodeNumber)
+                    : (int?)null
+            });
+
+            return Ok(result);
+        }
+
+        [HttpGet("{id}/similar")]
+        [AllowAnonymous]
+        public async Task<ActionResult<IEnumerable<object>>> GetSimilarMovies(int id)
+        {
+            var currentMovie = await _context.Movies.FindAsync(id);
+            if (currentMovie == null) return NotFound("Фільм не знайдено");
+
+            if (string.IsNullOrWhiteSpace(currentMovie.Genre))
+                return Ok(new List<object>());
+
+            var currentGenres = currentMovie.Genre
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(g => g.Trim().ToLower())
+                .ToList();
+
+            int requiredMatches = Math.Min(3, currentGenres.Count);
+
+            var candidateMovies = await _context.Movies
+                .Where(m => m.Id != id && !string.IsNullOrEmpty(m.Genre))
+                .Select(m => new
+                {
+                    m.Id,
+                    m.Title,
+                    m.PosterUrl,
+                    m.AverageRating,
+                    m.Year,
+                    m.Genre,
+                    m.IsSeries,
+                    m.ViewsCount,
+                    m.TotalReviews
+                })
+                .ToListAsync();
+
+            var similarMovies = candidateMovies
+                    .Select(m =>
+                    {
+                        var movieGenres = m.Genre
+                            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                            .Select(g => g.Trim().ToLower())
+                            .ToList();
+
+                        int matchCount = currentGenres.Intersect(movieGenres).Count();
+
+                        return new { Movie = m, MatchCount = matchCount };
+                    })
+                    .Where(x => x.MatchCount >= requiredMatches)
+                    .OrderByDescending(x => x.MatchCount)
+                    .ThenByDescending(x => x.Movie.AverageRating)
+                    .Take(10)
+                    .Select(x => new
+                    {
+                        id = x.Movie.Id,
+                        title = x.Movie.Title,
+                        posterUrl = x.Movie.PosterUrl,
+                        averageRating = x.Movie.AverageRating,
+                        year = x.Movie.Year,
+                        genre = x.Movie.Genre,
+                        type = x.Movie.IsSeries ? "Series" : "Movie",
+                        viewsCount = x.Movie.ViewsCount,
+                        totalReviews = x.Movie.TotalReviews
+                    })
+                    .ToList();
+
+            return Ok(similarMovies);
+        }
+
         private async Task ImportActorsFromTmdb(int movieId, int tmdbId)
         {
             using var client = new HttpClient();
