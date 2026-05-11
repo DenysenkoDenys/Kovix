@@ -235,7 +235,6 @@ function ActorsPage() {
             )}
 
             <style>{`
-                /* ... Ваші існуючі стилі ... */
                 .custom-pagination .page-link { background-color: var(--bg-card); border-color: var(--border-color); color: var(--text-main); margin: 0 2px; border-radius: 8px; }
                 .custom-pagination .page-item.active .page-link { background-color: #0d6efd; border-color: #0d6efd; }
                 .custom-pagination .page-item.disabled .page-link { background-color: var(--bg-main); opacity: 0.5; }

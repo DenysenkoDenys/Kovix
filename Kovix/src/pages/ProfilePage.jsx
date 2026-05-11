@@ -7,6 +7,7 @@ import { useFriends } from '../contexts/FriendsContext';
 import { useChatConnection } from '../hooks/useChatConnection';
 import { usePresence } from '../contexts/PresenceContext';
 import MovieStats from '../components/MovieStats';
+import QuizStatsComponent from '../components/QuizStatsComponent';
 import { formatLastSeen } from '../utils/dateUtils';
 import { useTheme } from '../contexts/ThemeContext';
 import defaultAvatarImg from '../assets/NotFoundAvatar.png';
@@ -332,7 +333,7 @@ function ProfilePage() {
 
       <Row>
         <Col md={4} className="mb-4">
-          <Card className="shadow-sm border-0 text-center p-4 h-100">
+          <Card className="shadow-sm border-0 text-center p-4">
             <div className="mb-3 d-flex justify-content-center">
               <img
                 src={profile.avatarUrl ? `${API_BASE_URL}${profile.avatarUrl}` : DEFAULT_AVATAR}
@@ -415,6 +416,7 @@ function ProfilePage() {
             <h4 className="mb-3 border-start border-4 border-info ps-2">📊 Моя кіно-статистика</h4>
             <MovieStats />
           </div>
+
           {profile.isBlocked ? (
             <div className="text-center mt-5 text-muted">
               <h4>🔒 Доступ до друзів обмежено</h4>
@@ -486,6 +488,19 @@ function ProfilePage() {
                 </Row>
               )}
             </>
+          )}
+        </Col>
+      </Row>
+
+      <Row className="mt-5">
+        <Col>
+          {profile.isBlocked ? (
+            <div className="text-center text-muted">
+              <h4>🔒 Доступ до тестів обмежено</h4>
+              <p>Оскільки ваш акаунт заблоковано, ви не можете проходити тести знання.</p>
+            </div>
+          ) : (
+            <QuizStatsComponent />
           )}
         </Col>
       </Row>

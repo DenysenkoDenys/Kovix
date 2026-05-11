@@ -28,7 +28,6 @@ const BecomeCriticBanner = () => {
 
     return (
         <>
-            {/* Банер-заклик */}
             <Card className="border-0 shadow-sm mb-4 text-center" style={{ background: 'linear-gradient(135deg, var(--bg-card), var(--bg-input))' }}>
                 <Card.Body className="p-4">
                     <h4 className="fw-bold mb-2" style={{ color: 'var(--primary-color)' }}>🎬 Бажаєте стати офіційним кінокритиком Kovix?</h4>

@@ -17,6 +17,7 @@ import '../style/App.css';
 import { API_BASE_URL } from '../utils/apiConfig';
 import AdminMovieAwardModal from '../components/AdminMovieAwardModal';
 import { adminMovieAwardsAPI } from '../services/api';
+import MovieQuizModal from '../components/MovieQuizModal';
 
 const LIKE_ID = 6;
 const DISLIKE_ID = 7;
@@ -62,6 +63,7 @@ function MovieDetailPage() {
   const userReview = user ? reviews.find(r => r.userId === user.id) : null;
   const [showAwardModal, setShowAwardModal] = useState(false);
   const [awardToEdit, setAwardToEdit] = useState(null);
+  const [showQuizModal, setShowQuizModal] = useState(false);
 
   useEffect(() => {
     loadMovieData();
@@ -419,6 +421,17 @@ function MovieDetailPage() {
               <div className="ratio ratio-16x9 shadow-sm rounded overflow-hidden">
                 <iframe src={movie.trailerUrl} title="Trailer" allowFullScreen></iframe>
               </div>
+              {user && (
+                <div className="mt-3 d-flex justify-content-end">
+                  <Button
+                    variant="outline-info"
+                    onClick={() => setShowQuizModal(true)}
+                    className="d-flex align-items-center gap-2"
+                  >
+                    Тест на знання
+                  </Button>
+                </div>
+              )}
             </div>
           )}
 
@@ -894,6 +907,14 @@ function MovieDetailPage() {
         onAwardAdded={loadMovieData}
         awardToEdit={awardToEdit}
       />
+
+      <MovieQuizModal
+        show={showQuizModal}
+        onHide={() => setShowQuizModal(false)}
+        movieId={movie.id}
+        movieTitle={movie.title}
+      />
+
       <SimilarMovies movieId={movie.id} />
     </Container>
   );

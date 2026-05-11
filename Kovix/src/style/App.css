@@ -98,14 +98,14 @@ a {
 
 .nav-tabs .nav-link:hover,
 .nav-tabs .nav-link:focus {
-    background-color: rgba(255, 255, 255, 0.1) !important; /* Напівпрозоре підсвічування замість глухого білого */
+    background-color: rgba(255, 255, 255, 0.1) !important; 
     color: var(--text-main, #ffffff) !important;
     border-color: var(--border-color, #444) !important;
 }
 
 .nav-tabs .nav-item.show .nav-link, 
 .nav-tabs .nav-link.active {
-    background-color: var(--bg-card, #2b3035) !important; /* Колір вашої модалки */
+    background-color: var(--bg-card, #2b3035) !important;
     color: var(--text-main, #ffffff) !important;
     border-color: var(--border-color, #444) var(--border-color, #444) var(--bg-card, #2b3035) !important;
 }

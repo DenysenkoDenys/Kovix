@@ -13,19 +13,27 @@ const getRoleBadge = (role) => {
     return <Badge bg="secondary" className="mt-1">Користувач</Badge>;
 };
 
-const CommentNode = ({ post, level = 0, user, isModOrAdmin, topicIsClosed, handleCreatePost, handleDeletePost, handleSavePostEdit }) => {
+const CommentNode = ({ 
+    post, 
+    level = 0, 
+    user, 
+    isModOrAdmin, 
+    topicIsClosed, 
+    handleCreatePost, 
+    handleDeletePost, 
+    handleSavePostEdit 
+}) => {
     const [isReplying, setIsReplying] = useState(false);
     const [replyText, setReplyText] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const [editText, setEditText] = useState(post.content);
     const [processing, setProcessing] = useState(false);
 
-    const [isCollapsed, setIsCollapsed] = useState(false);
-    const [visibleReplies, setVisibleReplies] = useState(3); 
+    const [isCollapsed, setIsCollapsed] = useState(level > 0);
 
     const isAuthor = user && user.id === post.authorId;
-    const canEditPost = isAuthor; 
-    const canDeletePost = isAuthor || isModOrAdmin; 
+    const canEditPost = isAuthor;
+    const canDeletePost = isAuthor || isModOrAdmin;
 
     const marginLeft = level > 0 ? `${Math.min(level * 2.5, 10)}rem` : '0';
 
@@ -33,10 +41,11 @@ const CommentNode = ({ post, level = 0, user, isModOrAdmin, topicIsClosed, handl
         setProcessing(true);
         const success = await handleCreatePost(replyText, post.id);
         setProcessing(false);
+
         if (success) {
             setIsReplying(false);
             setReplyText('');
-            setVisibleReplies(9999); 
+            setIsCollapsed(false);
         }
     };
 
@@ -44,7 +53,10 @@ const CommentNode = ({ post, level = 0, user, isModOrAdmin, topicIsClosed, handl
         setProcessing(true);
         const success = await handleSavePostEdit(post.id, editText);
         setProcessing(false);
-        if (success) { setIsEditing(false); }
+
+        if (success) {
+            setIsEditing(false);
+        }
     };
 
     const countAllChildren = (node) => {
@@ -52,94 +64,256 @@ const CommentNode = ({ post, level = 0, user, isModOrAdmin, topicIsClosed, handl
         return node.children.length + node.children.reduce((acc, child) => acc + countAllChildren(child), 0);
     };
 
+    const totalMessages = countAllChildren(post) + 1;
+
     if (isCollapsed) {
-        const totalHidden = countAllChildren(post);
         return (
-            <div style={{ marginLeft: marginLeft, borderLeft: level > 0 ? '2px solid var(--border-color)' : 'none', paddingLeft: level > 0 ? '15px' : '0' }}>
-                <div 
-                    className="mb-3 text-muted small p-2 rounded d-inline-block hover-card" 
-                    style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', cursor: 'pointer' }} 
+            <div
+                style={{
+                    marginLeft,
+                    borderLeft: level > 0 ? '2px solid var(--border-color)' : 'none',
+                    paddingLeft: level > 0 ? '15px' : '0',
+                    marginBottom: '10px'
+                }}
+            >
+                <div
                     onClick={() => setIsCollapsed(false)}
+                    className="p-2 rounded d-inline-block"
+                    style={{
+                        cursor: 'pointer',
+                        backgroundColor: 'var(--bg-card)',
+                        border: '1px solid var(--primary-color)',
+                        color: 'var(--text-main)'
+                    }}
                     title="Розгорнути гілку"
                 >
-                    <span className="me-2 text-primary fw-bold">[+]</span>
-                    <strong style={{ color: 'var(--primary-color)' }}>{post.authorName}</strong> 
-                    <span className="ms-2">{new Date(post.createdAt).toLocaleDateString('uk-UA')}</span>
-                    <span className="ms-2 fst-italic">({totalHidden + 1} повідомлень згорнуто)</span>
+                    <span className="me-2 fw-bold text-primary">[+]</span>
+
+                    <strong style={{ color: 'var(--primary-color)' }}>
+                        {post.authorName}
+                    </strong>
+
+                    <span className="ms-2">
+                        {new Date(post.createdAt).toLocaleDateString('uk-UA')}
+                    </span>
+
+                    <span className="ms-2 fst-italic text-muted">
+                        ({totalMessages} повідомлень згорнуто)
+                    </span>
                 </div>
             </div>
         );
     }
 
     return (
-        <div style={{ marginLeft: marginLeft, borderLeft: level > 0 ? '2px solid var(--border-color)' : 'none', paddingLeft: level > 0 ? '15px' : '0' }}>
-            <Card className="mb-3 shadow-sm border-0" style={{ backgroundColor: 'var(--bg-card)' }}>
+        <div
+            style={{
+                marginLeft,
+                borderLeft: level > 0 ? '2px solid var(--border-color)' : 'none',
+                paddingLeft: level > 0 ? '15px' : '0'
+            }}
+        >
+            <Card
+                className="mb-3 shadow-sm border-0"
+                style={{ backgroundColor: 'var(--bg-card)' }}
+            >
                 <Card.Body className="p-0">
                     <Row className="g-0">
-                        <Col xs={12} sm={3} lg={2} className="p-3 text-center border-sm-end" style={{ borderColor: 'var(--border-color) !important', backgroundColor: 'var(--bg-main)' }}>
-                            <Link to={`/profile/${post.authorId}`} className="text-decoration-none">
-                                <div className="rounded-circle mx-auto mb-2 overflow-hidden" style={{ width: '50px', height: '50px', border: '2px solid var(--border-color)' }}>
-                                    <img src={post.authorAvatarUrl ? `${API_BASE_URL}${post.authorAvatarUrl}` : defaultAvatar} alt={post.authorName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <Col
+                            xs={12}
+                            sm={3}
+                            lg={2}
+                            className="p-3 text-center"
+                            style={{
+                                backgroundColor: 'var(--bg-main)',
+                                borderRight: '1px solid var(--border-color)'
+                            }}
+                        >
+                            <Link
+                                to={`/profile/${post.authorId}`}
+                                className="text-decoration-none"
+                            >
+                                <div
+                                    className="rounded-circle mx-auto mb-2 overflow-hidden"
+                                    style={{
+                                        width: '55px',
+                                        height: '55px',
+                                        border: '2px solid var(--border-color)'
+                                    }}
+                                >
+                                    <img
+                                        src={
+                                            post.authorAvatarUrl
+                                                ? `${API_BASE_URL}${post.authorAvatarUrl}`
+                                                : defaultAvatar
+                                        }
+                                        alt={post.authorName}
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'cover'
+                                        }}
+                                    />
                                 </div>
-                                <strong style={{ color: 'var(--primary-color, #0d6efd)', fontSize: '0.9rem' }}>{post.authorName}</strong>
+
+                                <strong
+                                    style={{
+                                        color: 'var(--primary-color)',
+                                        fontSize: '0.9rem'
+                                    }}
+                                >
+                                    {post.authorName}
+                                </strong>
                             </Link>
-                            <div className="mt-1" style={{ fontSize: '0.75rem' }}>{getRoleBadge(post.authorRole)}</div>
+
+                            <div className="mt-2">
+                                {getRoleBadge(post.authorRole)}
+                            </div>
                         </Col>
 
-                        <Col xs={12} sm={9} lg={10} className="p-3 d-flex flex-column">
-                            <div className="text-muted small border-bottom pb-2 mb-3 d-flex justify-content-between align-items-center flex-wrap" style={{ borderColor: 'var(--border-color) !important' }}>
-                                <div>
-                                    <span 
-                                        className="me-2 fw-bold text-secondary" 
-                                        style={{ cursor: 'pointer' }} 
+                        <Col xs={12} sm={9} lg={10} className="p-3">
+                            <div
+                                className="d-flex justify-content-between align-items-center flex-wrap border-bottom pb-2 mb-3"
+                                style={{ borderColor: 'var(--border-color)' }}
+                            >
+                                <div className="small text-muted">
+                                    <span
+                                        className="fw-bold me-2"
+                                        style={{ cursor: 'pointer' }}
                                         onClick={() => setIsCollapsed(true)}
                                         title="Згорнути гілку"
                                     >
                                         [–]
                                     </span>
-                                    <span>{new Date(post.createdAt).toLocaleString('uk-UA')}</span>
-                                    {post.updatedAt && <span className="ms-2 fst-italic" title={`Оновлено: ${new Date(post.updatedAt).toLocaleString('uk-UA')}`}>(ред.)</span>}
+
+                                    {new Date(post.createdAt).toLocaleString(
+                                        'uk-UA'
+                                    )}
+
+                                    {post.updatedAt && (
+                                        <span className="ms-2 fst-italic">
+                                            (ред.)
+                                        </span>
+                                    )}
                                 </div>
-                                
-                                <div className="d-flex gap-2 mt-2 mt-sm-0">
+
+                                <div className="d-flex gap-3 small">
                                     {user && !topicIsClosed && (
-                                        <Button variant="link" size="sm" className="text-primary p-0 text-decoration-none" onClick={() => { setIsReplying(!isReplying); setReplyText(''); }}>
+                                        <Button
+                                            variant="link"
+                                            size="sm"
+                                            className="p-0 text-decoration-none"
+                                            onClick={() =>
+                                                setIsReplying(!isReplying)
+                                            }
+                                        >
                                             💬 Відповісти
                                         </Button>
                                     )}
+
                                     {canEditPost && !isEditing && (
-                                        <Button variant="link" size="sm" className="text-secondary p-0 ms-2 text-decoration-none" onClick={() => { setIsEditing(true); setEditText(post.content); }}>
+                                        <Button
+                                            variant="link"
+                                            size="sm"
+                                            className="p-0 text-decoration-none text-secondary"
+                                            onClick={() =>
+                                                setIsEditing(true)
+                                            }
+                                        >
                                             ✏️ Редагувати
                                         </Button>
                                     )}
+
                                     {canDeletePost && (
-                                        <Button variant="link" size="sm" className="text-danger p-0 ms-2 text-decoration-none" onClick={() => handleDeletePost(post.id)}>
+                                        <Button
+                                            variant="link"
+                                            size="sm"
+                                            className="p-0 text-decoration-none text-danger"
+                                            onClick={() =>
+                                                handleDeletePost(post.id)
+                                            }
+                                        >
                                             🗑️ Видалити
                                         </Button>
                                     )}
                                 </div>
                             </div>
 
-                            <div className="post-content flex-grow-1" style={{ color: 'var(--text-main)', whiteSpace: 'pre-wrap', lineHeight: '1.5', fontSize: '0.95rem' }}>
+                            <div
+                                style={{
+                                    whiteSpace: 'pre-wrap',
+                                    color: 'var(--text-main)',
+                                    lineHeight: '1.6'
+                                }}
+                            >
                                 {isEditing ? (
-                                    <div className="edit-mode">
-                                        <Form.Control as="textarea" rows={3} value={editText} onChange={(e) => setEditText(e.target.value)} style={{ backgroundColor: 'var(--bg-input)', color: 'var(--text-main)', borderColor: 'var(--border-color)' }} />
+                                    <>
+                                        <Form.Control
+                                            as="textarea"
+                                            rows={3}
+                                            value={editText}
+                                            onChange={(e) =>
+                                                setEditText(e.target.value)
+                                            }
+                                        />
+
                                         <div className="mt-2 d-flex gap-2 justify-content-end">
-                                            <Button variant="secondary" size="sm" onClick={() => setIsEditing(false)}>Скасувати</Button>
-                                            <Button variant="success" size="sm" onClick={onEditSubmit} disabled={processing}>{processing ? 'Збереження...' : 'Зберегти'}</Button>
+                                            <Button
+                                                variant="secondary"
+                                                size="sm"
+                                                onClick={() =>
+                                                    setIsEditing(false)
+                                                }
+                                            >
+                                                Скасувати
+                                            </Button>
+
+                                            <Button
+                                                variant="success"
+                                                size="sm"
+                                                onClick={onEditSubmit}
+                                                disabled={processing}
+                                            >
+                                                Зберегти
+                                            </Button>
                                         </div>
-                                    </div>
+                                    </>
                                 ) : (
                                     post.content
                                 )}
                             </div>
 
                             {isReplying && (
-                                <div className="mt-3 p-3 rounded" style={{ backgroundColor: 'var(--bg-main)', border: '1px solid var(--border-color)' }}>
-                                    <Form.Control as="textarea" rows={2} placeholder={`Відповідь для ${post.authorName}...`} value={replyText} onChange={(e) => setReplyText(e.target.value)} style={{ backgroundColor: 'var(--bg-input)', color: 'var(--text-main)', fontSize: '0.9rem' }} />
+                                <div className="mt-3">
+                                    <Form.Control
+                                        as="textarea"
+                                        rows={2}
+                                        placeholder={`Відповідь для ${post.authorName}...`}
+                                        value={replyText}
+                                        onChange={(e) =>
+                                            setReplyText(e.target.value)
+                                        }
+                                    />
+
                                     <div className="mt-2 d-flex justify-content-end gap-2">
-                                        <Button variant="secondary" size="sm" onClick={() => setIsReplying(false)}>Скасувати</Button>
-                                        <Button variant="primary" size="sm" onClick={onReplySubmit} disabled={processing}>{processing ? 'Відправка...' : 'Відправити'}</Button>
+                                        <Button
+                                            size="sm"
+                                            variant="secondary"
+                                            onClick={() =>
+                                                setIsReplying(false)
+                                            }
+                                        >
+                                            Скасувати
+                                        </Button>
+
+                                        <Button
+                                            size="sm"
+                                            variant="primary"
+                                            onClick={onReplySubmit}
+                                            disabled={processing}
+                                        >
+                                            Відправити
+                                        </Button>
                                     </div>
                                 </div>
                             )}
@@ -148,37 +322,20 @@ const CommentNode = ({ post, level = 0, user, isModOrAdmin, topicIsClosed, handl
                 </Card.Body>
             </Card>
 
-            {post.children && post.children.length > 0 && (
-                <div className="replies-container">
-                    {post.children.slice(0, visibleReplies).map(childPost => (
-                        <CommentNode 
-                            key={childPost.id} 
-                            post={childPost} 
-                            level={level + 1} 
-                            user={user} 
-                            isModOrAdmin={isModOrAdmin} 
-                            topicIsClosed={topicIsClosed}
-                            handleCreatePost={handleCreatePost} 
-                            handleDeletePost={handleDeletePost} 
-                            handleSavePostEdit={handleSavePostEdit} 
-                        />
-                    ))}
-                    
-                    {post.children.length > visibleReplies && (
-                        <div style={{ marginLeft: `${Math.min((level + 1) * 2.5, 10)}rem`, paddingLeft: '15px', borderLeft: '2px solid var(--border-color)' }}>
-                            <Button 
-                                variant="link" 
-                                size="sm" 
-                                className="text-decoration-none p-0 mb-3"
-                                style={{ color: 'var(--primary-color)' }}
-                                onClick={() => setVisibleReplies(prev => prev + 5)} // Завантажуємо ще +5 коментарів
-                            >
-                                ↪ Показати ще {post.children.length - visibleReplies} відповідей...
-                            </Button>
-                        </div>
-                    )}
-                </div>
-            )}
+            {post.children &&
+                post.children.map((child) => (
+                    <CommentNode
+                        key={child.id}
+                        post={child}
+                        level={level + 1}
+                        user={user}
+                        isModOrAdmin={isModOrAdmin}
+                        topicIsClosed={topicIsClosed}
+                        handleCreatePost={handleCreatePost}
+                        handleDeletePost={handleDeletePost}
+                        handleSavePostEdit={handleSavePostEdit}
+                    />
+                ))}
         </div>
     );
 };

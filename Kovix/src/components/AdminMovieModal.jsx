@@ -403,7 +403,6 @@ function AdminMovieModal({ show, onHide, movieToEdit, onSuccess }) {
                         </div>
                       )}
 
-                      {/* MAL RESULTS DEBUG */}
                       {(() => {
                         return malSearchResults.length > 0 && (
                           <div style={{ position: 'relative', zIndex: 2000 }}>

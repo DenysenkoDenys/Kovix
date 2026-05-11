@@ -1407,5 +1407,233 @@ namespace Movie.API.Controllers
 
             await _context.SaveChangesAsync();
         }
+
+        [HttpGet("{movieId}/quiz-questions")]
+        [Authorize]
+        public async Task<ActionResult<List<QuizQuestionDto>>> GetQuizQuestions(int movieId)
+        {
+            var movie = await _context.Movies.FirstOrDefaultAsync(m => m.Id == movieId);
+            if (movie == null)
+                return NotFound("Фільм не знайдено");
+            var questions = GenerateMovieQuizQuestions(movie);
+            
+            return Ok(questions);
+        }
+
+        [HttpPost("{movieId}/submit-quiz")]
+        [Authorize]
+        public async Task<ActionResult<object>> SubmitQuiz(int movieId, [FromBody] QuizSubmissionDto submission)
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            if (userId == 0)
+                return Unauthorized();
+
+            var movie = await _context.Movies.FirstOrDefaultAsync(m => m.Id == movieId);
+            if (movie == null)
+                return NotFound("Фільм не знайдено");
+
+            var quizQuestions = GenerateMovieQuizQuestions(movie);
+            int correctAnswers = 0;
+
+            for (int i = 0; i < submission.Answers.Count; i++)
+            {
+                if (i < quizQuestions.Count && 
+                    submission.Answers[i].SelectedOptionIndex == quizQuestions[i].CorrectAnswerIndex)
+                {
+                    correctAnswers++;
+                }
+            }
+
+            int rating = (int)Math.Round(((double)correctAnswers / quizQuestions.Count) * 100);
+
+            var existingResult = await _context.MovieQuizResults
+                .FirstOrDefaultAsync(r => r.UserId == userId && r.MovieId == movieId);
+
+            if (existingResult != null)
+            {
+                existingResult.Rating = rating;
+                existingResult.CorrectAnswers = correctAnswers;
+                existingResult.TotalQuestions = quizQuestions.Count;
+                existingResult.UpdatedAt = DateTime.UtcNow;
+                _context.MovieQuizResults.Update(existingResult);
+            }
+            else
+            {
+                var newResult = new MovieQuizResult
+                {
+                    UserId = userId,
+                    MovieId = movieId,
+                    Rating = rating,
+                    CorrectAnswers = correctAnswers,
+                    TotalQuestions = quizQuestions.Count,
+                    CompletedAt = DateTime.UtcNow
+                };
+                _context.MovieQuizResults.Add(newResult);
+            }
+
+            await _context.SaveChangesAsync();
+
+            var userStats = await GetUserQuizStats(userId);
+
+            return Ok(new { rating, stats = userStats });
+        }
+
+        [HttpGet("quiz-stats")]
+        [Authorize]
+        public async Task<ActionResult<UserQuizStatsDto>> GetQuizStats()
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            if (userId == 0)
+                return Unauthorized();
+
+            var stats = await GetUserQuizStats(userId);
+            return Ok(stats);
+        }
+
+        private async Task<UserQuizStatsDto> GetUserQuizStats(int userId)
+        {
+            var results = await _context.MovieQuizResults
+                .Where(r => r.UserId == userId)
+                .Include(r => r.Movie)
+                .OrderByDescending(r => r.CompletedAt)
+                .ToListAsync();
+
+            var stats = new UserQuizStatsDto
+            {
+                TotalQuizzesCompleted = results.Count,
+                AverageRating = results.Count > 0 ? results.Average(r => r.Rating) : 0,
+                HighestRating = results.Count > 0 ? results.Max(r => r.Rating) : 0,
+                LowestRating = results.Count > 0 ? results.Min(r => r.Rating) : 0,
+                RecentResults = results.Take(10).Select(r => new MovieQuizResultDto
+                {
+                    Id = r.Id,
+                    MovieId = r.MovieId,
+                    MovieTitle = r.Movie.Title,
+                    Rating = r.Rating,
+                    CorrectAnswers = r.CorrectAnswers,
+                    TotalQuestions = r.TotalQuestions,
+                    CompletedAt = r.CompletedAt
+                }).ToList()
+            };
+
+            return stats;
+        }
+
+        private List<QuizQuestionDto> GenerateMovieQuizQuestions(MovieEntity movie)
+        {
+            var random = new Random(movie.Id);
+            var questions = new List<QuizQuestionDto>();
+
+            var yearOptions = new List<string> { movie.Year.ToString() };
+            yearOptions.Add((movie.Year - 1).ToString());
+            yearOptions.Add((movie.Year + 1).ToString());
+            yearOptions.Add((movie.Year + 3).ToString());
+            var yearShuffled = yearOptions.OrderBy(x => random.Next()).ToList();
+            int yearCorrectIndex = yearShuffled.IndexOf(movie.Year.ToString());
+            
+            questions.Add(new QuizQuestionDto
+            {
+                Question = $"У якому році вийшов фільм \"{movie.Title}\"?",
+                Options = yearShuffled,
+                CorrectAnswerIndex = yearCorrectIndex
+            });
+
+            if (!string.IsNullOrEmpty(movie.Genre))
+            {
+                var genres = movie.Genre.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(g => g.Trim())
+                    .Where(g => g.ToLower() != "фільм" && g.ToLower() != "серіал")
+                    .ToArray();
+                if (genres.Length > 0)
+                {
+                    var genreOptions = new List<string> { genres[0] };
+                    var allGenres = new[] { "Комедія", "Драма", "Жахи", "Триллер", "Фантастика", "Пригода", "Романтика", "Біографія", "Кримінал", "Історичні", "Детектив" };
+                    var wrongGenres = allGenres.Where(g => !genres.Contains(g)).OrderBy(x => random.Next()).Take(3).ToList();
+                    genreOptions.AddRange(wrongGenres);
+                    var genreShuffled = genreOptions.OrderBy(x => random.Next()).ToList();
+                    int genreCorrectIndex = genreShuffled.IndexOf(genres[0]);
+                    
+                    questions.Add(new QuizQuestionDto
+                    {
+                        Question = $"Який із цих жанрів належить до \"{movie.Title}\"?",
+                        Options = genreShuffled,
+                        CorrectAnswerIndex = genreCorrectIndex
+                    });
+                }
+            }
+
+            if (!string.IsNullOrEmpty(movie.Director))
+            {
+                var directorOptions = new List<string> { movie.Director };
+                var directors = new[] { "Крістофер Нолан", "Квентін Тарантіно", "Денис Вільнев", "Грета Гервіг", "Райан Кулер", "Пітер Джексон" };
+                foreach (var dir in directors)
+                {
+                    if (dir != movie.Director && directorOptions.Count < 4)
+                        directorOptions.Add(dir);
+                }
+                var directorShuffled = directorOptions.OrderBy(x => random.Next()).ToList();
+                int directorCorrectIndex = directorShuffled.IndexOf(movie.Director);
+                
+                questions.Add(new QuizQuestionDto
+                {
+                    Question = $"Хто режисер фільму \"{movie.Title}\"?",
+                    Options = directorShuffled,
+                    CorrectAnswerIndex = directorCorrectIndex
+                });
+            }
+
+            var typeOptions = new List<string> 
+            { 
+                movie.IsSeries ? "Серіал" : "Фільм",
+                movie.IsSeries ? "Фільм" : "Серіал",
+                "Мультфільм",
+                "Аніме"
+            };
+            var typeShuffled = typeOptions.OrderBy(x => random.Next()).ToList();
+            int typeCorrectIndex = typeShuffled.IndexOf(movie.IsSeries ? "Серіал" : "Фільм");
+            
+            questions.Add(new QuizQuestionDto
+            {
+                Question = $"Це фільм чи серіал: \"{movie.Title}\"?",
+                Options = typeShuffled,
+                CorrectAnswerIndex = typeCorrectIndex
+            });
+
+            var ratingStr = $"{movie.AverageRating:F1}";
+            var ratingOptions = new List<string> { ratingStr };
+            double rating = Math.Round(movie.AverageRating, 1);
+            
+            var alternatives = new HashSet<string> { ratingStr };
+            var ratingVariants = new[] 
+            { 
+                Math.Max(1, rating - 1.5),
+                Math.Min(10, rating + 1.5),
+                Math.Max(1, rating - 3),
+                Math.Min(10, rating + 2),
+                Math.Max(1, rating - 2)
+            };
+            
+            foreach (var alt in ratingVariants)
+            {
+                var altStr = $"{alt:F1}";
+                if (!alternatives.Contains(altStr) && ratingOptions.Count < 4)
+                {
+                    ratingOptions.Add(altStr);
+                    alternatives.Add(altStr);
+                }
+            }
+            
+            var ratingShuffled = ratingOptions.OrderBy(x => random.Next()).ToList();
+            int ratingCorrectIndex = ratingShuffled.IndexOf(ratingStr);
+            
+            questions.Add(new QuizQuestionDto
+            {
+                Question = $"Який рейтинг у фільму \"{movie.Title}\"?",
+                Options = ratingShuffled,
+                CorrectAnswerIndex = ratingCorrectIndex
+            });
+
+            return questions;
+        }
     }
 }

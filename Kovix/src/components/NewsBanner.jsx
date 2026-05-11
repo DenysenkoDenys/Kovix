@@ -6,6 +6,7 @@ import { FaTools, FaExclamationTriangle } from 'react-icons/fa';
 const NewsBanner = () => {
     const [importantNews, setImportantNews] = useState(null);
     const [showModal, setShowModal] = useState(false);
+    const [showBanner, setShowBanner] = useState(true);
     const [theme, setTheme] = useState('light');
 
     const fetchNews = async () => {
@@ -14,6 +15,7 @@ const NewsBanner = () => {
             const tech = res.data.find(n => n.category === 'Tech');
             const pinned = res.data.find(n => n.isPinned);
             setImportantNews(tech || pinned);
+            setShowBanner(true);
         } catch (e) { console.error(e); }
     };
 
@@ -38,7 +40,7 @@ const NewsBanner = () => {
         };
     }, []);
 
-    if (!importantNews) return null;
+    if (!importantNews || !showBanner) return null;
 
     const isTech = importantNews.category === 'Tech';
 
@@ -68,14 +70,43 @@ const NewsBanner = () => {
                         </div>
                     </div>
                     
-                    <Button 
-                        variant={isTech ? (theme === 'dark' ? 'secondary' : 'danger') : 'primary'} 
-                        size="sm" 
-                        className="fw-bold text-nowrap align-self-end align-self-md-center px-3 py-2 shadow-sm"
-                        onClick={() => setShowModal(true)}
-                    >
-                        Читати повністю
-                    </Button>
+                    <div className="d-flex gap-2 align-self-end align-self-md-center">
+                        <Button 
+                            variant={isTech ? (theme === 'dark' ? 'secondary' : 'danger') : 'primary'} 
+                            size="sm" 
+                            className="fw-bold text-nowrap px-3 py-2 shadow-sm"
+                            onClick={() => setShowModal(true)}
+                        >
+                            Читати повністю
+                        </Button>
+                        <Button 
+                            variant="link" 
+                            size="sm"
+                            onClick={() => setShowBanner(false)}
+                            title="Закрити новину"
+                            style={{
+                                color: 'inherit',
+                                border: 'none',
+                                padding: '0.25rem 0.5rem',
+                                textDecoration: 'none',
+                                fontSize: '1.25rem',
+                                opacity: 0.8,
+                                transition: 'opacity 0.2s ease, transform 0.2s ease',
+                                cursor: 'pointer',
+                            }}
+                            className="close-news-btn"
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.opacity = '1';
+                                e.currentTarget.style.transform = 'rotate(90deg)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.opacity = '0.8';
+                                e.currentTarget.style.transform = 'rotate(0deg)';
+                            }}
+                        >
+                            ✕
+                        </Button>
+                    </div>
                 </Alert>
             </Container>
 

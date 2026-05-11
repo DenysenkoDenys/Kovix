@@ -47,6 +47,7 @@ namespace Movie.API.Data
         public DbSet<ForumTopic> ForumTopics { get; set; }
         public DbSet<ForumPost> ForumPosts { get; set; }
         public DbSet<TierListReaction> TierListReactions { get; set; }
+        public DbSet<MovieQuizResult> MovieQuizResults { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
