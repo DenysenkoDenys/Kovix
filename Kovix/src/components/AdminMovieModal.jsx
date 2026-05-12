@@ -179,6 +179,8 @@ function AdminMovieModal({ show, onHide, movieToEdit, onSuccess }) {
     setMalSearchResults([]);
   };
 
+  const isImporting = isSearching || isMalSearching;
+
   const handleSelectTmdbMovie = async (movieFromSearch) => {
     setIsSearching(true);
     setMovieCast([]);
@@ -344,9 +346,32 @@ function AdminMovieModal({ show, onHide, movieToEdit, onSuccess }) {
         <Modal.Header closeButton style={{ borderColor: 'var(--border-color)' }}>
           <Modal.Title>{movieToEdit ? 'Редагувати фільм' : 'Додати фільм'}</Modal.Title>
         </Modal.Header>
-        <Modal.Body style={{ backgroundColor: 'var(--bg-main)' }}>
+        <Modal.Body style={{ backgroundColor: 'var(--bg-main)', position: 'relative' }}>
+          {isImporting && (
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+              borderRadius: '4px'
+            }}>
+              <div style={{ textAlign: 'center', color: 'white' }}>
+                <div style={{ marginBottom: '10px' }}>
+                  <div style={{ fontSize: '48px' }}>⏳</div>
+                </div>
+                <div style={{ fontSize: '14px', fontWeight: 'bold' }}>Імпортування фільму...</div>
+                <div style={{ fontSize: '12px', marginTop: '5px', color: 'rgba(255, 255, 255, 0.8)' }}>Будь ласка, чекайте</div>
+              </div>
+            </div>
+          )}
           <Form onSubmit={handleSubmit}>
-            <Tabs activeKey={activeTab} onSelect={(k) => setActiveTab(k)} className="mb-3">
+            <Tabs activeKey={activeTab} onSelect={(k) => !isImporting && setActiveTab(k)} className="mb-3" style={{ pointerEvents: isImporting ? 'none' : 'auto', opacity: isImporting ? 0.6 : 1 }}>
 
               <Tab eventKey="info" title="Інформація">
                 <Row>
@@ -381,9 +406,9 @@ function AdminMovieModal({ show, onHide, movieToEdit, onSuccess }) {
                               <ListGroup.Item
                                 key={m.tmdbId}
                                 action
-                                onClick={(e) => { e.preventDefault(); handleSelectTmdbMovie(m); }}
+                                onClick={(e) => { if (!isImporting) { e.preventDefault(); handleSelectTmdbMovie(m); } }}
                                 className="d-flex align-items-center gap-3 bg-card text-main border-secondary"
-                                style={{ cursor: 'pointer' }}
+                                style={{ cursor: isImporting ? 'not-allowed' : 'pointer', opacity: isImporting ? 0.5 : 1 }}
                               >
                                 <Image
                                   src={m.posterUrl || 'https://via.placeholder.com/45x68?text=No+Img'}
@@ -425,9 +450,9 @@ function AdminMovieModal({ show, onHide, movieToEdit, onSuccess }) {
                                 <ListGroup.Item
                                   key={anime.mal_id}
                                   action
-                                  onClick={(e) => { e.preventDefault(); handleSelectMalAnime(anime); }}
+                                  onClick={(e) => { if (!isImporting) { e.preventDefault(); handleSelectMalAnime(anime); } }}
                                   className="d-flex align-items-center gap-3 bg-card text-main border-secondary"
-                                  style={{ cursor: 'pointer' }}
+                                  style={{ cursor: isImporting ? 'not-allowed' : 'pointer', opacity: isImporting ? 0.5 : 1 }}
                                 >
                                   <Image
                                     src={anime.images?.jpg?.image_url || 'https://via.placeholder.com/45x68?text=No+Img'}
@@ -567,34 +592,34 @@ function AdminMovieModal({ show, onHide, movieToEdit, onSuccess }) {
               </Tab>
 
               <Tab eventKey="cast" title={`Актори (${movieCast.length})`}>
-                <div className="p-3 border rounded mb-3 border-secondary shadow-sm">
+                <div className="p-3 border rounded mb-3 border-secondary shadow-sm" style={{ opacity: isImporting ? 0.6 : 1, pointerEvents: isImporting ? 'none' : 'auto' }}>
                   <div className="d-flex justify-content-between align-items-center mb-2">
                     <h6 className="mb-0">Додати актора</h6>
-                    <Button variant="link" size="sm" className="text-info p-0 text-decoration-none fw-bold" onClick={() => setShowQuickAddActor(true)}>
+                    <Button variant="link" size="sm" className="text-info p-0 text-decoration-none fw-bold" onClick={() => setShowQuickAddActor(true)} disabled={isImporting}>
                       + Створити нового актора в базі
                     </Button>
                   </div>
                   <Row className="g-2">
                     <Col md={6}>
-                      <Form.Select value={selectedActorId} onChange={(e) => setSelectedActorId(e.target.value)} className="bg-input text-main border-secondary">
+                      <Form.Select value={selectedActorId} onChange={(e) => setSelectedActorId(e.target.value)} className="bg-input text-main border-secondary" disabled={isImporting}>
                         <option value="">Оберіть актора...</option>
                         {allActors.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                       </Form.Select>
                     </Col>
                     <Col md={4}>
-                      <Form.Control placeholder="Роль" value={roleName} onChange={(e) => setRoleName(e.target.value)} className="bg-input text-main border-secondary" />
+                      <Form.Control placeholder="Роль" value={roleName} onChange={(e) => setRoleName(e.target.value)} className="bg-input text-main border-secondary" disabled={isImporting} />
                     </Col>
                     <Col md={2}>
-                      <Button variant="success" onClick={handleAddActorToCast} className="w-100">Додати</Button>
+                      <Button variant="success" onClick={handleAddActorToCast} className="w-100" disabled={isImporting}>Додати</Button>
                     </Col>
                   </Row>
                 </div>
 
-                <ListGroup style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                <ListGroup style={{ maxHeight: '300px', overflowY: 'auto', opacity: isImporting ? 0.6 : 1, pointerEvents: isImporting ? 'none' : 'auto' }}>
                   {movieCast.length > 0 ? movieCast.map((item, index) => (
                     <ListGroup.Item key={`${item.actorId}-${index}`} className="d-flex justify-content-between align-items-center bg-card text-main border-secondary">
                       <div><strong className="text-info">{item.name}</strong> <span className="text-muted ms-2 small">як {item.role}</span></div>
-                      <Button variant="outline-danger" size="sm" onClick={() => handleRemoveActor(item.actorId)}>✖</Button>
+                      <Button variant="outline-danger" size="sm" onClick={() => handleRemoveActor(item.actorId)} disabled={isImporting}>✖</Button>
                     </ListGroup.Item>
                   )) : <p className="text-center text-muted mt-2">Список акторів порожній</p>}
                 </ListGroup>
@@ -602,8 +627,12 @@ function AdminMovieModal({ show, onHide, movieToEdit, onSuccess }) {
             </Tabs>
 
             <div className="d-flex justify-content-end gap-2 mt-3">
-              <Button variant="secondary" onClick={onHide}>Скасувати</Button>
-              <Button variant="primary" type="submit">Зберегти фільм</Button>
+              <Button variant="secondary" onClick={onHide} disabled={isImporting}>
+                {isImporting ? '⏳ Імпортування...' : 'Скасувати'}
+              </Button>
+              <Button variant="primary" type="submit" disabled={isImporting}>
+                {isImporting ? '⏳ Імпортування...' : 'Зберегти фільм'}
+              </Button>
             </div>
           </Form>
         </Modal.Body>

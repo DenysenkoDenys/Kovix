@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Movie.API.Data;
 using Movie.API.DTOs;
 using Movie.API.Models;
+using Movie.API.Hubs;
 
 namespace Movie.API.Controllers
 {
@@ -12,10 +14,14 @@ namespace Movie.API.Controllers
     public class AdminUserAwardsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHubContext<NotificationHub> _notificationHubContext;
+        private readonly ILogger<AdminUserAwardsController> _logger;
 
-        public AdminUserAwardsController(ApplicationDbContext context)
+        public AdminUserAwardsController(ApplicationDbContext context, IHubContext<NotificationHub> notificationHubContext, ILogger<AdminUserAwardsController> logger)
         {
             _context = context;
+            _notificationHubContext = notificationHubContext;
+            _logger = logger;
         }
 
         [HttpPost]
@@ -34,6 +40,27 @@ namespace Movie.API.Controllers
 
             _context.UserAwards.Add(award);
             await _context.SaveChangesAsync();
+
+            _logger.LogInformation($"🎖️ Видано досягнення: {dto.Name} для користувача {dto.UserId}");
+
+            try
+            {
+                await _notificationHubContext.Clients.User(dto.UserId.ToString()).SendAsync(
+                    "AchievementUnlocked",
+                    new
+                    {
+                        name = dto.Name,
+                        icon = dto.Icon,
+                        description = dto.Description
+                    }
+                );
+                _logger.LogInformation($"SignalR сповіщення відправлено для {dto.UserId}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Помилка відправки SignalR: {ex.Message}");
+            }
+
             return Ok(new { message = "Досягнення успішно видано!" });
         }
 

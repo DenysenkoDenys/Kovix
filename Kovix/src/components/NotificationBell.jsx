@@ -1,17 +1,19 @@
 import { useState, useEffect, useCallback } from 'react';
-import { HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr';
 import { useAuth } from '../contexts/AuthContext';
+import { useSignalR } from '../contexts/SignalRContext';
 import { useNavigate } from 'react-router-dom';
 import { useFriends } from '../contexts/FriendsContext';
+import { useAchievement } from '../contexts/AchievementContext';
 import { notificationsAPI, friendsAPI } from '../services/api';
 import { FiBell, FiTrash2, FiCheck, FiX } from 'react-icons/fi';
 import { Button } from 'react-bootstrap';
 import '../style/NotificationBell.css';
-import { getWebSocketUrl } from '../utils/apiConfig';
 
 function NotificationBell() {
     const { user } = useAuth();
+    const { notificationConnection } = useSignalR();
     const { incomingRequests, requestCount, refreshRequests } = useFriends();
+    const { showAchievement } = useAchievement();
 
     const [simpleNotifications, setSimpleNotifications] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
@@ -34,14 +36,7 @@ function NotificationBell() {
     }, [user, requestCount, loadNotifications, refreshRequests]);
 
     useEffect(() => {
-        if (!user) return;
-        const wsUrl = getWebSocketUrl();
-        const connection = new HubConnectionBuilder()
-            .withUrl(`${wsUrl}/notificationHub`, {
-                accessTokenFactory: () => localStorage.getItem('token')
-            })
-            .withAutomaticReconnect()
-            .build();
+        if (!notificationConnection || !user) return;
 
         const handler = (note) => {
             if (note.message.toLowerCase().includes("запит") || note.type === "FriendRequest") {
@@ -59,19 +54,38 @@ function NotificationBell() {
             });
         };
 
-        connection.start()
-            .then(() => {
-                console.log("✅ Notification connected");
-                connection.on('ReceiveNotification', handler);
-            })
-            .catch(console.error);
+        const achievementHandler = (achievement) => {
+            console.log('🎖️ Achievement received:', achievement);
+            if (showAchievement) {
+                showAchievement({
+                    name: achievement.name,
+                    icon: achievement.icon,
+                    description: achievement.description
+                });
+            } else {
+                console.warn('showAchievement is not available');
+            }
 
-        return () => {
-            connection.off('ReceiveNotification', handler);
-            connection.stop();
+            setSimpleNotifications(prev => [{
+                id: Date.now(),
+                message: `🏆 ${achievement.name}`,
+                type: "Achievement",
+                createdAt: new Date().toISOString(),
+                isRead: false,
+                fromUserId: user?.id  
+            }, ...prev]);
         };
 
-    }, [user]);
+        notificationConnection.on('ReceiveNotification', handler);
+        notificationConnection.on('AchievementUnlocked', achievementHandler);
+        console.log('📡 SignalR listeners registered');
+
+        return () => {
+            notificationConnection.off('ReceiveNotification', handler);
+            notificationConnection.off('AchievementUnlocked', achievementHandler);
+        };
+
+    }, [notificationConnection, user, refreshRequests, showAchievement]);
 
     const removeFriendRequestNotification = (requesterId) => {
         setSimpleNotifications(prev =>
@@ -99,12 +113,17 @@ function NotificationBell() {
         } catch (e) { console.error(e); }
     };
 
-    const handleDeleteNotification = async (e, id) => {
+    const handleDeleteNotification = async (e, id, notificationType) => {
         e.stopPropagation();
         try {
-            await notificationsAPI.delete(id);
+            if (notificationType !== "Achievement") {
+                await notificationsAPI.delete(id);
+            }
             setSimpleNotifications(prev => prev.filter(n => n.id !== id));
-        } catch (error) { console.error(error); }
+        } catch (error) { 
+            console.error(error);
+            setSimpleNotifications(prev => prev.filter(n => n.id !== id));
+        }
     };
 
     const handleClearAll = async () => {
@@ -122,7 +141,9 @@ function NotificationBell() {
     const handleNotificationClick = async (notification) => {
         try {
             if (!notification.isRead) {
-                await notificationsAPI.markAsRead(notification.id);
+                if (notification.type !== "Achievement") {
+                    await notificationsAPI.markAsRead(notification.id);
+                }
 
                 setSimpleNotifications(prev =>
                     prev.map(n => n.id === notification.id ? { ...n, isRead: true } : n)
@@ -132,6 +153,9 @@ function NotificationBell() {
             if (notification.url) {
                 setIsOpen(false);
                 navigate(notification.url);
+            } else if (notification.fromUserId || notification.senderId) {
+                const userId = notification.fromUserId || notification.senderId;
+                goToProfile(userId);
             }
         } catch (err) {
             console.error("Помилка при кліку на сповіщення:", err);
@@ -232,7 +256,7 @@ function NotificationBell() {
                                         </div>
 
                                         {note.id && (
-                                            <button className="btn btn-link text-danger p-0 ms-2" onClick={(e) => handleDeleteNotification(e, note.id)}>
+                                            <button className="btn btn-link text-danger p-0 ms-2" onClick={(e) => handleDeleteNotification(e, note.id, note.type)}>
                                                 <FiTrash2 />
                                             </button>
                                         )}

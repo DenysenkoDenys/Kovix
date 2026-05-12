@@ -1,9 +1,11 @@
 ﻿using GTranslate.Translators;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Movie.API.Data;
 using Movie.API.DTOs;
+using Movie.API.Hubs;
 using Movie.API.Models;
 using Movie.API.Models.Enums;
 using Movie.API.Models.TMdb;
@@ -18,13 +20,15 @@ namespace Movie.API.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _env;
+        private readonly IHubContext<NotificationHub> _notificationHubContext;
         private const string TMDB_API_KEY = "f797261e58f7c171a30e466ce870cfbe";
 
 
-        public MoviesController(ApplicationDbContext context, IWebHostEnvironment env)
+        public MoviesController(ApplicationDbContext context, IWebHostEnvironment env, IHubContext<NotificationHub> notificationHubContext)
         {
             _context = context;
             _env = env;
+            _notificationHubContext = notificationHubContext;
         }
 
         [HttpGet]
@@ -297,6 +301,8 @@ namespace Movie.API.Controllers
             }
 
             bool hasReactionAward = await _context.UserAwards.AnyAsync(ua => ua.UserId == userId && ua.Name == "Емоційний глядач");
+            bool awardAdded = false;
+            
             if (!hasReactionAward)
             {
                 _context.UserAwards.Add(new UserAward
@@ -306,10 +312,21 @@ namespace Movie.API.Controllers
                     Icon = "🎭",
                     Description = "За першу залишену реакцію на фільм"
                 });
-                await _context.SaveChangesAsync();
+                awardAdded = true;
             }
 
+            // Зберегти реакцію та досягнення (якщо були)
             await _context.SaveChangesAsync();
+            
+            // Відправити SignalR сповіщення тільки якщо досягнення було додано
+            if (awardAdded)
+            {
+                await _notificationHubContext.Clients.User(userId.ToString()).SendAsync(
+                    "AchievementUnlocked",
+                    new { name = "Емоційний глядач", icon = "🎭", description = "За першу залишену реакцію на фільм" }
+                );
+            }
+
             return Ok();
         }
 
@@ -1471,7 +1488,63 @@ namespace Movie.API.Controllers
                 _context.MovieQuizResults.Add(newResult);
             }
 
+            bool perfectAwardAdded = false;
+            if (rating == 100)
+            {
+                bool hasPerfectAward = await _context.UserAwards.AnyAsync(ua => ua.UserId == userId && ua.Name == "Ідеальний знавець");
+                if (!hasPerfectAward)
+                {
+                    _context.UserAwards.Add(new UserAward
+                    {
+                        UserId = userId,
+                        Name = "Ідеальний знавець",
+                        Icon = "💯",
+                        Description = "За ідеальний результат тесту (100%)"
+                    });
+                    perfectAwardAdded = true;
+                }
+            }
+
+            bool warriorAwardAdded = false;
+            int totalCompleted = await _context.MovieQuizResults
+                .Where(r => r.UserId == userId)
+                .Select(r => r.MovieId)
+                .Distinct()
+                .CountAsync();
+
+            if (totalCompleted == 10)
+            {
+                bool hasWarriorAward = await _context.UserAwards.AnyAsync(ua => ua.UserId == userId && ua.Name == "Тестовий воїн");
+                if (!hasWarriorAward)
+                {
+                    _context.UserAwards.Add(new UserAward
+                    {
+                        UserId = userId,
+                        Name = "Тестовий воїн",
+                        Icon = "⚔️",
+                        Description = "За проходження 10 тестів знання"
+                    });
+                    warriorAwardAdded = true;
+                }
+            }
+
             await _context.SaveChangesAsync();
+
+            if (perfectAwardAdded)
+            {
+                await _notificationHubContext.Clients.User(userId.ToString()).SendAsync(
+                    "AchievementUnlocked",
+                    new { name = "Ідеальний знавець", icon = "💯", description = "За ідеальний результат тесту (100%)" }
+                );
+            }
+
+            if (warriorAwardAdded)
+            {
+                await _notificationHubContext.Clients.User(userId.ToString()).SendAsync(
+                    "AchievementUnlocked",
+                    new { name = "Тестовий воїн", icon = "⚔️", description = "За проходження 10 тестів знання" }
+                );
+            }
 
             var userStats = await GetUserQuizStats(userId);
 

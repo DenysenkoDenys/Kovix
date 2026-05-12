@@ -10,5 +10,6 @@
         public DateTime? LastMessageTime { get; set; }
         public int UnreadCount { get; set; }
         public bool IsOnline { get; set; }
+        public DateTime? LastActive { get; set; }
     }
 }

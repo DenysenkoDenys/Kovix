@@ -155,7 +155,12 @@ function ChatPage() {
                 (String(activeChat) === String(receiverId));
 
             if (isCurrentChatOpen) {
-                setMessages(prev => [...prev, { id, senderId, senderName, content: message, receiverId, timestamp }]);
+                setMessages(prev => {
+                    const messageExists = prev.some(m => m.id === id);
+                    if (messageExists) return prev;
+                    
+                    return [...prev, { id, senderId, senderName, content: message, receiverId, timestamp }];
+                });
             }
 
             if (isGeneralMessage) {
@@ -253,18 +258,10 @@ function ChatPage() {
             if (editingId) {
                 await connection.invoke('EditMessage', editingId, messageInput);
                 setEditingId(null);
+                setMessageInput('');
             } else {
                 const now = new Date().toISOString();
-                const tempId = 'temp-' + Date.now();
                 if (activeChat !== null) {
-                    setMessages(prev => [...prev, {
-                        id: tempId,
-                        senderId: user.id,
-                        senderName: user.username,
-                        receiverId: activeChat,
-                        content: messageInput,
-                        timestamp: now
-                    }]);
                 } else {
                     setGeneralChat(prev => ({ ...prev, lastMessage: `Ви: ${messageInput}`, lastMessageTime: now }));
                 }

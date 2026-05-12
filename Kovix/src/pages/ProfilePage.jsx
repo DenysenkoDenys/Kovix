@@ -5,7 +5,6 @@ import { authAPI, friendsAPI, moviesAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useFriends } from '../contexts/FriendsContext';
 import { useChatConnection } from '../hooks/useChatConnection';
-import { usePresence } from '../contexts/PresenceContext';
 import MovieStats from '../components/MovieStats';
 import QuizStatsComponent from '../components/QuizStatsComponent';
 import { formatLastSeen } from '../utils/dateUtils';
@@ -36,7 +35,6 @@ function ProfilePage() {
 
   const { logout, login, user: currentUser } = useAuth();
   const { refreshRequests } = useFriends();
-  const { connection: presenceConnection } = usePresence();
   const navigate = useNavigate();
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -89,21 +87,29 @@ function ProfilePage() {
         )
       );
     });
-
-    try {
-      let attempts = 0;
-      while (conn.state !== "Connected" && attempts < 50) {
-        await new Promise(r => setTimeout(r, 50));
-        attempts++;
-      }
-
-      if (conn.state === "Connected") {
-        await conn.invoke("GetFriendsStatus");
-      }
-    } catch (err) {
-      console.error('Помилка отримання статусів:', err);
-    }
   });
+
+  useEffect(() => {
+    if (!localConnection || currentUser?.isBlocked) return;
+
+    const syncFriendsStatus = async () => {
+      try {
+        let attempts = 0;
+        while (localConnection.state !== "Connected" && attempts < 50) {
+          await new Promise(r => setTimeout(r, 50));
+          attempts++;
+        }
+
+        if (localConnection.state === "Connected") {
+          await localConnection.invoke("GetFriendsStatus");
+        }
+      } catch (err) {
+        console.error('Помилка синхронізації статусів:', err);
+      }
+    };
+
+    syncFriendsStatus();
+  }, [localConnection, currentUser?.isBlocked]);
 
   const loadProfile = async () => {
     try {

@@ -7,8 +7,23 @@ const AdminUserAwardModal = ({ show, onHide, targetUserId, onAwardAdded, awardTo
     const [icon, setIcon] = useState('🏆');
     const [description, setDescription] = useState('');
     const [loading, setLoading] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
 
     const popularIcons = ['🏆', '👑', '🌟', '✍️', '🎮', '💯', '❤️', '🤓', '🚀', '🥇'];
+
+    const automaticAchievements = [
+        { name: 'Емоційний глядач', icon: '🎭', description: 'За першу залишену реакцію на фільм' },
+        { name: 'Гостре перо', icon: '🖋️', description: 'За першу написану професійну рецензію' },
+        { name: 'Перше слово', icon: '✍️', description: 'За перший написанний коментар на сайті' },
+        { name: 'Голос на форумі', icon: '💬', description: 'За перший коментар на форумі' },
+        { name: 'Ідеальний знавець', icon: '💯', description: 'За ідеальний результат тесту (100%)' },
+        { name: 'Тестовий воїн', icon: '⚔️', description: 'За проходження 10 тестів знання' }
+    ];
+
+    const filteredAchievements = automaticAchievements.filter(achievement =>
+        achievement.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        achievement.description.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     useEffect(() => {
         if (awardToEdit) {
@@ -20,7 +35,15 @@ const AdminUserAwardModal = ({ show, onHide, targetUserId, onAwardAdded, awardTo
             setIcon('🏆');
             setDescription('');
         }
+        setSearchTerm('');
     }, [awardToEdit, show]);
+
+    const handleSelectAutomatic = (achievement) => {
+        setName(achievement.name);
+        setIcon(achievement.icon);
+        setDescription(achievement.description);
+        setSearchTerm('');
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -51,6 +74,58 @@ const AdminUserAwardModal = ({ show, onHide, targetUserId, onAwardAdded, awardTo
             </Modal.Header>
             <Modal.Body>
                 <Form onSubmit={handleSubmit}>
+                    <Form.Group className="mb-4">
+                        <Form.Label className="fw-bold">🎖️ Автоматичні досягнення</Form.Label>
+                        <Form.Control
+                            type="text"
+                            placeholder="🔍 Пошук досягнень..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="bg-input text-main border-secondary mb-3"
+                        />
+                        <div
+                            style={{
+                                maxHeight: '300px',
+                                overflowY: 'auto',
+                                border: '1px solid var(--border-color)',
+                                borderRadius: '0.25rem',
+                                padding: '8px'
+                            }}
+                        >
+                            {filteredAchievements.length > 0 ? (
+                                <div className="d-grid gap-2">
+                                    {filteredAchievements.map((achievement) => (
+                                        <Button
+                                            key={achievement.name}
+                                            variant="outline-primary"
+                                            onClick={() => handleSelectAutomatic(achievement)}
+                                            className="text-start p-3"
+                                            style={{
+                                                backgroundColor: name === achievement.name ? 'rgba(13, 110, 253, 0.15)' : 'var(--bg-card)',
+                                                borderColor: name === achievement.name ? 'var(--primary-color)' : 'var(--border-color)',
+                                                color: 'var(--text-main)'
+                                            }}
+                                        >
+                                            <div className="d-flex gap-2 align-items-center">
+                                                <span style={{ fontSize: '1.5rem' }}>{achievement.icon}</span>
+                                                <div>
+                                                    <div className="fw-bold">{achievement.name}</div>
+                                                    <small className="text-muted">{achievement.description}</small>
+                                                </div>
+                                            </div>
+                                        </Button>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-3 text-muted">
+                                    Досягнення не знайдено
+                                </div>
+                            )}
+                        </div>
+                    </Form.Group>
+
+                    <hr className="my-3" style={{ borderColor: 'var(--border-color)' }} />
+
                     <Form.Group className="mb-3">
                         <Form.Label className="fw-bold">Назва</Form.Label>
                         <Form.Control type="text" required maxLength={50} value={name} onChange={(e) => setName(e.target.value)} className="bg-input text-main border-secondary" placeholder="напр., Легенда Kovix" />

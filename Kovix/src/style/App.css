@@ -404,6 +404,20 @@ h1, h2, h3, h4, h5 {
 .status-badge-3 { background-color: #2ecc71; color: white; }
 .status-badge-4 { background-color: #95a5a6; color: white; }
 
+.achievements-container {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.achievements-container > * {
+  pointer-events: auto;
+}
+
 @media (max-width: 992px) {
   .movie-actions-bar {
     gap: 10px;

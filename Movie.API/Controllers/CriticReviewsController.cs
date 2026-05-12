@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Movie.API.Data;
 using Movie.API.DTOs;
+using Movie.API.Hubs;
 using Movie.API.Models;
 using System.Security.Claims;
 
@@ -13,10 +15,12 @@ namespace Movie.API.Controllers
     public class CriticReviewsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHubContext<NotificationHub> _notificationHubContext;
 
-        public CriticReviewsController(ApplicationDbContext context)
+        public CriticReviewsController(ApplicationDbContext context, IHubContext<NotificationHub> notificationHubContext)
         {
             _context = context;
+            _notificationHubContext = notificationHubContext;
         }
 
         [HttpGet("movie/{movieId}")]
@@ -83,6 +87,8 @@ namespace Movie.API.Controllers
             };
 
             bool hasCriticAward = await _context.UserAwards.AnyAsync(ua => ua.UserId == userId && ua.Name == "Гостре перо");
+            bool awardAdded = false;
+            
             if (!hasCriticAward)
             {
                 _context.UserAwards.Add(new UserAward
@@ -92,10 +98,19 @@ namespace Movie.API.Controllers
                     Icon = "🖋️",
                     Description = "За першу написану професійну рецензію"
                 });
+                awardAdded = true;
             }
 
             _context.CriticReviews.Add(review);
             await _context.SaveChangesAsync();
+            
+            if (awardAdded)
+            {
+                await _notificationHubContext.Clients.User(userId.ToString()).SendAsync(
+                    "AchievementUnlocked",
+                    new { name = "Гостре перо", icon = "🖋️", description = "За першу написану професійну рецензію" }
+                );
+            }
 
             await _context.Entry(review).Reference(cr => cr.User).LoadAsync();
 

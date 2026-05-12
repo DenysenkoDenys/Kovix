@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Movie.API.Data;
 using Movie.API.DTOs;
+using Movie.API.Hubs;
 using Movie.API.Models;
 using System.Security.Claims;
 
@@ -13,10 +15,12 @@ namespace Movie.API.Controllers
     public class ReviewsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHubContext<NotificationHub> _notificationHubContext;
 
-        public ReviewsController(ApplicationDbContext context)
+        public ReviewsController(ApplicationDbContext context, IHubContext<NotificationHub> notificationHubContext)
         {
             _context = context;
+            _notificationHubContext = notificationHubContext;
         }
 
         [HttpGet("movie/{movieId}")]
@@ -146,6 +150,8 @@ namespace Movie.API.Controllers
             };
 
             bool hasReviewAward = await _context.UserAwards.AnyAsync(ua => ua.UserId == userId && ua.Name == "Перше слово");
+            bool awardAdded = false;
+            
             if (!hasReviewAward)
             {
                 _context.UserAwards.Add(new UserAward
@@ -153,9 +159,9 @@ namespace Movie.API.Controllers
                     UserId = userId,
                     Name = "Перше слово",
                     Icon = "✍️",
-                    Description = "За першу написану рецензію на сайті"
+                    Description = "За перший написанний коментар на сайті"
                 });
-                await _context.SaveChangesAsync();
+                awardAdded = true;
             }
 
             _context.Reviews.Add(review);
@@ -167,6 +173,14 @@ namespace Movie.API.Controllers
             movie.AverageRating = movie.Reviews.Any() ? movie.Reviews.Average(r => r.Rating) : 0;
 
             await _context.SaveChangesAsync();
+            
+            if (awardAdded)
+            {
+                await _notificationHubContext.Clients.User(userId.ToString()).SendAsync(
+                    "AchievementUnlocked",
+                    new { name = "Перше слово", icon = "✍️", description = "За перший написанний коментар на сайті" }
+                );
+            }
 
             await _context.Entry(review).Reference(r => r.User).LoadAsync();
 

@@ -27,15 +27,13 @@ export const getApiBaseUrl = () => {
 };
 
 /**
- * Get WebSocket URL
- * Uses the same host as current page but with ws/wss protocol
+ * Get SignalR connection URL
+ * Returns the HTTP(S) URL for SignalR to use
+ * SignalR will automatically handle protocol upgrade to WebSocket
  */
 export const getWebSocketUrl = () => {
-  if (typeof window !== 'undefined') {
-    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-    return `${protocol}://${window.location.host}`;
-  }
-  return 'ws://localhost:8080';
+  // Return the same base URL as API - SignalR handles the protocol upgrade
+  return getApiBaseUrl();
 };
 
 export const API_BASE_URL = getApiBaseUrl();

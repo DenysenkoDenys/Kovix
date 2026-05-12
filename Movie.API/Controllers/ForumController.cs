@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Movie.API.Data;
 using Movie.API.DTOs;
+using Movie.API.Hubs;
 using Movie.API.Models;
 using System.Security.Claims;
 
@@ -15,11 +17,13 @@ namespace Movie.API.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IMemoryCache _cache;
+        private readonly IHubContext<NotificationHub> _notificationHubContext;
 
-        public ForumController(ApplicationDbContext context, IMemoryCache cache)
+        public ForumController(ApplicationDbContext context, IMemoryCache cache, IHubContext<NotificationHub> notificationHubContext)
         {
             _context = context;
             _cache = cache;
+            _notificationHubContext = notificationHubContext;
         }
 
         [HttpGet("categories")]
@@ -247,12 +251,33 @@ namespace Movie.API.Controllers
                 ParentPostId = dto.ParentPostId 
             };
 
-
             _context.ForumPosts.Add(post);
-
             topic.UpdatedAt = DateTime.UtcNow;
 
+            bool hasForumPostAward = await _context.UserAwards.AnyAsync(ua => ua.UserId == userId && ua.Name == "Голос на форумі");
+            bool awardAdded = false;
+            
+            if (!hasForumPostAward)
+            {
+                _context.UserAwards.Add(new UserAward
+                {
+                    UserId = userId,
+                    Name = "Голос на форумі",
+                    Icon = "💬",
+                    Description = "За перший коментар на форумі"
+                });
+                awardAdded = true;
+            }
+
             await _context.SaveChangesAsync();
+            
+            if (awardAdded)
+            {
+                await _notificationHubContext.Clients.User(userId.ToString()).SendAsync(
+                    "AchievementUnlocked",
+                    new { name = "Голос на форумі", icon = "💬", description = "За перший коментар на форумі" }
+                );
+            }
 
             return Ok(new { message = "Відповідь додано!" });
         }

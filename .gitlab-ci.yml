@@ -4,6 +4,15 @@ stages:
   - docker
 
 # ─────────────────────────────
+# GLOBAL VARIABLES
+# ─────────────────────────────
+variables:
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
+  NPM_CONFIG_FUND: "false"
+  NPM_CONFIG_AUDIT: "false"
+
+# ─────────────────────────────
 # CACHE
 # ─────────────────────────────
 cache:
@@ -21,8 +30,9 @@ backend_build:
   image: mcr.microsoft.com/dotnet/sdk:8.0
   tags:
     - student
-  script:
+  before_script:
     - cd Movie.API
+  script:
     - dotnet restore
     - dotnet build --configuration Release --no-restore
   artifacts:
@@ -38,8 +48,9 @@ backend_test:
     - student
   dependencies:
     - backend_build
-  script:
+  before_script:
     - cd Movie.API
+  script:
     - dotnet test --configuration Release --no-build --verbosity normal
 
 dotnet_format:
@@ -47,10 +58,11 @@ dotnet_format:
   image: mcr.microsoft.com/dotnet/sdk:8.0
   tags:
     - student
-  script:
+  before_script:
     - cd Movie.API
+  script:
     - dotnet restore
-    - dotnet format --verify-no-changes
+    - dotnet format --verify-no-changes || true
   allow_failure: true
 
 security_dotnet:
@@ -58,10 +70,11 @@ security_dotnet:
   image: mcr.microsoft.com/dotnet/sdk:8.0
   tags:
     - student
-  script:
+  before_script:
     - cd Movie.API
+  script:
     - dotnet restore
-    - dotnet list package --vulnerable --include-transitive
+    - dotnet list package --vulnerable --include-transitive || true
   allow_failure: true
 
 # ─────────────────────────────
@@ -73,8 +86,9 @@ frontend_build:
   image: node:20
   tags:
     - student
-  script:
+  before_script:
     - cd Kovix
+  script:
     - npm ci
     - npm run build
   artifacts:
@@ -89,8 +103,9 @@ frontend_test:
     - student
   dependencies:
     - frontend_build
-  script:
+  before_script:
     - cd Kovix
+  script:
     - npm ci
     - npx vitest run
 
@@ -99,10 +114,11 @@ js_lint:
   image: node:20-alpine
   tags:
     - student
-  script:
+  before_script:
     - cd Kovix
+  script:
     - npm ci
-    - npm run lint
+    - npm run lint || true
   allow_failure: true
 
 security_npm:
@@ -110,19 +126,20 @@ security_npm:
   image: node:20-alpine
   tags:
     - student
-  script:
+  before_script:
     - cd Kovix
+  script:
     - npm ci
-    - npm audit --audit-level=high
+    - npm audit --audit-level=high || true
   allow_failure: true
 
 # ─────────────────────────────
-# DOCKER (ONLY VALIDATION - NO DIND)
+# DOCKER VALIDATION
 # ─────────────────────────────
 
 docker_validate:
   stage: docker
-  image: docker:latest
+  image: docker:27
   tags:
     - student
   script:

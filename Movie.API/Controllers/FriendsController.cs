@@ -218,6 +218,7 @@ namespace Movie.API.Controllers
                     AvatarUrl = u.AvatarUrl,
                     Status = "Friend",
                     IsOnline = u.IsOnline,
+                    LastActive = u.LastActive,
                     LastMessage = _context.Messages
                         .Where(m => !m.IsDeleted &&
                                     ((m.SenderId == userId && m.ReceiverId == u.Id) ||

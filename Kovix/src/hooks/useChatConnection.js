@@ -1,13 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
-import { HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr';
-import { getWebSocketUrl } from '../utils/apiConfig';
+import { useEffect, useRef } from 'react';
+import { useSignalR } from '../contexts/SignalRContext';
 
 /**
- * useChatConnection - хук для підключення до SignalR хаба
+ * useChatConnection - хук для роботи з глобальним SignalR chat з'єднанням
  * @param {(connection: any) => void} onConnectedCallback - колбек для підписки на події або виклику методів після старту
  */
 export const useChatConnection = (onConnectedCallback) => {
-    const [connection, setConnection] = useState(null);
+    const { chatConnection } = useSignalR();
     const callbackRef = useRef(onConnectedCallback);
 
     useEffect(() => {
@@ -15,49 +14,11 @@ export const useChatConnection = (onConnectedCallback) => {
     }, [onConnectedCallback]);
 
     useEffect(() => {
-        const wsUrl = getWebSocketUrl();
-        const newConnection = new HubConnectionBuilder()
-            .withUrl(`${wsUrl}/chatHub`, {
-                accessTokenFactory: () => localStorage.getItem('token')
-            })
-            .withAutomaticReconnect()
-            .build();
-
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setConnection(newConnection);
-    }, []);
-
-    useEffect(() => {
-    if (!connection) return;
-
-    const startConnection = async () => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            console.warn('No token found. SignalR connection skipped.');
-            return; 
+        if (chatConnection && callbackRef.current) {
+            console.log('✅ Chat connection available');
+            callbackRef.current(chatConnection);
         }
+    }, [chatConnection]);
 
-        try {
-            if (connection.state === HubConnectionState.Disconnected) {
-                await connection.start();
-                console.log('SignalR Connected via Hook');
-
-                if (callbackRef.current) {
-                    callbackRef.current(connection);
-                }
-            }
-        } catch (err) {
-            console.error('SignalR Connection Error:', err);
-        }
-    };
-
-    startConnection();
-
-        return () => {
-            if (connection.state === HubConnectionState.Connected) {
-                connection.stop().catch(err => console.error("Error stopping connection:", err));
-            }
-        };
-    }, [connection]);
-    return connection;
+    return chatConnection;
 };

@@ -58,6 +58,7 @@ import MembershipPage from './pages/MembershipPage';
 import PaymentSuccessPage from './pages/PaymentSuccessPage';
 
 import { useEffect } from 'react';
+import { AchievementProvider } from './contexts/AchievementContext';
 
 function App() {
   useEffect(() => {
@@ -70,7 +71,8 @@ function App() {
       <AuthProvider>
         <ThemeProvider>
           <FriendsProvider>
-            <Router>
+            <AchievementProvider>
+              <Router>
               <div className="App">
                 <PromoBanner />
                 <NewsBanner />
@@ -176,6 +178,7 @@ function App() {
               <CookiePopup />
               <Footer />
             </Router>
+            </AchievementProvider>
           </FriendsProvider>
         </ThemeProvider>
       </AuthProvider>
