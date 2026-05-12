@@ -103,9 +103,8 @@ frontend_test:
     - student
   dependencies:
     - frontend_build
-  before_script:
-    - cd Kovix
   script:
+    - cd Kovix
     - npm ci
     - npx vitest run
 
