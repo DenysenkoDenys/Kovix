@@ -257,7 +257,7 @@ namespace Movie.API.Controllers
         }
 
         [HttpPost("messages/{messageId}/pin")]
-        public async Task<IActionResult> PinMessage(int messageId)
+        public async Task<IActionResult> PinMessage(int messageId, [FromBody] PinMessageDto dto)
         {
             var userId = GetUserId();
             var message = await _context.Messages.FindAsync(messageId);
@@ -265,19 +265,41 @@ namespace Movie.API.Controllers
             if (message == null)
                 return NotFound("Повідомлення не знайдено");
 
+            var isGeneralChat = message.ReceiverId == null;
+            int? chatUserForPin = null;
+
+            if (isGeneralChat)
+            {
+                if (!dto.PinForSelf)
+                {
+                    var user = await _context.Users.FindAsync(userId);
+                    if (user?.Role != "Admin" && user?.Role != "Moderator")
+                        return Forbid("Тільки адміни та модератори можуть закріплювати для всіх у глобальному чаті");
+                }
+            }
+            else
+            {
+                var otherUserId = message.SenderId == userId ? message.ReceiverId!.Value : message.SenderId;
+                chatUserForPin = Math.Min(userId, otherUserId);
+            }
+
             var existingPin = await _context.MessagePins
-                .FirstOrDefaultAsync(p => p.MessageId == messageId);
+                .FirstOrDefaultAsync(p => p.MessageId == messageId &&
+                                          p.ChatUserId == chatUserForPin &&
+                                          p.IsPinForSelf == dto.PinForSelf &&
+                                          p.PinnedBy == userId);
 
             if (existingPin != null)
             {
-                _context.MessagePins.Remove(existingPin);
+                _context.MessagePins.Remove(existingPin); 
             }
             else
             {
                 var pin = new MessagePin
                 {
                     MessageId = messageId,
-                    ChatUserId = message.ReceiverId,
+                    ChatUserId = chatUserForPin,
+                    IsPinForSelf = dto.PinForSelf,
                     PinnedBy = userId
                 };
                 _context.MessagePins.Add(pin);
@@ -290,8 +312,12 @@ namespace Movie.API.Controllers
         [HttpGet("pins/general")]
         public async Task<IActionResult> GetGeneralPinnedMessages()
         {
+            var currentUserId = GetUserId();
+
             var pins = await _context.MessagePins
-                .Where(p => p.ChatUserId == null)
+                .Where(p =>
+                    (p.ChatUserId == null && !p.IsPinForSelf) ||
+                    (p.IsPinForSelf && p.PinnedBy == currentUserId && p.ChatUserId == currentUserId))
                 .Include(p => p.Message)
                 .Include(p => p.Message!.Sender)
                 .Include(p => p.PinnedByUser)
@@ -304,7 +330,8 @@ namespace Movie.API.Controllers
                     SenderName = p.Message!.Sender!.Username,
                     PinnedByName = p.PinnedByUser!.Username,
                     PinnedAt = p.PinnedAt,
-                    PinOrder = p.PinOrder
+                    PinOrder = p.PinOrder,
+                    IsPinForSelf = p.IsPinForSelf
                 })
                 .ToListAsync();
 
@@ -314,8 +341,13 @@ namespace Movie.API.Controllers
         [HttpGet("pins/private/{userId}")]
         public async Task<IActionResult> GetPrivatePinnedMessages(int userId)
         {
+            var currentUserId = GetUserId();
+
+            var chatKey = Math.Min(currentUserId, userId);
+
             var pins = await _context.MessagePins
-                .Where(p => p.ChatUserId == userId)
+                .Where(p => p.ChatUserId == chatKey &&
+                           (!p.IsPinForSelf || p.PinnedBy == currentUserId))
                 .Include(p => p.Message)
                 .Include(p => p.Message!.Sender)
                 .Include(p => p.PinnedByUser)
@@ -328,7 +360,8 @@ namespace Movie.API.Controllers
                     SenderName = p.Message!.Sender!.Username,
                     PinnedByName = p.PinnedByUser!.Username,
                     PinnedAt = p.PinnedAt,
-                    PinOrder = p.PinOrder
+                    PinOrder = p.PinOrder,
+                    IsPinForSelf = p.IsPinForSelf
                 })
                 .ToListAsync();
 

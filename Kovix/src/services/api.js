@@ -121,7 +121,7 @@ export const chatAPI = {
   markGeneralAsRead: () => api.post('/chat/general/read'),
   addReaction: (messageId, emoji) => api.post(`/chat/messages/${messageId}/reactions`, { reactionEmoji: emoji }),
   getReactions: (messageId) => api.get(`/chat/messages/${messageId}/reactions`),
-  pinMessage: (messageId) => api.post(`/chat/messages/${messageId}/pin`, {}),
+  pinMessage: (messageId, pinForEveryone = true, pinForSelf = false) => api.post(`/chat/messages/${messageId}/pin`, { pinForEveryone, pinForSelf }),
   getGeneralPins: () => api.get('/chat/pins/general'),
   getPrivatePins: (userId) => api.get(`/chat/pins/private/${userId}`),
   replyToMessage: (messageId, replyMessageId) => api.post(`/chat/messages/${messageId}/reply`, { replyMessageId }),

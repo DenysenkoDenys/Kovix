@@ -74,6 +74,8 @@ function ChatPage() {
     const [reactionsTrigger, setReactionsTrigger] = useState({});
     const [pinsTrigger, setPinsTrigger] = useState(0);
     const [showPinnedModal, setShowPinnedModal] = useState(false);
+    const [showPinTypeModal, setShowPinTypeModal] = useState(false);
+    const [messageToPinType, setMessageToPinType] = useState(null);
 
     const sortedPins = [...pinnedMessages].sort((a, b) => new Date(b.pinnedAt) - new Date(a.pinnedAt));
     const latestPin = sortedPins.length > 0 ? sortedPins[0] : null;
@@ -91,15 +93,54 @@ function ChatPage() {
         }
     };
 
-    const handleUnpin = async (messageId, e) => {
+    const canManagePinsInGlobal = user?.role === 'Admin' || user?.role === 'Moderator';
+    const isGlobalChat = activeChat === null;
+
+    const handleUnpin = async (messageId, isPinForSelf = false, e) => {
         if (e) e.stopPropagation();
         try {
             console.log(`Спроба відкріпити повідомлення ${messageId}`);
-            await chatAPI.pinMessage(messageId);
+            await chatAPI.pinMessage(messageId, !isPinForSelf, isPinForSelf);
             console.log(`Повідомлення ${messageId} успішно оновлено`);
             setPinsTrigger(prev => prev + 1);
         } catch (err) {
             console.error("Помилка відкріплення:", err);
+        }
+    };
+
+    const canUnpinMessage = (pinnedByName) => {
+        if (isGlobalChat) {
+            return canManagePinsInGlobal;
+        }
+        return pinnedByName === user?.username || user?.role === 'Admin' || user?.role === 'Moderator';
+    };
+
+    const canPinMessage = () => {
+        if (isGlobalChat) {
+            return canManagePinsInGlobal;
+        }
+        return true;
+    };
+
+    const handlePinMessageWithType = (message) => {
+        if (!canPinMessage()) {
+            alert('У вас немає дозволу закріплювати повідомлення в глобальному чаті');
+            return;
+        }
+        setMessageToPinType(message);
+        setShowPinTypeModal(true);
+    };
+
+    const pinMessageForType = async (isPinForEveryone) => {
+        if (!messageToPinType) return;
+        try {
+            await chatAPI.pinMessage(messageToPinType.id, isPinForEveryone, !isPinForEveryone);
+            console.log(`Повідомлення закріплено (для ${isPinForEveryone ? 'всіх' : 'себе'})`);
+            setPinsTrigger(prev => prev + 1);
+            setShowPinTypeModal(false);
+            setMessageToPinType(null);
+        } catch (err) {
+            console.error('Помилка закріплення:', err);
         }
     };
 
@@ -572,6 +613,11 @@ function ChatPage() {
                                     selectedAward={friends.find(f => f.id === activeChat)?.selectedAward}
                                 />
                             )}
+                            {isGlobalChat && (
+                                <span style={{ marginLeft: 'auto', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                                    {canManagePinsInGlobal ? '🔒 Керування адміна' : '📖 Публічний чат'}
+                                </span>
+                            )}
                         </Card.Header>
 
                         {latestPin && (
@@ -611,7 +657,7 @@ function ChatPage() {
                                     {(latestPin.pinnedByName === user?.username || user?.role === 'Admin') && (
                                         <span
                                             style={{ cursor: 'pointer', fontSize: '1.1rem', color: '#dc3545', opacity: 0.8 }}
-                                            onClick={(e) => handleUnpin(latestPin.messageId, e)}
+                                            onClick={(e) => handleUnpin(latestPin.messageId, latestPin.isPinForSelf, e)}
                                             title="Відкріпити"
                                         >
                                             ✖
@@ -792,39 +838,33 @@ function ChatPage() {
                                 <div onClick={() => { openReportModal(contextMenu.message); setContextMenu(null); }} className="p-2 text-warning hover-bg" style={{ cursor: 'pointer' }}>⚠️ Поскаржитися</div>
                             )}
 
-                            {(() => {
+                           {(() => {
                                 const isPinned = pinnedMessages.some(p => p.messageId === contextMenu.message.id);
+                                const pinnedMsg = pinnedMessages.find(p => p.messageId === contextMenu.message.id);
 
                                 if (isPinned) {
-                                    return (
+                                    return canUnpinMessage(pinnedMsg?.pinnedByName) ? (
                                         <div
-                                            onClick={(e) => { handleUnpin(contextMenu.message.id, e); setContextMenu(null); }}
+                                            onClick={(e) => { handleUnpin(contextMenu.message.id, pinnedMsg?.isPinForSelf, e); setContextMenu(null); }}
                                             className="p-2 hover-bg"
                                             style={{ cursor: 'pointer', borderTop: '1px solid var(--border-color)' }}
                                         >
                                             📌 Відкріпити
                                         </div>
-                                    );
+                                    ) : null;
                                 } else {
-                                    return (
+                                    return canPinMessage() ? (
                                         <div
                                             onClick={() => {
-                                                chatAPI.pinMessage(contextMenu.message.id)
-                                                    .then(() => {
-                                                        console.log('Повідомлення закріплено');
-                                                        setPinsTrigger(prev => prev + 1);
-                                                        setContextMenu(null);
-                                                    })
-                                                    .catch(err => {
-                                                        console.error('Помилка закріплення:', err);
-                                                    });
+                                                handlePinMessageWithType(contextMenu.message);
+                                                setContextMenu(null);
                                             }}
                                             className="p-2 hover-bg"
                                             style={{ cursor: 'pointer', borderTop: '1px solid var(--border-color)' }}
                                         >
                                             📌 Закріпити
                                         </div>
-                                    );
+                                    ) : null;
                                 }
                             })()}
 
@@ -849,7 +889,7 @@ function ChatPage() {
                                 <p className="text-center text-muted my-3">Немає закріплених повідомлень.</p>
                             ) : (
                                 sortedPins.map(pin => {
-                                    const canUnpinThis = pin.pinnedByName === user?.username || user?.role === 'Admin';
+                                    const canUnpinThis = canUnpinMessage(pin.pinnedByName);
                                     return (
                                         <div
                                             key={pin.id}
@@ -867,13 +907,14 @@ function ChatPage() {
                                                 <div className="small text-break" style={{ color: 'var(--text-secondary)' }}>{pin.messageContent}</div>
                                                 <div className="mt-1" style={{ fontSize: '0.7rem', opacity: 0.6 }}>
                                                     Закріпив(ла): {pin.pinnedByName} • {new Date(pin.pinnedAt).toLocaleString('uk-UA')}
+                                                    {pin.isPinForSelf && <span style={{ marginLeft: '8px', color: 'var(--primary-color)' }}>(для себе)</span>}
                                                 </div>
                                             </div>
                                             {canUnpinThis && (
                                                 <Button
                                                     variant="link"
                                                     className="text-danger p-0 ms-2 text-decoration-none small fw-bold flex-shrink-0"
-                                                    onClick={() => handleUnpin(pin.messageId)}
+                                                    onClick={() => handleUnpin(pin.messageId, pin.isPinForSelf)}
                                                     style={{ fontSize: '0.8rem' }}
                                                 >
                                                     Відкріпити
@@ -883,6 +924,41 @@ function ChatPage() {
                                     );
                                 })
                             )}
+                        </Modal.Body>
+                    </Modal>
+
+                    <Modal show={showPinTypeModal} onHide={() => setShowPinTypeModal(false)} centered>
+                        <Modal.Header closeButton style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', borderColor: 'var(--border-color)' }}>
+                            <Modal.Title>📌 Як закріпити повідомлення?</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-main)' }}>
+                            <p className="mb-4">Виберіть, для кого закріпити це повідомлення:</p>
+                            <div className="d-grid gap-2">
+                                <Button
+                                    variant="outline-primary"
+                                    onClick={() => pinMessageForType(false)}
+                                    style={{
+                                        borderColor: 'var(--primary-color)',
+                                        color: 'var(--primary-color)',
+                                        padding: '12px',
+                                        fontSize: '16px'
+                                    }}
+                                >
+                                    👤 Закріпити для себе
+                                </Button>
+                                <Button
+                                    variant="outline-primary"
+                                    onClick={() => pinMessageForType(true)}
+                                    style={{
+                                        borderColor: 'var(--primary-color)',
+                                        color: 'var(--primary-color)',
+                                        padding: '12px',
+                                        fontSize: '16px'
+                                    }}
+                                >
+                                    👥 Закріпити для всіх
+                                </Button>
+                            </div>
                         </Modal.Body>
                     </Modal>
                 </Col>

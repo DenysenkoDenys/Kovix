@@ -9,6 +9,7 @@ namespace Movie.API.DTOs
         public string? PinnedByName { get; set; }
         public DateTime PinnedAt { get; set; }
         public int PinOrder { get; set; }
+        public bool IsPinForSelf { get; set; } = false;
     }
 
     public class CreateMessagePinDto

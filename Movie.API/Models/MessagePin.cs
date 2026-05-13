@@ -10,16 +10,17 @@ namespace Movie.API.Models
         [ForeignKey(nameof(MessageId))]
         public Message? Message { get; set; }
 
-        public int? ChatUserId { get; set; } // null = загальний чат
+        public int? ChatUserId { get; set; } 
         [ForeignKey(nameof(ChatUserId))]
         public User? ChatUser { get; set; }
 
         public int PinnedBy { get; set; }
         [ForeignKey(nameof(PinnedBy))]
         public User? PinnedByUser { get; set; }
+        public bool IsPinForSelf { get; set; } = false;
 
         public DateTime PinnedAt { get; set; } = DateTime.UtcNow;
 
-        public int PinOrder { get; set; } = 0; // для сортування
+        public int PinOrder { get; set; } = 0; 
     }
 }
