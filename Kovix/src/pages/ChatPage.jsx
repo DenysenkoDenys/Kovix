@@ -7,6 +7,9 @@ import { HubConnectionState } from '@microsoft/signalr';
 import { useChatConnection } from '../hooks/useChatConnection';
 import { getApiBaseUrl } from '../utils/apiConfig';
 import UserTitleBadge from '../components/UserTitleBadge';
+import MessageReactions from '../components/MessageReactions';
+import MessageReply from '../components/MessageReply';
+import TypingIndicator from '../components/TypingIndicator';
 import '../style/App.css';
 
 const formatMessageDate = (dateString) => {
@@ -64,9 +67,41 @@ function ChatPage() {
     const [reportReason, setReportReason] = useState('');
     const [targetMessage, setTargetMessage] = useState(null);
 
+    const [typingUsers, setTypingUsers] = useState([]);
+    const [pinnedMessages, setPinnedMessages] = useState([]);
+    const [replyingTo, setReplyingTo] = useState(null);
+    const typingTimeoutRef = useRef(null);
+    const [reactionsTrigger, setReactionsTrigger] = useState({});
+    const [pinsTrigger, setPinsTrigger] = useState(0);
+    const [showPinnedModal, setShowPinnedModal] = useState(false);
+
+    const sortedPins = [...pinnedMessages].sort((a, b) => new Date(b.pinnedAt) - new Date(a.pinnedAt));
+    const latestPin = sortedPins.length > 0 ? sortedPins[0] : null;
+
     const [searchParams] = useSearchParams();
     const forcedChatId = searchParams.get('activeChat');
     const targetMessageId = searchParams.get('messageId');
+
+    const scrollToPinnedMessage = (messageId) => {
+        const element = document.getElementById(`msg-${messageId}`);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setHighlightedMsgId(messageId);
+            setTimeout(() => setHighlightedMsgId(null), 3000);
+        }
+    };
+
+    const handleUnpin = async (messageId, e) => {
+        if (e) e.stopPropagation();
+        try {
+            console.log(`Спроба відкріпити повідомлення ${messageId}`);
+            await chatAPI.pinMessage(messageId);
+            console.log(`Повідомлення ${messageId} успішно оновлено`);
+            setPinsTrigger(prev => prev + 1);
+        } catch (err) {
+            console.error("Помилка відкріплення:", err);
+        }
+    };
 
     const scrollToBottom = () => {
         if (!targetMessageId && chatContainerRef.current) {
@@ -158,7 +193,7 @@ function ChatPage() {
                 setMessages(prev => {
                     const messageExists = prev.some(m => m.id === id);
                     if (messageExists) return prev;
-                    
+
                     return [...prev, { id, senderId, senderName, content: message, receiverId, timestamp }];
                 });
             }
@@ -198,13 +233,30 @@ function ChatPage() {
             setFriends(prev => prev.map(f => String(f.id) === String(userId) ? { ...f, isOnline, lastActive } : f));
         });
 
+        conn.on('ReactionAdded', (messageId, reactionUserId, userName, emoji) => {
+            setReactionsTrigger(prev => ({ ...prev, [messageId]: Date.now() }));
+        });
+
+        conn.on('UserTyping', (userId, userName) => {
+            setTypingUsers(prev => {
+                const updated = [...prev];
+                if (!updated.includes(userName)) {
+                    updated.push(userName);
+                }
+                return updated;
+            });
+        });
+
+        conn.on('UserStoppedTyping', (userId) => {
+            setTypingUsers(prev => prev.filter(u => u !== userId));
+        });
+
         if (conn.state === HubConnectionState.Connected) {
             conn.invoke("GetFriendsStatus").catch(console.error);
         }
     });
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMessages([]);
         setEditingId(null);
         setMessageInput('');
@@ -212,30 +264,42 @@ function ChatPage() {
         if (activeChat === null) {
             setGeneralChat(prev => ({ ...prev, unreadCount: 0 }));
             chatAPI.markGeneralAsRead().catch(console.error);
+
             chatAPI.getGeneralHistory()
                 .then(res => setMessages(res.data))
                 .catch(err => {
-                    if (err.response?.status === 403) {
-                        showBlockedSystemMessage();
-                    } else {
-                        console.error(err);
-                    }
+                    if (err.response?.status === 403) showBlockedSystemMessage();
+                    else console.error(err);
                 });
-
         } else {
             setFriends(prev => prev.map(f => f.id === activeChat ? { ...f, unreadCount: 0 } : f));
             chatAPI.markAsRead(activeChat).catch(console.error);
+
             chatAPI.getPrivateHistory(activeChat)
                 .then(res => setMessages(res.data))
                 .catch(err => {
-                    if (err.response?.status === 403) {
-                        showBlockedSystemMessage();
-                    } else {
-                        console.error(err);
-                    }
+                    if (err.response?.status === 403) showBlockedSystemMessage();
+                    else console.error(err);
                 });
         }
     }, [activeChat]);
+
+    useEffect(() => {
+        const loadPins = async () => {
+            try {
+                console.log(`Завантажую закріплені повідомлення для чату: ${activeChat === null ? 'Загальний' : activeChat}`);
+                const res = activeChat === null
+                    ? await chatAPI.getGeneralPins()
+                    : await chatAPI.getPrivatePins(activeChat);
+                console.log(`Завантажено ${res.data.length} закріплених повідомлень:`, res.data);
+                setPinnedMessages(res.data);
+            } catch (err) {
+                console.error("Помилка завантаження закріплених:", err);
+            }
+        };
+
+        loadPins();
+    }, [activeChat, pinsTrigger]);
 
     useEffect(() => {
         if (!targetMessageId) {
@@ -248,6 +312,24 @@ function ChatPage() {
         window.addEventListener('click', handleClick);
         return () => window.removeEventListener('click', handleClick);
     }, []);
+
+    const handleMessageInputChange = (e) => {
+        setMessageInput(e.target.value);
+
+        if (connection && connection.state === HubConnectionState.Connected) {
+            connection.invoke('UserTyping', activeChat).catch(console.error);
+
+            if (typingTimeoutRef.current) {
+                clearTimeout(typingTimeoutRef.current);
+            }
+
+            typingTimeoutRef.current = setTimeout(() => {
+                if (connection && connection.state === HubConnectionState.Connected) {
+                    connection.invoke('UserStoppedTyping', activeChat).catch(console.error);
+                }
+            }, 2000);
+        }
+    };
 
     const handleSendOrSave = async (e) => {
         e.preventDefault();
@@ -492,18 +574,66 @@ function ChatPage() {
                             )}
                         </Card.Header>
 
+                        {latestPin && (
+                            <div
+                                className="px-3 py-2 shadow-sm d-flex justify-content-between align-items-center"
+                                style={{
+                                    backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                                    borderBottom: '1px solid var(--border-color)',
+                                    zIndex: 5
+                                }}
+                            >
+                                <div
+                                    className="d-flex align-items-center gap-2 overflow-hidden px-1"
+                                    style={{ cursor: 'pointer', flex: 1, transition: 'opacity 0.2s' }}
+                                    onClick={() => scrollToPinnedMessage(latestPin.messageId)}
+                                    title="Перейти до повідомлення"
+                                >
+                                    <span style={{ color: '#ffd700', fontSize: '1.1rem' }}>📌</span>
+                                    <span className="fw-bold text-truncate" style={{ color: 'var(--text-main)', maxWidth: '120px' }}>
+                                        {latestPin.senderName}:
+                                    </span>
+                                    <span className="text-truncate" style={{ color: 'var(--text-secondary)' }}>
+                                        {latestPin.messageContent}
+                                    </span>
+                                </div>
+
+                                <div className="d-flex align-items-center gap-3 ms-3 flex-shrink-0">
+                                    {sortedPins.length > 1 && (
+                                        <span
+                                            style={{ cursor: 'pointer', fontSize: '0.85rem', color: 'var(--primary-color)', fontWeight: '600' }}
+                                            onClick={() => setShowPinnedModal(true)}
+                                            className="text-decoration-underline"
+                                        >
+                                            Всі ({sortedPins.length})
+                                        </span>
+                                    )}
+                                    {(latestPin.pinnedByName === user?.username || user?.role === 'Admin') && (
+                                        <span
+                                            style={{ cursor: 'pointer', fontSize: '1.1rem', color: '#dc3545', opacity: 0.8 }}
+                                            onClick={(e) => handleUnpin(latestPin.messageId, e)}
+                                            title="Відкріпити"
+                                        >
+                                            ✖
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
                         <Card.Body className="d-flex flex-column p-0" style={{ overflow: 'hidden' }}>
                             <div
                                 ref={chatContainerRef}
-                                className="flex-grow-1 p-3"
+                                className="flex-grow-1 p-4"
                                 style={{ backgroundColor: 'var(--bg-main)', overflowY: 'auto' }}
                             >
                                 {filteredMessages.map((msg, idx) => {
                                     const myId = String(user?.id || '');
                                     const sender = String(msg.senderId || '');
                                     const isMe = sender === myId;
-
                                     const isHighlighted = highlightedMsgId && String(highlightedMsgId) === String(msg.id);
+                                    
+                                    const isPinned = pinnedMessages.some(p => p.messageId === msg.id);
 
                                     if (msg.senderId === 0 || msg.senderName === "СИСТЕМА") {
                                         return (
@@ -516,26 +646,34 @@ function ChatPage() {
                                     }
 
                                     return (
-                                        <div key={idx} className={`d-flex mb-3 ${isMe ? 'justify-content-end' : 'justify-content-start'}`}>
+                                        <div key={idx} className={`d-flex mb-4 ${isMe ? 'justify-content-end' : 'justify-content-start'}`}>
                                             <div
                                                 id={`msg-${msg.id}`}
-                                                className={`p-3 shadow-sm position-relative message-transition ${isMe ? 'my-message' : ''} ${isHighlighted ? 'highlighted-message' : ''}`}
+                                                className={`shadow-sm position-relative message-transition ${isMe ? 'my-message' : ''} ${isHighlighted ? 'highlighted-message' : ''}`}
                                                 onContextMenu={(e) => handleContextMenu(e, msg)}
+
+                                                onDoubleClick={() => {
+                                                    if (connection && connection.state === HubConnectionState.Connected) {
+                                                        connection.invoke('AddReaction', msg.id, '❤️').catch(console.error);
+                                                    }
+                                                }}
                                                 style={{
                                                     maxWidth: '75%',
+                                                    padding: '14px 16px',
                                                     backgroundColor: isMe ? undefined : 'var(--bg-card)',
                                                     color: isMe ? undefined : 'var(--text-main)',
-                                                    border: isMe ? 'none' : '1px solid var(--border-color)',
-                                                    borderRadius: isMe ? undefined : '1rem',
+                                                    border: isMe ? 'none' : '2px solid var(--border-color)',
+                                                    borderRadius: '1rem',
                                                     borderTopLeftRadius: isMe ? undefined : '0',
                                                 }}
                                             >
                                                 {!isMe && (
                                                     <div
-                                                        className="fw-bold small mb-1"
+                                                        className="fw-bold small mb-2"
                                                         style={{
                                                             cursor: 'pointer',
-                                                            color: 'var(--primary-color)'
+                                                            color: 'var(--primary-color)',
+                                                            fontSize: '15px'
                                                         }}
                                                         onClick={() => navigate(`/users/${msg.senderId}`)}
                                                     >
@@ -543,21 +681,42 @@ function ChatPage() {
                                                     </div>
                                                 )}
 
-                                                <div style={{ wordBreak: 'break-word' }}>
+                                                <div style={{ wordBreak: 'break-word', fontSize: '16px', lineHeight: '1.6' }}>
                                                     {msg.content}
-                                                    {msg.isEdited && <small className="ms-1" style={{ fontSize: '0.7em', opacity: 0.7 }}>(ред.)</small>}
+                                                    {msg.isEdited && <small className="ms-2" style={{ fontSize: '13px', opacity: 0.7, fontWeight: 'bold' }}>(ред.)</small>}
                                                 </div>
 
                                                 <div
-                                                    className="text-end mt-1 small"
+                                                    className="text-end mt-2 small"
                                                     style={{
-                                                        fontSize: '0.7em',
+                                                        fontSize: '12px',
                                                         opacity: 0.7,
                                                         color: isMe ? 'rgba(255,255,255,0.8)' : 'var(--text-secondary)'
                                                     }}
                                                 >
+                                                    {isPinned && <span className="me-1" title="Закріплене повідомлення">📌</span>}
                                                     {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                 </div>
+
+                                                <div className="mt-2">
+                                                    <MessageReactions
+                                                        messageId={msg.id}
+                                                        userId={user?.id}
+                                                        refreshTrigger={reactionsTrigger[msg.id]}
+                                                        onReactionAdded={(msgId, emoji) => {
+                                                            if (connection && connection.state === HubConnectionState.Connected) {
+                                                                connection.invoke('AddReaction', msgId, emoji).catch(console.error);
+                                                            }
+                                                        }}
+                                                    />
+                                                </div>
+
+                                                <MessageReply
+                                                    messageId={msg.id}
+                                                    onReplySelect={(replyMsgId) => {
+                                                        setReplyingTo(msg.senderName);
+                                                    }}
+                                                />
                                             </div>
                                         </div>
                                     );
@@ -567,12 +726,15 @@ function ChatPage() {
 
                             <div className="p-3" style={{ backgroundColor: 'var(--bg-card)', borderTop: '1px solid var(--border-color)' }}>
                                 {editingId && <div className="d-flex justify-content-between small text-primary mb-2"><span>✏️ Редагування...</span><span onClick={cancelEditing} style={{ cursor: 'pointer' }}>✖</span></div>}
+                                {replyingTo && <div className="d-flex justify-content-between small text-info mb-2"><span>↩️ Відповідь на {replyingTo}</span><span onClick={() => setReplyingTo(null)} style={{ cursor: 'pointer' }}>✖</span></div>}
+
+                                <TypingIndicator typingUsers={typingUsers} />
 
                                 <Form onSubmit={handleSendOrSave} className="d-flex gap-2">
                                     <Form.Control
                                         type="text"
                                         value={messageInput}
-                                        onChange={e => setMessageInput(e.target.value)}
+                                        onChange={handleMessageInputChange}
                                         autoComplete="off"
                                         disabled={isBlocked}
                                         placeholder={isBlocked ? "⛔ Акаунт заблоковано" : "Напишіть повідомлення..."}
@@ -580,7 +742,10 @@ function ChatPage() {
                                             backgroundColor: 'var(--bg-main)',
                                             color: 'var(--text-main)',
                                             borderColor: 'var(--border-color)',
-                                            borderRadius: '20px'
+                                            borderRadius: '20px',
+                                            fontSize: '16px',
+                                            padding: '12px 20px',
+                                            minHeight: '48px'
                                         }}
                                     />
 
@@ -593,8 +758,14 @@ function ChatPage() {
                                             borderColor: 'var(--primary-color)',
                                             color: 'var(--btn-text)',
                                             borderRadius: '20px',
-                                            paddingLeft: '20px',
-                                            paddingRight: '20px'
+                                            paddingLeft: '24px',
+                                            paddingRight: '24px',
+                                            fontSize: '16px',
+                                            fontWeight: '600',
+                                            minHeight: '48px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
                                         }}
                                     >
                                         {editingId ? "Зберегти" : "Надіслати"}
@@ -620,6 +791,43 @@ function ChatPage() {
                             {String(contextMenu.message.senderId) !== String(user?.id) && (
                                 <div onClick={() => { openReportModal(contextMenu.message); setContextMenu(null); }} className="p-2 text-warning hover-bg" style={{ cursor: 'pointer' }}>⚠️ Поскаржитися</div>
                             )}
+
+                            {(() => {
+                                const isPinned = pinnedMessages.some(p => p.messageId === contextMenu.message.id);
+
+                                if (isPinned) {
+                                    return (
+                                        <div
+                                            onClick={(e) => { handleUnpin(contextMenu.message.id, e); setContextMenu(null); }}
+                                            className="p-2 hover-bg"
+                                            style={{ cursor: 'pointer', borderTop: '1px solid var(--border-color)' }}
+                                        >
+                                            📌 Відкріпити
+                                        </div>
+                                    );
+                                } else {
+                                    return (
+                                        <div
+                                            onClick={() => {
+                                                chatAPI.pinMessage(contextMenu.message.id)
+                                                    .then(() => {
+                                                        console.log('Повідомлення закріплено');
+                                                        setPinsTrigger(prev => prev + 1);
+                                                        setContextMenu(null);
+                                                    })
+                                                    .catch(err => {
+                                                        console.error('Помилка закріплення:', err);
+                                                    });
+                                            }}
+                                            className="p-2 hover-bg"
+                                            style={{ cursor: 'pointer', borderTop: '1px solid var(--border-color)' }}
+                                        >
+                                            📌 Закріпити
+                                        </div>
+                                    );
+                                }
+                            })()}
+
                             {(String(contextMenu.message.senderId) === String(user?.id) || user?.role === 'Admin') && (
                                 <div onClick={() => { deleteForEveryone(contextMenu.message.id); setContextMenu(null); }} className="p-2 text-danger hover-bg" style={{ cursor: 'pointer', borderTop: '1px solid var(--border-color)' }}>🗑️ Видалити для всіх</div>
                             )}
@@ -630,22 +838,52 @@ function ChatPage() {
                         </div>
                     )}
 
-                    <Modal show={showReportModal} onHide={() => setShowReportModal(false)} centered contentClassName="bg-card text-main">
+                    <Modal show={showPinnedModal} onHide={() => setShowPinnedModal(false)} centered scrollable>
                         <Modal.Header closeButton style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', borderColor: 'var(--border-color)' }}>
-                            <Modal.Title className="text-danger">⚠️ Поскаржитися</Modal.Title>
+                            <Modal.Title style={{ color: '#ffd700', fontSize: '1.25rem', fontWeight: 'bold' }}>
+                                📌 Всі закріплені
+                            </Modal.Title>
                         </Modal.Header>
-                        <Modal.Body style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-main)' }}>
-                            <p className="small text-muted" style={{ color: 'var(--text-secondary)' }}>Повідомлення: "{targetMessage?.content}"</p>
-                            <Form.Control
-                                as="textarea" rows={3} placeholder="Причина..."
-                                value={reportReason} onChange={e => setReportReason(e.target.value)}
-                                style={{ backgroundColor: 'var(--bg-main)', color: 'var(--text-main)', borderColor: 'var(--border-color)' }}
-                            />
+                        <Modal.Body style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', maxHeight: '60vh', overflowY: 'auto' }}>
+                            {sortedPins.length === 0 ? (
+                                <p className="text-center text-muted my-3">Немає закріплених повідомлень.</p>
+                            ) : (
+                                sortedPins.map(pin => {
+                                    const canUnpinThis = pin.pinnedByName === user?.username || user?.role === 'Admin';
+                                    return (
+                                        <div
+                                            key={pin.id}
+                                            className="d-flex justify-content-between align-items-start mb-2 p-2 rounded"
+                                            style={{ border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-main)' }}
+                                        >
+                                            <div
+                                                style={{ cursor: 'pointer', flex: 1, overflow: 'hidden' }}
+                                                onClick={() => {
+                                                    setShowPinnedModal(false);
+                                                    scrollToPinnedMessage(pin.messageId);
+                                                }}
+                                            >
+                                                <div className="fw-bold small" style={{ color: 'var(--primary-color)' }}>{pin.senderName}</div>
+                                                <div className="small text-break" style={{ color: 'var(--text-secondary)' }}>{pin.messageContent}</div>
+                                                <div className="mt-1" style={{ fontSize: '0.7rem', opacity: 0.6 }}>
+                                                    Закріпив(ла): {pin.pinnedByName} • {new Date(pin.pinnedAt).toLocaleString('uk-UA')}
+                                                </div>
+                                            </div>
+                                            {canUnpinThis && (
+                                                <Button
+                                                    variant="link"
+                                                    className="text-danger p-0 ms-2 text-decoration-none small fw-bold flex-shrink-0"
+                                                    onClick={() => handleUnpin(pin.messageId)}
+                                                    style={{ fontSize: '0.8rem' }}
+                                                >
+                                                    Відкріпити
+                                                </Button>
+                                            )}
+                                        </div>
+                                    );
+                                })
+                            )}
                         </Modal.Body>
-                        <Modal.Footer style={{ backgroundColor: 'var(--bg-card)', borderTopColor: 'var(--border-color)' }}>
-                            <Button variant="secondary" onClick={() => setShowReportModal(false)}>Скасувати</Button>
-                            <Button variant="danger" onClick={submitReport}>Відправити</Button>
-                        </Modal.Footer>
                     </Modal>
                 </Col>
             </Row>

@@ -25,6 +25,9 @@ namespace Movie.API.Data
         public DbSet<Report> Reports { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<MessageReadStatus> MessageReadStatuses { get; set; }
+        public DbSet<MessageReaction> MessageReactions { get; set; }
+        public DbSet<MessagePin> MessagePins { get; set; }
+        public DbSet<MessageReply> MessageReplies { get; set; }
         public DbSet<WatchHistoryItem> WatchHistory { get; set; }
         public DbSet<Episode> Episodes { get; set; }
         public DbSet<UserEpisodeRating> UserEpisodeRatings { get; set; }
@@ -435,6 +438,48 @@ namespace Movie.API.Data
                     CreatedAt = new DateTime(2023, 6, 15, 0, 0, 0, DateTimeKind.Utc)
                 }
             );
+
+            modelBuilder.Entity<MessageReply>()
+                .HasOne(mr => mr.Message)
+                .WithMany()
+                .HasForeignKey(mr => mr.MessageId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<MessageReply>()
+                .HasOne(mr => mr.ReplyMessage)
+                .WithMany()
+                .HasForeignKey(mr => mr.ReplyMessageId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<MessageReaction>()
+                .HasOne(mr => mr.Message)
+                .WithMany(m => m.Reactions)
+                .HasForeignKey(mr => mr.MessageId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<MessageReaction>()
+                .HasOne(mr => mr.User)
+                .WithMany()
+                .HasForeignKey(mr => mr.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<MessagePin>()
+                .HasOne(mp => mp.Message)
+                .WithMany(m => m.Pins)
+                .HasForeignKey(mp => mp.MessageId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<MessagePin>()
+                .HasOne(mp => mp.ChatUser)
+                .WithMany()
+                .HasForeignKey(mp => mp.ChatUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<MessagePin>()
+                .HasOne(mp => mp.PinnedByUser)
+                .WithMany()
+                .HasForeignKey(mp => mp.PinnedBy)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<User>().HasData(
                 new User

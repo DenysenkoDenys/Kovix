@@ -217,5 +217,116 @@ namespace Movie.API.Hubs
 
             await Clients.Caller.SendAsync("MessageDeletedForMe", messageId);
         }
+        public async Task AddReaction(int messageId, string reactionEmoji)
+        {
+            var userId = GetUserId();
+            var message = await _context.Messages.FindAsync(messageId);
+
+            if (message == null) return;
+
+            var existingReaction = await _context.MessageReactions
+                .FirstOrDefaultAsync(r => r.MessageId == messageId && r.UserId == userId);
+
+            if (existingReaction != null)
+            {
+                if (existingReaction.ReactionEmoji == reactionEmoji)
+                {
+                    _context.MessageReactions.Remove(existingReaction);
+                }
+                else
+                {
+                    existingReaction.ReactionEmoji = reactionEmoji;
+                }
+            }
+            else
+            {
+                var reaction = new MessageReaction
+                {
+                    MessageId = messageId,
+                    UserId = userId,
+                    ReactionEmoji = reactionEmoji
+                };
+                _context.MessageReactions.Add(reaction);
+            }
+
+            await _context.SaveChangesAsync();
+
+            var user = await _context.Users.FindAsync(userId);
+            if (message.ReceiverId == null)
+            {
+                await Clients.All.SendAsync("ReactionAdded", messageId, userId, user!.Username, reactionEmoji);
+            }
+            else
+            {
+                await Clients.User(message.ReceiverId.ToString()!).SendAsync("ReactionAdded", messageId, userId, user!.Username, reactionEmoji);
+                await Clients.Caller.SendAsync("ReactionAdded", messageId, userId, user!.Username, reactionEmoji);
+            }
+        }
+
+        public async Task PinMessage(int messageId)
+        {
+            var userId = GetUserId();
+            var message = await _context.Messages.FindAsync(messageId);
+
+            if (message == null) return;
+
+            var existingPin = await _context.MessagePins
+                .FirstOrDefaultAsync(p => p.MessageId == messageId);
+
+            if (existingPin != null)
+            {
+                _context.MessagePins.Remove(existingPin);
+            }
+            else
+            {
+                var pin = new MessagePin
+                {
+                    MessageId = messageId,
+                    ChatUserId = message.ReceiverId,
+                    PinnedBy = userId
+                };
+                _context.MessagePins.Add(pin);
+            }
+
+            await _context.SaveChangesAsync();
+
+            if (message.ReceiverId == null)
+            {
+                await Clients.All.SendAsync("MessagePinned", messageId);
+            }
+            else
+            {
+                await Clients.User(message.ReceiverId.ToString()!).SendAsync("MessagePinned", messageId);
+                await Clients.Caller.SendAsync("MessagePinned", messageId);
+            }
+        }
+        public async Task UserTyping(int? receiverId)
+        {
+            var userId = GetUserId();
+            var user = await _context.Users.FindAsync(userId);
+
+            if (receiverId == null)
+            {
+                await Clients.Others.SendAsync("UserTyping", userId, user!.Username);
+            }
+            else
+            {
+                await Clients.User(receiverId.ToString()!).SendAsync("UserTyping", userId, user!.Username);
+            }
+        }
+
+        public async Task UserStoppedTyping(int? receiverId)
+        {
+            var userId = GetUserId();
+
+            if (receiverId == null)
+            {
+                await Clients.Others.SendAsync("UserStoppedTyping", userId);
+            }
+            else
+            {
+                await Clients.User(receiverId.ToString()!).SendAsync("UserStoppedTyping", userId);
+            }
+        }
     }
 }

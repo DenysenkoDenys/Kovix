@@ -196,5 +196,186 @@ namespace Movie.API.Controllers
 
             return Ok(new { count = unreadMessages.Count });
         }
+
+        [HttpPost("messages/{messageId}/reactions")]
+        public async Task<IActionResult> AddReaction(int messageId, [FromBody] AddReactionDto dto)
+        {
+            var userId = GetUserId();
+            var message = await _context.Messages.FindAsync(messageId);
+
+            if (message == null)
+                return NotFound("Повідомлення не знайдено");
+
+            var existingReaction = await _context.MessageReactions
+                .FirstOrDefaultAsync(r => r.MessageId == messageId && r.UserId == userId);
+
+            if (existingReaction != null)
+            {
+                if (existingReaction.ReactionEmoji == dto.ReactionEmoji)
+                {
+                    _context.MessageReactions.Remove(existingReaction);
+                }
+                else
+                {
+                    existingReaction.ReactionEmoji = dto.ReactionEmoji;
+                }
+            }
+            else
+            {
+                var reaction = new MessageReaction
+                {
+                    MessageId = messageId,
+                    UserId = userId,
+                    ReactionEmoji = dto.ReactionEmoji
+                };
+                _context.MessageReactions.Add(reaction);
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpGet("messages/{messageId}/reactions")]
+        public async Task<IActionResult> GetMessageReactions(int messageId)
+        {
+            var reactions = await _context.MessageReactions
+                .Where(r => r.MessageId == messageId)
+                .Include(r => r.User)
+                .Select(r => new MessageReactionDto
+                {
+                    Id = r.Id,
+                    MessageId = r.MessageId,
+                    UserId = r.UserId,
+                    UserName = r.User!.Username,
+                    ReactionEmoji = r.ReactionEmoji,
+                    CreatedAt = r.CreatedAt
+                })
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+
+            return Ok(reactions);
+        }
+
+        [HttpPost("messages/{messageId}/pin")]
+        public async Task<IActionResult> PinMessage(int messageId)
+        {
+            var userId = GetUserId();
+            var message = await _context.Messages.FindAsync(messageId);
+
+            if (message == null)
+                return NotFound("Повідомлення не знайдено");
+
+            var existingPin = await _context.MessagePins
+                .FirstOrDefaultAsync(p => p.MessageId == messageId);
+
+            if (existingPin != null)
+            {
+                _context.MessagePins.Remove(existingPin);
+            }
+            else
+            {
+                var pin = new MessagePin
+                {
+                    MessageId = messageId,
+                    ChatUserId = message.ReceiverId,
+                    PinnedBy = userId
+                };
+                _context.MessagePins.Add(pin);
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpGet("pins/general")]
+        public async Task<IActionResult> GetGeneralPinnedMessages()
+        {
+            var pins = await _context.MessagePins
+                .Where(p => p.ChatUserId == null)
+                .Include(p => p.Message)
+                .Include(p => p.Message!.Sender)
+                .Include(p => p.PinnedByUser)
+                .OrderBy(p => p.PinOrder)
+                .Select(p => new MessagePinDto
+                {
+                    Id = p.Id,
+                    MessageId = p.MessageId,
+                    MessageContent = p.Message!.Content,
+                    SenderName = p.Message!.Sender!.Username,
+                    PinnedByName = p.PinnedByUser!.Username,
+                    PinnedAt = p.PinnedAt,
+                    PinOrder = p.PinOrder
+                })
+                .ToListAsync();
+
+            return Ok(pins);
+        }
+
+        [HttpGet("pins/private/{userId}")]
+        public async Task<IActionResult> GetPrivatePinnedMessages(int userId)
+        {
+            var pins = await _context.MessagePins
+                .Where(p => p.ChatUserId == userId)
+                .Include(p => p.Message)
+                .Include(p => p.Message!.Sender)
+                .Include(p => p.PinnedByUser)
+                .OrderBy(p => p.PinOrder)
+                .Select(p => new MessagePinDto
+                {
+                    Id = p.Id,
+                    MessageId = p.MessageId,
+                    MessageContent = p.Message!.Content,
+                    SenderName = p.Message!.Sender!.Username,
+                    PinnedByName = p.PinnedByUser!.Username,
+                    PinnedAt = p.PinnedAt,
+                    PinOrder = p.PinOrder
+                })
+                .ToListAsync();
+
+            return Ok(pins);
+        }
+
+        [HttpPost("messages/{messageId}/reply")]
+        public async Task<IActionResult> ReplyToMessage(int messageId, [FromBody] CreateMessageReplyDto dto)
+        {
+            var message = await _context.Messages.FindAsync(messageId);
+            var replyMessage = await _context.Messages.FindAsync(dto.ReplyMessageId);
+
+            if (message == null || replyMessage == null)
+                return NotFound("Повідомлення не знайдено");
+
+            var reply = new MessageReply
+            {
+                MessageId = messageId,
+                ReplyMessageId = dto.ReplyMessageId
+            };
+
+            _context.MessageReplies.Add(reply);
+            await _context.SaveChangesAsync();
+
+            return Ok(reply);
+        }
+
+        [HttpGet("messages/{messageId}/replies")]
+        public async Task<IActionResult> GetMessageReplies(int messageId)
+        {
+            var replies = await _context.MessageReplies
+                .Where(r => r.MessageId == messageId)
+                .Include(r => r.ReplyMessage)
+                .Include(r => r.ReplyMessage!.Sender)
+                .Select(r => new MessageReplyDto
+                {
+                    Id = r.Id,
+                    MessageId = r.MessageId,
+                    ReplyMessageId = r.ReplyMessageId,
+                    ReplyMessageContent = r.ReplyMessage!.Content,
+                    ReplySenderName = r.ReplyMessage!.Sender!.Username,
+                    CreatedAt = r.CreatedAt
+                })
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+
+            return Ok(replies);
+        }
     }
 }

@@ -119,6 +119,13 @@ export const chatAPI = {
   markAsRead: (senderId) => api.post(`/chat/messages/read/${senderId}`),
   getGeneralChatInfo: () => api.get('/chat/general'),
   markGeneralAsRead: () => api.post('/chat/general/read'),
+  addReaction: (messageId, emoji) => api.post(`/chat/messages/${messageId}/reactions`, { reactionEmoji: emoji }),
+  getReactions: (messageId) => api.get(`/chat/messages/${messageId}/reactions`),
+  pinMessage: (messageId) => api.post(`/chat/messages/${messageId}/pin`, {}),
+  getGeneralPins: () => api.get('/chat/pins/general'),
+  getPrivatePins: (userId) => api.get(`/chat/pins/private/${userId}`),
+  replyToMessage: (messageId, replyMessageId) => api.post(`/chat/messages/${messageId}/reply`, { replyMessageId }),
+  getReplies: (messageId) => api.get(`/chat/messages/${messageId}/replies`)
 };
 
 export const reportsAPI = {

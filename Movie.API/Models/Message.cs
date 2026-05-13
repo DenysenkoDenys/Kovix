@@ -23,5 +23,8 @@ namespace Movie.API.Models
         public User? Receiver { get; set; }
         public bool IsRead { get; set; } = false;
         public ICollection<MessageDelete> DeletedFor { get; set; } = new List<MessageDelete>();
+        public string? TextColor { get; set; } = null;
+        public ICollection<MessageReaction> Reactions { get; set; } = new List<MessageReaction>();
+        public ICollection<MessagePin> Pins { get; set; } = new List<MessagePin>();
     }
 }

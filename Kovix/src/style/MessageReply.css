@@ -1,0 +1,77 @@
+.message-reply-container {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.show-replies-btn {
+    background-color: transparent;
+    border: none;
+    color: inherit;
+    opacity: 0.8;
+    cursor: pointer;
+    font-size: 13px;
+    padding: 4px 0;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.show-replies-btn:hover {
+    opacity: 1;
+    text-decoration: underline;
+}
+
+.replies-list {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.reply-item {
+    padding: 8px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    border-left: 3px solid rgba(255, 255, 255, 0.3);
+    font-size: 13px;
+}
+
+.reply-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.reply-sender {
+    font-weight: bold;
+    color: inherit;
+    opacity: 0.9;
+}
+
+.reply-content {
+    color: inherit;
+    opacity: 0.8;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.reply-action-btn {
+    background-color: transparent;
+    border: none;
+    color: inherit;
+    opacity: 0.7;
+    padding: 4px 0 0 0;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.reply-action-btn:hover {
+    opacity: 1;
+    text-decoration: underline;
+}

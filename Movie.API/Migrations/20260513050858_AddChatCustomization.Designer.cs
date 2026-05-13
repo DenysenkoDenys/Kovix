@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Movie.API.Data;
 
@@ -11,9 +12,11 @@ using Movie.API.Data;
 namespace Movie.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260513050858_AddChatCustomization")]
+    partial class AddChatCustomization
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -389,6 +392,9 @@ namespace Movie.API.Migrations
 
                     b.Property<bool>("IsRead")
                         .HasColumnType("bit");
+
+                    b.Property<string>("MessageEffect")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("ReceiverId")
                         .HasColumnType("int");
@@ -1158,7 +1164,7 @@ namespace Movie.API.Migrations
                             IsBlocked = false,
                             IsOnline = false,
                             IsPremium = false,
-                            PasswordHash = "$2a$11$SVSZ/eN9LqiOw4NgdlY1pu24MedDC9cfjNgVUGUD2E4RgySXJ74au",
+                            PasswordHash = "$2a$11$n7EHMgeMjlHCX96Daz.8TOmuIuB9raXTxkdJazhh2KcLTAAFB8PWG",
                             Role = "Admin",
                             Username = "admin"
                         });
