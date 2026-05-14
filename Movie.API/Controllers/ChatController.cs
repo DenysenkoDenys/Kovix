@@ -44,7 +44,16 @@ namespace Movie.API.Controllers
                     m.SenderId,
                     SenderName = m.Sender.Username,
                     m.IsEdited,
-                    IsRead = _context.MessageReadStatuses.Any(r => r.MessageId == m.Id && r.UserId == userId && r.IsRead)
+                    IsRead = _context.MessageReadStatuses.Any(r => r.MessageId == m.Id && r.UserId == userId && r.IsRead),
+
+                    ReplyTo = _context.MessageReplies
+                        .Where(r => r.ReplyMessageId == m.Id)
+                        .Select(r => new {
+                            id = r.MessageId,
+                            senderName = r.Message!.Sender!.Username,
+                            content = r.Message.Content
+                        })
+                        .FirstOrDefault()
                 })
                 .ToListAsync();
 
@@ -106,7 +115,16 @@ namespace Movie.API.Controllers
                     m.SenderId,
                     SenderName = m.Sender.Username,
                     ReceiverId = m.ReceiverId,
-                    m.IsEdited
+                    m.IsEdited,
+
+                    ReplyTo = _context.MessageReplies
+                        .Where(r => r.ReplyMessageId == m.Id)
+                        .Select(r => new {
+                            id = r.MessageId,
+                            senderName = r.Message!.Sender!.Username,
+                            content = r.Message.Content
+                        })
+                        .FirstOrDefault()
                 })
                 .ToListAsync();
 
@@ -149,8 +167,11 @@ namespace Movie.API.Controllers
             if (msg == null) return NotFound();
 
             msg.IsDeleted = true;
-            await _context.SaveChangesAsync();
 
+            var associatedPins = _context.MessagePins.Where(p => p.MessageId == id);
+            _context.MessagePins.RemoveRange(associatedPins);
+
+            await _context.SaveChangesAsync();
             return Ok();
         }
 
@@ -318,6 +339,7 @@ namespace Movie.API.Controllers
                 .Where(p =>
                     (p.ChatUserId == null && !p.IsPinForSelf) ||
                     (p.IsPinForSelf && p.PinnedBy == currentUserId && p.ChatUserId == currentUserId))
+                .Where(p => !p.Message!.IsDeleted)
                 .Include(p => p.Message)
                 .Include(p => p.Message!.Sender)
                 .Include(p => p.PinnedByUser)
@@ -348,6 +370,7 @@ namespace Movie.API.Controllers
             var pins = await _context.MessagePins
                 .Where(p => p.ChatUserId == chatKey &&
                            (!p.IsPinForSelf || p.PinnedBy == currentUserId))
+                .Where(p => !p.Message!.IsDeleted)
                 .Include(p => p.Message)
                 .Include(p => p.Message!.Sender)
                 .Include(p => p.PinnedByUser)

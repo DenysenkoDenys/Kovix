@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Movie.API.Data;
 
@@ -11,9 +12,11 @@ using Movie.API.Data;
 namespace Movie.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260514052236_AddSupportTickets")]
+    partial class AddSupportTickets
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -972,44 +975,6 @@ namespace Movie.API.Migrations
                     b.ToTable("ReviewerApplications");
                 });
 
-            modelBuilder.Entity("Movie.API.Models.SupportTicket", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AdminReply")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsResolved")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("RepliedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Subject")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("SupportTickets");
-                });
-
             modelBuilder.Entity("Movie.API.Models.TierList", b =>
                 {
                     b.Property<int>("Id")
@@ -1199,7 +1164,7 @@ namespace Movie.API.Migrations
                             IsBlocked = false,
                             IsOnline = false,
                             IsPremium = false,
-                            PasswordHash = "$2a$11$zYHbXiYs5hs3p8nNtsi7vu5gdALY5p8p3HFYAEozJSLUJEKoY7HXy",
+                            PasswordHash = "$2a$11$KAOETY1wALVyjLLLkUFODOahP6Ri/4llNL6gA1qnibRSB7K4obUbC",
                             Role = "Admin",
                             Username = "admin"
                         });
@@ -1825,17 +1790,6 @@ namespace Movie.API.Migrations
                 });
 
             modelBuilder.Entity("Movie.API.Models.ReviewerApplication", b =>
-                {
-                    b.HasOne("Movie.API.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Movie.API.Models.SupportTicket", b =>
                 {
                     b.HasOne("Movie.API.Models.User", "User")
                         .WithMany()

@@ -37,6 +37,7 @@ import BlacklistPage from './pages/BlacklistPage';
 import AppealPage from './pages/AppealPage';
 import AdminAppealsPage from './pages/AdminAppealsPage';
 import AdminCriticApplicationsPage from './pages/AdminCriticApplicationsPage';
+import AdminSupportPage from './pages/AdminSupportPage';
 import MoviePage from './pages/MoviePage';
 import CharacterDetailPage from './pages/CharacterDetailPage';
 import VoiceActorDetailPage from './pages/VoiceActorDetailPage';
@@ -56,6 +57,8 @@ import ForumTopicPage from './pages/ForumTopicPage';
 import AdminForumModerationPage from './pages/AdminForumModerationPage';
 import MembershipPage from './pages/MembershipPage';
 import PaymentSuccessPage from './pages/PaymentSuccessPage';
+import FAQPage from './pages/FAQPage';
+import SupportWidget from './components/SupportWidget';
 
 import { useEffect } from 'react';
 import { AchievementProvider } from './contexts/AchievementContext';
@@ -172,9 +175,16 @@ function App() {
                       <AdminTierListModerationPage />
                     </ProtectedRoute>
                   } />
+                  <Route path="/admin/support" element={
+                    <ProtectedRoute>
+                      <AdminSupportPage />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/faq" element={<FAQPage />} />
                   <Route path="*" element={<NotFoundPage />} />
                 </Routes>
               </div>
+              <SupportWidget />
               <CookiePopup />
               <Footer />
             </Router>

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Movie.API.Data;
 
@@ -11,9 +12,11 @@ using Movie.API.Data;
 namespace Movie.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260514052357_AddSupportTickets1")]
+    partial class AddSupportTickets1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -980,9 +983,6 @@ namespace Movie.API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AdminReply")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -992,9 +992,6 @@ namespace Movie.API.Migrations
                     b.Property<string>("Message")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("RepliedAt")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("Subject")
                         .IsRequired()
@@ -1199,7 +1196,7 @@ namespace Movie.API.Migrations
                             IsBlocked = false,
                             IsOnline = false,
                             IsPremium = false,
-                            PasswordHash = "$2a$11$zYHbXiYs5hs3p8nNtsi7vu5gdALY5p8p3HFYAEozJSLUJEKoY7HXy",
+                            PasswordHash = "$2a$11$Dzrc.EU.5Cy29JdchRQLV.UtK0ISlAzqtZnqQrhxXlQKXkhJlQqha",
                             Role = "Admin",
                             Username = "admin"
                         });

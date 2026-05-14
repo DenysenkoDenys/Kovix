@@ -259,6 +259,9 @@ function Navigation() {
                         <NavDropdown.Item as={Link} to="/admin/forum-moderation">
                           Модерація форуму
                         </NavDropdown.Item>
+                        <NavDropdown.Item as={Link} to="/admin/support">
+                          📞 Звернення користувачів
+                        </NavDropdown.Item>
                       </>
                     )}
 

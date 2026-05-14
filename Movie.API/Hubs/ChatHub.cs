@@ -125,29 +125,31 @@ namespace Movie.API.Hubs
             }
         }
 
-        public async Task SendMessage(string content, int? receiverId)
+        public async Task SendMessage(string content, int? receiverId, int? replyToMessageId = null)
         {
-            var userId = GetUserId();
-            var userName = Context.User.Identity.Name;
-
             var userIdString = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdString))
-            {
-                throw new HubException("Unauthorized");
-            }
+            if (string.IsNullOrEmpty(userIdString)) throw new HubException("Unauthorized");
             var senderId = int.Parse(userIdString);
 
-            var sender = await _context.Users
-                .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.Id == senderId);
+            var sender = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == senderId);
+            if (sender == null || sender.IsBlocked) throw new HubException("BLOCK_ERROR: Ваш акаунт заблоковано.");
 
-            if (sender == null || sender.IsBlocked)
+            string? replyToSender = null;
+            string? replyToContent = null;
+
+            if (replyToMessageId.HasValue)
             {
-                throw new HubException("BLOCK_ERROR: Ваш акаунт заблоковано адміністратором.");
+                var parentMsg = await _context.Messages.Include(m => m.Sender).FirstOrDefaultAsync(m => m.Id == replyToMessageId.Value);
+                if (parentMsg != null)
+                {
+                    replyToSender = parentMsg.Sender?.Username;
+                    replyToContent = parentMsg.Content;
+                }
             }
+
             var message = new Message
             {
-                SenderId = userId,
+                SenderId = senderId,
                 ReceiverId = receiverId,
                 Content = content,
                 Timestamp = DateTime.UtcNow
@@ -156,14 +158,32 @@ namespace Movie.API.Hubs
             _context.Messages.Add(message);
             await _context.SaveChangesAsync();
 
+            if (replyToMessageId.HasValue)
+            {
+                var reply = new MessageReply
+                {
+                    MessageId = replyToMessageId.Value,
+                    ReplyMessageId = message.Id
+                };
+                _context.MessageReplies.Add(reply);
+                await _context.SaveChangesAsync();
+
+                if (receiverId == null) await Clients.All.SendAsync("ReplyAdded", replyToMessageId.Value);
+                else
+                {
+                    await Clients.User(receiverId.ToString()!).SendAsync("ReplyAdded", replyToMessageId.Value);
+                    await Clients.Caller.SendAsync("ReplyAdded", replyToMessageId.Value);
+                }
+            }
+
             if (receiverId == null)
             {
-                await Clients.All.SendAsync("ReceiveMessage", userId, userName, content, null, message.Timestamp, message.Id);
+                await Clients.All.SendAsync("ReceiveMessage", senderId, sender.Username, content, null, message.Timestamp, message.Id, replyToMessageId, replyToSender, replyToContent);
             }
             else
             {
-                await Clients.User(receiverId.ToString()).SendAsync("ReceiveMessage", userId, userName, content, receiverId, message.Timestamp, message.Id);
-                await Clients.Caller.SendAsync("ReceiveMessage", userId, userName, content, receiverId, message.Timestamp, message.Id);
+                await Clients.User(receiverId.ToString()!).SendAsync("ReceiveMessage", senderId, sender.Username, content, receiverId, message.Timestamp, message.Id, replyToMessageId, replyToSender, replyToContent);
+                await Clients.Caller.SendAsync("ReceiveMessage", senderId, sender.Username, content, receiverId, message.Timestamp, message.Id, replyToMessageId, replyToSender, replyToContent);
             }
         }
 
@@ -188,11 +208,18 @@ namespace Movie.API.Hubs
 
             if (msg == null) return;
 
-            bool isAdmin = Context.User!.IsInRole("Admin");
+            bool isAdmin = Context.User!.IsInRole("Admin") || Context.User!.IsInRole("Moderator");
 
             if (msg.SenderId == userId || isAdmin)
             {
                 msg.IsDeleted = true;
+
+                var associatedPins = _context.MessagePins.Where(p => p.MessageId == messageId);
+                if (associatedPins.Any())
+                {
+                    _context.MessagePins.RemoveRange(associatedPins);
+                }
+
                 await _context.SaveChangesAsync();
                 await Clients.All.SendAsync("MessageDeleted", msg.Id);
             }
@@ -307,11 +334,11 @@ namespace Movie.API.Hubs
 
             if (receiverId == null)
             {
-                await Clients.Others.SendAsync("UserTyping", userId, user!.Username);
+                await Clients.Others.SendAsync("UserTyping", userId, user!.Username, null);
             }
             else
             {
-                await Clients.User(receiverId.ToString()!).SendAsync("UserTyping", userId, user!.Username);
+                await Clients.User(receiverId.ToString()!).SendAsync("UserTyping", userId, user!.Username, userId);
             }
         }
 
@@ -321,11 +348,11 @@ namespace Movie.API.Hubs
 
             if (receiverId == null)
             {
-                await Clients.Others.SendAsync("UserStoppedTyping", userId);
+                await Clients.Others.SendAsync("UserStoppedTyping", userId, null);
             }
             else
             {
-                await Clients.User(receiverId.ToString()!).SendAsync("UserStoppedTyping", userId);
+                await Clients.User(receiverId.ToString()!).SendAsync("UserStoppedTyping", userId, userId);
             }
         }
     }

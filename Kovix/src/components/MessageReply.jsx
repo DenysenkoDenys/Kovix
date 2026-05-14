@@ -2,14 +2,14 @@ import { useState, useEffect } from 'react';
 import { chatAPI } from '../services/api';
 import '../style/MessageReply.css';
 
-export default function MessageReply({ messageId, onReplySelect }) {
+export default function MessageReply({ messageId, onReplySelect, refreshTrigger }) {
     const [replies, setReplies] = useState([]);
     const [showReplies, setShowReplies] = useState(false);
     const [repliesCount, setRepliesCount] = useState(0);
 
     useEffect(() => {
         loadReplies();
-    }, [messageId]);
+    }, [messageId, refreshTrigger]);
 
     const loadReplies = async () => {
         try {
@@ -29,7 +29,7 @@ export default function MessageReply({ messageId, onReplySelect }) {
                     onClick={() => setShowReplies(!showReplies)}
                 >
                     <i className="bi bi-chat-left-dots"></i>
-                    {repliesCount} відповід{repliesCount % 10 === 1 && repliesCount !== 11 ? 'і' : 'і'}
+                    {repliesCount} відповід{repliesCount % 10 === 1 && repliesCount !== 11 ? 'ь' : (repliesCount % 10 >= 2 && repliesCount % 10 <= 4 && (repliesCount < 10 || repliesCount > 20) ? 'і' : 'ей')}
                 </button>
             )}
 
@@ -43,7 +43,7 @@ export default function MessageReply({ messageId, onReplySelect }) {
                             <div className="reply-content">{reply.replyMessageContent}</div>
                             <button
                                 className="reply-action-btn"
-                                onClick={() => onReplySelect && onReplySelect(reply.replyMessageId)}
+                                onClick={() => onReplySelect && onReplySelect(reply.replyMessageId, reply.replySenderName)}
                             >
                                 Відповісти
                             </button>

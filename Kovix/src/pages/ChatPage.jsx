@@ -60,6 +60,11 @@ function ChatPage() {
     const [editingId, setEditingId] = useState(null);
     const [contextMenu, setContextMenu] = useState(null);
     const messagesEndRef = useRef(null);
+    const activeChatRef = useRef(activeChat);
+
+    useEffect(() => {
+        activeChatRef.current = activeChat;
+    }, [activeChat]);
 
     const [highlightedMsgId, setHighlightedMsgId] = useState(null);
 
@@ -72,6 +77,7 @@ function ChatPage() {
     const [replyingTo, setReplyingTo] = useState(null);
     const typingTimeoutRef = useRef(null);
     const [reactionsTrigger, setReactionsTrigger] = useState({});
+    const [repliesTrigger, setRepliesTrigger] = useState({});
     const [pinsTrigger, setPinsTrigger] = useState(0);
     const [showPinnedModal, setShowPinnedModal] = useState(false);
     const [showPinTypeModal, setShowPinTypeModal] = useState(false);
@@ -224,18 +230,23 @@ function ChatPage() {
     };
 
     const connection = useChatConnection((conn) => {
-        conn.on('ReceiveMessage', (senderId, senderName, message, receiverId, timestamp, id) => {
+        conn.on('ReceiveMessage', (senderId, senderName, message, receiverId, timestamp, id, replyToMessageId, replyToSender, replyToContent) => {
+            const currentActiveChat = activeChatRef.current;
+
             const isGeneralMessage = receiverId === null;
-            const isCurrentChatOpen = (activeChat === null && isGeneralMessage) ||
-                (String(activeChat) === String(senderId)) ||
-                (String(activeChat) === String(receiverId));
+            const isCurrentChatOpen = (currentActiveChat === null && isGeneralMessage) ||
+                (String(currentActiveChat) === String(senderId)) ||
+                (String(currentActiveChat) === String(receiverId));
 
             if (isCurrentChatOpen) {
                 setMessages(prev => {
                     const messageExists = prev.some(m => m.id === id);
                     if (messageExists) return prev;
 
-                    return [...prev, { id, senderId, senderName, content: message, receiverId, timestamp }];
+                    return [...prev, {
+                        id, senderId, senderName, content: message, receiverId, timestamp,
+                        replyTo: replyToMessageId ? { id: replyToMessageId, senderName: replyToSender, content: replyToContent } : null
+                    }];
                 });
             }
 
@@ -243,14 +254,15 @@ function ChatPage() {
                 setGeneralChat(prev => ({
                     lastMessage: `${senderName}: ${message}`,
                     lastMessageTime: timestamp,
-                    unreadCount: activeChat !== null ? prev.unreadCount + 1 : 0
+                    unreadCount: currentActiveChat !== null ? prev.unreadCount + 1 : 0
                 }));
             } else {
                 setFriends(prev => {
                     const updatedFriends = prev.map(f => {
                         if (String(f.id) === String(senderId) || String(f.id) === String(receiverId)) {
                             const isIncoming = String(f.id) === String(senderId);
-                            const isChatClosed = String(activeChat) !== String(senderId);
+                            const isChatClosed = String(currentActiveChat) !== String(senderId) && String(currentActiveChat) !== String(receiverId);
+
                             return {
                                 ...f,
                                 lastMessage: message,
@@ -268,8 +280,16 @@ function ChatPage() {
         conn.on('MessageEdited', (id, newContent) => {
             setMessages(prev => prev.map(m => m.id === id ? { ...m, content: newContent, isEdited: true } : m));
         });
-        conn.on('MessageDeleted', (id) => setMessages(prev => prev.filter(m => m.id !== id)));
-        conn.on('MessageDeletedForMe', (id) => setMessages(prev => prev.filter(m => m.id !== id)));
+
+        conn.on('MessageDeleted', (id) => {
+            setMessages(prev => prev.filter(m => m.id !== id));
+            setPinsTrigger(prev => prev + 1);
+        });
+
+        conn.on('MessageDeletedForMe', (id) => {
+            setMessages(prev => prev.filter(m => m.id !== id));
+            setPinsTrigger(prev => prev + 1);
+        });
         conn.on('UserStatusChanged', (userId, isOnline, lastActive) => {
             setFriends(prev => prev.map(f => String(f.id) === String(userId) ? { ...f, isOnline, lastActive } : f));
         });
@@ -278,18 +298,22 @@ function ChatPage() {
             setReactionsTrigger(prev => ({ ...prev, [messageId]: Date.now() }));
         });
 
-        conn.on('UserTyping', (userId, userName) => {
+        conn.on('UserTyping', (typingUserId, userName, chatId) => {
+            if (String(typingUserId) === String(user?.id)) return;
+
             setTypingUsers(prev => {
-                const updated = [...prev];
-                if (!updated.includes(userName)) {
-                    updated.push(userName);
-                }
-                return updated;
+                const exists = prev.find(u => u.userId === typingUserId && u.chatId === chatId);
+                if (exists) return prev;
+                return [...prev, { userId: typingUserId, userName, chatId }];
             });
         });
 
-        conn.on('UserStoppedTyping', (userId) => {
-            setTypingUsers(prev => prev.filter(u => u !== userId));
+        conn.on('UserStoppedTyping', (typingUserId, chatId) => {
+            setTypingUsers(prev => prev.filter(u => !(u.userId === typingUserId && u.chatId === chatId)));
+        });
+
+        conn.on('ReplyAdded', (parentMessageId) => {
+            setRepliesTrigger(prev => ({ ...prev, [parentMessageId]: Date.now() }));
         });
 
         if (conn.state === HubConnectionState.Connected) {
@@ -389,7 +413,10 @@ function ChatPage() {
                     setGeneralChat(prev => ({ ...prev, lastMessage: `Ви: ${messageInput}`, lastMessageTime: now }));
                 }
                 setMessageInput('');
-                await connection.invoke('SendMessage', messageInput, activeChat);
+                await connection.invoke('SendMessage', messageInput, activeChat, replyingTo ? replyingTo.id : null);
+                setReplyingTo(null);
+                if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+                await connection.invoke('UserStoppedTyping', activeChat);
             }
         } catch (err) {
             console.error("Помилка відправки:", err);
@@ -430,6 +457,11 @@ function ChatPage() {
     const deleteForEveryone = async (id) => { if (window.confirm("Видалити для всіх?")) await connection.invoke('DeleteMessageForEveryone', id); };
     const deleteForMe = async (id) => { await connection.invoke('DeleteMessageForMe', id); };
     const filteredMessages = messages;
+
+    const generalTypers = typingUsers.filter(u => u.chatId === null).map(u => u.userName);
+    const generalTypingText = generalTypers.length > 0
+        ? (generalTypers.length === 1 ? `${generalTypers[0]} друкує...` : `${generalTypers.join(', ')} друкують...`)
+        : null;
 
     return (
         <Container className="mt-4 mb-5" style={{ height: 'calc(100vh - 100px)', backgroundColor: 'var(--bg-main)', color: 'var(--text-main)' }}>
@@ -483,16 +515,28 @@ function ChatPage() {
 
                                     <div className="ms-3 overflow-hidden d-flex flex-column justify-content-center">
                                         <span className="fw-bold">🌍 Загальний чат</span>
-                                        <span
-                                            className="text-truncate small"
-                                            style={{
-                                                fontSize: '0.85rem',
-                                                opacity: 0.8,
-                                                color: activeChat === null ? 'var(--btn-text)' : 'var(--text-secondary)'
-                                            }}
-                                        >
-                                            {generalChat.lastMessage || <em style={{ opacity: 0.6 }}>Спілкуйтеся тут</em>}
-                                        </span>
+                                        {generalTypingText ? (
+                                            <span
+                                                className="text-truncate small fst-italic fw-bold"
+                                                style={{
+                                                    fontSize: '0.85rem',
+                                                    color: activeChat === null ? 'var(--btn-text)' : 'var(--primary-color)'
+                                                }}
+                                            >
+                                                ✏️ {generalTypingText}
+                                            </span>
+                                        ) : (
+                                            <span
+                                                className="text-truncate small"
+                                                style={{
+                                                    fontSize: '0.85rem',
+                                                    opacity: 0.8,
+                                                    color: activeChat === null ? 'var(--btn-text)' : 'var(--text-secondary)'
+                                                }}
+                                            >
+                                                {generalChat.lastMessage || <em style={{ opacity: 0.6 }}>Спілкуйтеся тут</em>}
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
 
@@ -525,6 +569,7 @@ function ChatPage() {
                             const isOnline = friend.isOnline === true;
                             const isActive = activeChat === friend.id;
                             const borderColor = isOnline ? '#28a745' : 'transparent';
+                            const isFriendTyping = typingUsers.some(u => u.chatId === friend.id);
 
                             return (
                                 <ListGroup.Item
@@ -567,15 +612,28 @@ function ChatPage() {
                                                         selectedAward={friend.selectedAward}
                                                     />
                                                 </div>
-                                                <span
-                                                    className="text-truncate small"
-                                                    style={{
-                                                        fontSize: '0.8rem', opacity: 0.8,
-                                                        color: isActive ? 'var(--btn-text)' : 'var(--text-secondary)'
-                                                    }}
-                                                >
-                                                    {friend.lastMessage || <em style={{ opacity: 0.6 }}>Немає повідомлень</em>}
-                                                </span>
+
+                                                {isFriendTyping ? (
+                                                    <span
+                                                        className="text-truncate small fst-italic fw-bold"
+                                                        style={{
+                                                            fontSize: '0.8rem',
+                                                            color: isActive ? 'var(--btn-text)' : 'var(--primary-color)'
+                                                        }}
+                                                    >
+                                                        ✏️ друкує...
+                                                    </span>
+                                                ) : (
+                                                    <span
+                                                        className="text-truncate small"
+                                                        style={{
+                                                            fontSize: '0.8rem', opacity: 0.8,
+                                                            color: isActive ? 'var(--btn-text)' : 'var(--text-secondary)'
+                                                        }}
+                                                    >
+                                                        {friend.lastMessage || <em style={{ opacity: 0.6 }}>Немає повідомлень</em>}
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                         <div className="ms-2 d-flex flex-column align-items-end" style={{ minWidth: '50px' }}>
@@ -678,7 +736,7 @@ function ChatPage() {
                                     const sender = String(msg.senderId || '');
                                     const isMe = sender === myId;
                                     const isHighlighted = highlightedMsgId && String(highlightedMsgId) === String(msg.id);
-                                    
+
                                     const isPinned = pinnedMessages.some(p => p.messageId === msg.id);
 
                                     if (msg.senderId === 0 || msg.senderName === "СИСТЕМА") {
@@ -728,6 +786,34 @@ function ChatPage() {
                                                 )}
 
                                                 <div style={{ wordBreak: 'break-word', fontSize: '16px', lineHeight: '1.6' }}>
+                                                    {msg.replyTo && (
+                                                        <div 
+                                                            className="message-quote mb-2" 
+                                                            style={{ 
+                                                                cursor: 'pointer', 
+                                                                padding: '6px 10px', 
+                                                                backgroundColor: isMe ? 'rgba(255,255,255,0.15)' : 'rgba(33, 150, 243, 0.1)', 
+                                                                borderLeft: `4px solid ${isMe ? '#fff' : 'var(--primary-color)'}`,
+                                                                borderRadius: '4px'
+                                                            }}
+                                                            onClick={() => {
+                                                                const element = document.getElementById(`msg-${msg.replyTo.id}`);
+                                                                if (element) {
+                                                                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                                                    setHighlightedMsgId(msg.replyTo.id);
+                                                                    setTimeout(() => setHighlightedMsgId(null), 3000);
+                                                                }
+                                                            }}
+                                                        >
+                                                            <div className="fw-bold" style={{ fontSize: '13px', color: isMe ? '#fff' : 'var(--primary-color)' }}>
+                                                                {msg.replyTo.senderName}
+                                                            </div>
+                                                            <div className="text-truncate" style={{ fontSize: '13px', color: isMe ? '#e0e0e0' : 'var(--text-secondary)' }}>
+                                                                {msg.replyTo.content}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
                                                     {msg.content}
                                                     {msg.isEdited && <small className="ms-2" style={{ fontSize: '13px', opacity: 0.7, fontWeight: 'bold' }}>(ред.)</small>}
                                                 </div>
@@ -759,8 +845,9 @@ function ChatPage() {
 
                                                 <MessageReply
                                                     messageId={msg.id}
-                                                    onReplySelect={(replyMsgId) => {
-                                                        setReplyingTo(msg.senderName);
+                                                    refreshTrigger={repliesTrigger[msg.id]}
+                                                    onReplySelect={(replyMsgId, senderName) => {
+                                                        setReplyingTo({ id: replyMsgId, name: senderName });
                                                     }}
                                                 />
                                             </div>
@@ -772,9 +859,22 @@ function ChatPage() {
 
                             <div className="p-3" style={{ backgroundColor: 'var(--bg-card)', borderTop: '1px solid var(--border-color)' }}>
                                 {editingId && <div className="d-flex justify-content-between small text-primary mb-2"><span>✏️ Редагування...</span><span onClick={cancelEditing} style={{ cursor: 'pointer' }}>✖</span></div>}
-                                {replyingTo && <div className="d-flex justify-content-between small text-info mb-2"><span>↩️ Відповідь на {replyingTo}</span><span onClick={() => setReplyingTo(null)} style={{ cursor: 'pointer' }}>✖</span></div>}
+                                {replyingTo && (
+                                    <div className="d-flex justify-content-between align-items-center small mb-2 p-2 rounded" style={{ backgroundColor: 'rgba(33, 150, 243, 0.1)', borderLeft: '3px solid var(--primary-color)' }}>
+                                        <div>
+                                            <span className="fw-bold" style={{ color: 'var(--primary-color)' }}>↩️ Відповідь для: {replyingTo.name}</span>
+                                        </div>
+                                        <span onClick={() => setReplyingTo(null)} style={{ cursor: 'pointer', fontSize: '1.1rem', color: 'var(--text-secondary)' }}>✖</span>
+                                    </div>
+                                )}
 
-                                <TypingIndicator typingUsers={typingUsers} />
+                                {(() => {
+                                    const currentTypingUsers = typingUsers
+                                        .filter(u => u.chatId === activeChat)
+                                        .map(u => u.userName);
+
+                                    return <TypingIndicator typingUsers={currentTypingUsers} />;
+                                })()}
 
                                 <Form onSubmit={handleSendOrSave} className="d-flex gap-2">
                                     <Form.Control
@@ -838,7 +938,15 @@ function ChatPage() {
                                 <div onClick={() => { openReportModal(contextMenu.message); setContextMenu(null); }} className="p-2 text-warning hover-bg" style={{ cursor: 'pointer' }}>⚠️ Поскаржитися</div>
                             )}
 
-                           {(() => {
+                            <div
+                                onClick={() => { setReplyingTo({ id: contextMenu.message.id, name: contextMenu.message.senderName }); setContextMenu(null); }}
+                                className="p-2 hover-bg"
+                                style={{ cursor: 'pointer', borderTop: '1px solid var(--border-color)' }}
+                            >
+                                ↩️ Відповісти
+                            </div>
+
+                            {(() => {
                                 const isPinned = pinnedMessages.some(p => p.messageId === contextMenu.message.id);
                                 const pinnedMsg = pinnedMessages.find(p => p.messageId === contextMenu.message.id);
 

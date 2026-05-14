@@ -288,4 +288,12 @@ export const subscriptionAPI = {
     confirmPayment: (data) => api.post('/subscription/confirm-payment', data) 
 };
 
+export const supportAPI = {
+    createTicket: (data) => api.post('/support/tickets', data),
+    getAllTickets: () => api.get('/support/tickets'),
+    toggleTicketStatus: (id) => api.put(`/support/tickets/${id}/resolve`),
+    getMyTickets: (search = '', page = 1, pageSize = 5) => 
+        api.get(`/support/tickets/my?search=${search}&page=${page}&pageSize=${pageSize}`),
+    replyToTicket: (id, reply) => api.put(`/support/tickets/${id}/reply`, { reply })
+};
 export default api;

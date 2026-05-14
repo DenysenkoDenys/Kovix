@@ -23,6 +23,7 @@ function Footer() {
                         <ul className="list-unstyled small d-flex flex-column gap-2">
                             <li><Link to="/movies" className="text-muted text-decoration-none">Фільми</Link></li>
                             <li><Link to="/actors" className="text-muted text-decoration-none">Актори</Link></li>
+                            <li><Link to="/faq" className="text-muted text-decoration-none">FAQ</Link></li>
                             <li><Link to="/terms" className="text-muted text-decoration-none">Правила</Link></li>
                             <li><Link to="/privacy" className="text-muted text-decoration-none">Приватність</Link></li>
                         </ul>
@@ -55,6 +56,7 @@ function Footer() {
                 <div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 small text-muted">
                     <span>© 2026 Kovix Project. Всі права захищені.</span>
                     <div className="d-flex gap-3">
+                        <Link to="/faq" className="text-muted text-decoration-none">FAQ</Link>
                         <Link to="/terms" className="text-muted text-decoration-none">Умови</Link>
                         <Link to="/privacy" className="text-muted text-decoration-none">Конфіденційність</Link>
                     </div>
