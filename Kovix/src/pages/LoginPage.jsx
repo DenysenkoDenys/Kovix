@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Container, Form, Button, Card, Alert } from 'react-bootstrap';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { authAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import SocialLogin from '../components/SocialLogin';
@@ -10,7 +10,10 @@ function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
+
+  const successMessage = location.state?.message || '';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,7 +26,13 @@ function LoginPage() {
       login(token, username, role);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data || 'Помилка входу');
+      if (err.response?.status === 403 && err.response.data.message === "EMAIL_NOT_VERIFIED") {
+        localStorage.setItem('token', err.response.data.token);
+        navigate('/verify-email');
+        return;
+      }
+
+      setError(err.response?.data?.message || err.response?.data || 'Помилка входу');
     }
   };
 
@@ -32,6 +41,7 @@ function LoginPage() {
       <Card style={{ width: '400px' }} className="shadow">
         <Card.Body>
           <h2 className="text-center mb-4">Вхід</h2>
+          {successMessage && <Alert variant="success">{successMessage}</Alert>}
           {error && <Alert variant="danger">{error}</Alert>}
           
           <Form onSubmit={handleSubmit}>

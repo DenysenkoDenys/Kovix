@@ -58,6 +58,7 @@ import AdminForumModerationPage from './pages/AdminForumModerationPage';
 import MembershipPage from './pages/MembershipPage';
 import PaymentSuccessPage from './pages/PaymentSuccessPage';
 import FAQPage from './pages/FAQPage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
 import SupportWidget from './components/SupportWidget';
 
 import { useEffect } from 'react';
@@ -110,6 +111,7 @@ function App() {
                   <Route path="/admin/forum-moderation" element={<AdminForumModerationPage />} />
                   <Route path="/membership" element={<MembershipPage />} />
                   <Route path="/payment/success" element={<PaymentSuccessPage />} />
+                  <Route path="/verify-email" element={<VerifyEmailPage />} />
                   <Route
                     path="/movies/:movieId"
                     element={

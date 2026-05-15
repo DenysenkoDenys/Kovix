@@ -82,7 +82,7 @@ namespace Movie.API.Controllers
             return Ok(new { message = "Реєстрація успішна!" });
         }
 
-
+        
         [HttpPost("login")]
         public async Task<ActionResult<string>> Login(LoginDto request)
         {
@@ -98,8 +98,19 @@ namespace Movie.API.Controllers
                 return BadRequest("Невірний пароль.");
             }
 
-            string token = CreateToken(user);
+            if (!user.IsEmailVerified && user.ExternalProvider != "Google" && user.Role != "Admin" && user.Role != "Moderator")
+            {
+                string tempToken = CreateToken(user);
 
+                return StatusCode(403, new
+                {
+                    message = "EMAIL_NOT_VERIFIED",
+                    token = tempToken,
+                    email = user.Email
+                });
+            }
+
+            string token = CreateToken(user);
             return Ok(new { token, role = user.Role, username = user.Username });
         }
 
@@ -440,6 +451,72 @@ namespace Movie.API.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Звання успішно оновлено!" });
+        }
+
+        [Authorize]
+        [HttpPost("send-verification-code")]
+        public async Task<IActionResult> SendVerificationCode()
+        {
+            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdString)) return Unauthorized();
+
+            var userId = int.Parse(userIdString);
+            var user = await _context.Users.FindAsync(userId);
+
+            if (user == null) return NotFound();
+            if (user.IsEmailVerified) return BadRequest("Email вже підтверджено.");
+
+            var random = new Random();
+            var code = random.Next(100000, 999999).ToString();
+
+            user.EmailVerificationCode = code;
+            user.EmailVerificationCodeExpiry = DateTime.UtcNow.AddMinutes(15); 
+
+            await _context.SaveChangesAsync();
+
+            var subject = "Підтвердження email на Kovix";
+            var body = $@"
+                <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;'>
+                    <h2 style='color: #2196F3; text-align: center;'>Kovix</h2>
+                    <p>Привіт, <b>{user.Username}</b>!</p>
+                    <p>Твій код для підтвердження електронної пошти:</p>
+                    <div style='background-color: #f5f5f5; padding: 15px; text-align: center; border-radius: 8px; margin: 20px 0;'>
+                        <span style='font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #333;'>{code}</span>
+                    </div>
+                    <p style='color: #666; font-size: 14px;'>Код дійсний протягом 15 хвилин. Якщо ти не запитував цей код, просто проігноруй цей лист.</p>
+                </div>";
+
+            await _emailService.SendEmailAsync(user.Email, subject, body);
+
+            return Ok(new { message = "Код відправлено на пошту." });
+        }
+
+        [Authorize]
+        [HttpPost("verify-email")]
+        public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailDto dto)
+        {
+            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdString)) return Unauthorized();
+
+            var userId = int.Parse(userIdString);
+            var user = await _context.Users.FindAsync(userId);
+
+            if (user == null) return NotFound();
+            if (user.IsEmailVerified) return BadRequest("Email вже підтверджено.");
+
+            if (user.EmailVerificationCode != dto.Code)
+                return BadRequest("Невірний код.");
+
+            if (user.EmailVerificationCodeExpiry < DateTime.UtcNow)
+                return BadRequest("Час дії коду минув. Запросіть новий.");
+
+            user.IsEmailVerified = true;
+            user.EmailVerificationCode = null;
+            user.EmailVerificationCodeExpiry = null;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Email успішно підтверджено!" });
         }
 
         private async Task<bool> VerifyCaptchaAsync(string token)

@@ -33,11 +33,11 @@ export const moviesAPI = {
   update: (id, movieData) => api.put(`/movies/${id}`, movieData),
   delete: (id) => api.delete(`/movies/${id}`),
   react: (movieId, type) => api.post(`/movies/${movieId}/react?type=${type}`),
-  
+
   rateEpisode: (episodeId, rating) => {
     return api.post(`/movies/rate-episode/${episodeId}?rating=${rating}`);
   },
-  
+
   addEpisode: (movieId, data) => {
     return api.post(`/movies/${movieId}/add-episode`, data);
   },
@@ -79,7 +79,9 @@ export const authAPI = {
   changePassword: (data) => api.post('/auth/change-password', data),
   forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
   resetPassword: (data) => api.post('/auth/reset-password', data),
-  updateTitle: (awardId) => api.put('/auth/me/title', { awardId })
+  updateTitle: (awardId) => api.put('/auth/me/title', { awardId }),
+  sendVerificationCode: () => api.post('/auth/send-verification-code'),
+  verifyEmail: (code) => api.post('/auth/verify-email', { code })
 };
 
 export const watchlistAPI = {
@@ -212,88 +214,88 @@ export const criticReviewsAPI = {
 };
 
 export const applicationsAPI = {
-    submit: (data) => api.post('/reviewerapplications', data),
-    getPending: () => api.get('/reviewerapplications/pending'),
-    approve: (id) => api.post(`/reviewerapplications/${id}/approve`),
-    reject: (id) => api.post(`/reviewerapplications/${id}/reject`)
+  submit: (data) => api.post('/reviewerapplications', data),
+  getPending: () => api.get('/reviewerapplications/pending'),
+  approve: (id) => api.post(`/reviewerapplications/${id}/approve`),
+  reject: (id) => api.post(`/reviewerapplications/${id}/reject`)
 };
 
 export const adminUsersAPI = {
-    getAll: () => api.get(`/adminUsers`),
-    changeRole: (id, newRole) => api.put(`/adminUsers/${id}/role`, { newRole: newRole }),
-    delete: (id) => api.delete(`/criticreviews/${id}`)
+  getAll: () => api.get(`/adminUsers`),
+  changeRole: (id, newRole) => api.put(`/adminUsers/${id}/role`, { newRole: newRole }),
+  delete: (id) => api.delete(`/criticreviews/${id}`)
 };
 
 export const moderatorAPI = {
-    getReports: (status = null) => api.get('/moderator/reports', { params: { status } }),
-    getUsersForModeration: (blockedOnly = false) => api.get('/moderator/users', { params: { blockedOnly } }),
-    deleteCriticReview: (id) => api.delete(`/moderator/reviews/${id}`),
-    deleteUserReview: (id) => api.delete(`/moderator/user-reviews/${id}`),
-    blockUser: (id, reason = '') => api.put(`/moderator/users/${id}/block`, { Reason: reason }),
-    unblockUser: (id) => api.put(`/moderator/users/${id}/unblock`),
-    resolveReport: (id, status, comment) => api.put(`/moderator/reports/${id}/resolve`, { Status: status, AdminComment: comment })
+  getReports: (status = null) => api.get('/moderator/reports', { params: { status } }),
+  getUsersForModeration: (blockedOnly = false) => api.get('/moderator/users', { params: { blockedOnly } }),
+  deleteCriticReview: (id) => api.delete(`/moderator/reviews/${id}`),
+  deleteUserReview: (id) => api.delete(`/moderator/user-reviews/${id}`),
+  blockUser: (id, reason = '') => api.put(`/moderator/users/${id}/block`, { Reason: reason }),
+  unblockUser: (id) => api.put(`/moderator/users/${id}/unblock`),
+  resolveReport: (id, status, comment) => api.put(`/moderator/reports/${id}/resolve`, { Status: status, AdminComment: comment })
 };
 
 export const adminMovieAwardsAPI = {
-    issueAward: (data) => api.post('/adminMovieAwards', data),
-    editAward: (id, data) => api.put(`/adminMovieAwards/${id}`, data),
-    removeAward: (id) => api.delete(`/adminMovieAwards/${id}`)
+  issueAward: (data) => api.post('/adminMovieAwards', data),
+  editAward: (id, data) => api.put(`/adminMovieAwards/${id}`, data),
+  removeAward: (id) => api.delete(`/adminMovieAwards/${id}`)
 };
 
 export const adminUserAwardsAPI = {
-    issueAward: (data) => api.post('/adminUserAwards', data),
-    editAward: (id, data) => api.put(`/adminUserAwards/${id}`, data),
-    removeAward: (id) => api.delete(`/adminUserAwards/${id}`)
+  issueAward: (data) => api.post('/adminUserAwards', data),
+  editAward: (id, data) => api.put(`/adminUserAwards/${id}`, data),
+  removeAward: (id) => api.delete(`/adminUserAwards/${id}`)
 };
 
 export const tierListsAPI = {
-    getAll: (userId = null, isPublic = null, page = 1, pageSize = 10) => 
-        api.get('/tierlists', { params: { userId, isPublic, page, pageSize } }),
-    getById: (id) => api.get(`/tierlists/${id}`),
-    getUserTierLists: (userId) => api.get(`/tierlists/user/${userId}`),
-    create: (data) => api.post('/tierlists', data),
-    update: (id, data) => api.put(`/tierlists/${id}`, data),
-    delete: (id) => api.delete(`/tierlists/${id}`),
-    share: (id) => api.post(`/tierlists/${id}/share`),
-    unshare: (id) => api.post(`/tierlists/${id}/unshare`),
-    getPendingForModeration: (page = 1, pageSize = 10) => 
-        api.get('/admin/tierlists/pending', { params: { page, pageSize } }),
-    getAllForModeration: (status = null, page = 1, pageSize = 10) => 
-        api.get('/admin/tierlists', { params: { status, page, pageSize } }),
-    moderate: (id, data) => api.post(`/admin/tierlists/${id}/moderate`, data),
-    adminDelete: (id) => api.delete(`/admin/tierlists/${id}`),
-    getReactions: (id) => api.get(`/tierlists/${id}/reactions`),
-    toggleReaction: (id, reactionType) => api.post(`/tierlists/${id}/react`, { reactionType })
+  getAll: (userId = null, isPublic = null, page = 1, pageSize = 10) =>
+    api.get('/tierlists', { params: { userId, isPublic, page, pageSize } }),
+  getById: (id) => api.get(`/tierlists/${id}`),
+  getUserTierLists: (userId) => api.get(`/tierlists/user/${userId}`),
+  create: (data) => api.post('/tierlists', data),
+  update: (id, data) => api.put(`/tierlists/${id}`, data),
+  delete: (id) => api.delete(`/tierlists/${id}`),
+  share: (id) => api.post(`/tierlists/${id}/share`),
+  unshare: (id) => api.post(`/tierlists/${id}/unshare`),
+  getPendingForModeration: (page = 1, pageSize = 10) =>
+    api.get('/admin/tierlists/pending', { params: { page, pageSize } }),
+  getAllForModeration: (status = null, page = 1, pageSize = 10) =>
+    api.get('/admin/tierlists', { params: { status, page, pageSize } }),
+  moderate: (id, data) => api.post(`/admin/tierlists/${id}/moderate`, data),
+  adminDelete: (id) => api.delete(`/admin/tierlists/${id}`),
+  getReactions: (id) => api.get(`/tierlists/${id}/reactions`),
+  toggleReaction: (id, reactionType) => api.post(`/tierlists/${id}/react`, { reactionType })
 };
 
 export const forumAPI = {
-    getCategories: () => api.get('/forum/categories'),
-    getTopics: (categoryId) => api.get(`/forum/categories/${categoryId}/topics`),
-    getTopic: (topicId) => api.get(`/forum/topics/${topicId}`),
-    createTopic: (data) => api.post('/forum/topics', data),
-    createPost: (topicId, data) => api.post(`/forum/topics/${topicId}/posts`, data),
-    createCategory: (data) => api.post('/forum/categories', data),
-    getPendingCategories: () => api.get('/forum/admin/pending-categories'),
-    moderateCategory: (id, approve) => api.post(`/forum/admin/categories/${id}/moderate?approve=${approve}`),
-    deleteCategory: (id) => api.delete(`/forum/categories/${id}`),
-    deleteTopic: (id) => api.delete(`/forum/topics/${id}`),
-    deletePost: (id) => api.delete(`/forum/posts/${id}`),
-    updateCategory: (id, data) => api.put(`/forum/categories/${id}`, data),
-    updateTopic: (id, data) => api.put(`/forum/topics/${id}`, data),
-    updatePost: (id, data) => api.put(`/forum/posts/${id}`, data),
+  getCategories: () => api.get('/forum/categories'),
+  getTopics: (categoryId) => api.get(`/forum/categories/${categoryId}/topics`),
+  getTopic: (topicId) => api.get(`/forum/topics/${topicId}`),
+  createTopic: (data) => api.post('/forum/topics', data),
+  createPost: (topicId, data) => api.post(`/forum/topics/${topicId}/posts`, data),
+  createCategory: (data) => api.post('/forum/categories', data),
+  getPendingCategories: () => api.get('/forum/admin/pending-categories'),
+  moderateCategory: (id, approve) => api.post(`/forum/admin/categories/${id}/moderate?approve=${approve}`),
+  deleteCategory: (id) => api.delete(`/forum/categories/${id}`),
+  deleteTopic: (id) => api.delete(`/forum/topics/${id}`),
+  deletePost: (id) => api.delete(`/forum/posts/${id}`),
+  updateCategory: (id, data) => api.put(`/forum/categories/${id}`, data),
+  updateTopic: (id, data) => api.put(`/forum/topics/${id}`, data),
+  updatePost: (id, data) => api.put(`/forum/posts/${id}`, data),
 };
 
 export const subscriptionAPI = {
-    createCheckout: (data) => api.post('/subscription/create-checkout', data),
-    confirmPayment: (data) => api.post('/subscription/confirm-payment', data) 
+  createCheckout: (data) => api.post('/subscription/create-checkout', data),
+  confirmPayment: (data) => api.post('/subscription/confirm-payment', data)
 };
 
 export const supportAPI = {
-    createTicket: (data) => api.post('/support/tickets', data),
-    getAllTickets: () => api.get('/support/tickets'),
-    toggleTicketStatus: (id) => api.put(`/support/tickets/${id}/resolve`),
-    getMyTickets: (search = '', page = 1, pageSize = 5) => 
-        api.get(`/support/tickets/my?search=${search}&page=${page}&pageSize=${pageSize}`),
-    replyToTicket: (id, reply) => api.put(`/support/tickets/${id}/reply`, { reply })
+  createTicket: (data) => api.post('/support/tickets', data),
+  getAllTickets: () => api.get('/support/tickets'),
+  toggleTicketStatus: (id) => api.put(`/support/tickets/${id}/resolve`),
+  getMyTickets: (search = '', page = 1, pageSize = 5) =>
+    api.get(`/support/tickets/my?search=${search}&page=${page}&pageSize=${pageSize}`),
+  replyToTicket: (id, reply) => api.put(`/support/tickets/${id}/reply`, { reply })
 };
 export default api;

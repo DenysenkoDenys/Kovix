@@ -38,5 +38,8 @@ namespace Movie.API.Models
         public UserAward? SelectedAward { get; set; }
         public bool IsPremium { get; set; } = false;
         public DateTime? PremiumUntil { get; set; }
+        public bool IsEmailVerified { get; set; } = false;
+        public string? EmailVerificationCode { get; set; }
+        public DateTime? EmailVerificationCodeExpiry { get; set; }
     }
 }

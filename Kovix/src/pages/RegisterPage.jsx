@@ -48,7 +48,10 @@ function RegisterPage() {
 
       await authAPI.register(dataToSend);
 
-      navigate('/login');
+      navigate('/login', { 
+        state: { message: 'Реєстрація успішна! Увійдіть у свій акаунт, щоб підтвердити пошту.' } 
+      });
+      
     } catch (err) {
       setError(err.response?.data || 'Помилка реєстрації');
     }
