@@ -109,6 +109,7 @@ function Navigation() {
               <Nav.Link as={Link} to="/membership" className="fw-semibold">
                 KovixPRO
               </Nav.Link>
+              <Nav.Link as={Link} to="/leaderboard">🏆 Рейтинг</Nav.Link>
               <Nav.Link as={Link} to="/forum">Форум</Nav.Link>
             </Nav>
             <Nav className="align-items-center gap-2">

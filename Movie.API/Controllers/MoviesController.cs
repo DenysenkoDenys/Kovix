@@ -1454,7 +1454,7 @@ namespace Movie.API.Controllers
 
             for (int i = 0; i < submission.Answers.Count; i++)
             {
-                if (i < quizQuestions.Count && 
+                if (i < quizQuestions.Count &&
                     submission.Answers[i].SelectedOptionIndex == quizQuestions[i].CorrectAnswerIndex)
                 {
                     correctAnswers++;
@@ -1463,19 +1463,22 @@ namespace Movie.API.Controllers
 
             int rating = (int)Math.Round(((double)correctAnswers / quizQuestions.Count) * 100);
 
+            var user = await _context.Users.FindAsync(userId);
             var existingResult = await _context.MovieQuizResults
                 .FirstOrDefaultAsync(r => r.UserId == userId && r.MovieId == movieId);
 
             if (existingResult != null)
             {
-                existingResult.Rating = rating;
-                existingResult.CorrectAnswers = correctAnswers;
-                existingResult.TotalQuestions = quizQuestions.Count;
-                existingResult.UpdatedAt = DateTime.UtcNow;
-                _context.MovieQuizResults.Update(existingResult);
+                if (rating > existingResult.Rating)
+                {
+                    int difference = rating - existingResult.Rating;
+                    if (user != null) user.TestScore += difference;
+                }
             }
             else
             {
+                if (user != null) user.TestScore += rating;
+
                 var newResult = new MovieQuizResult
                 {
                     UserId = userId,
@@ -1487,6 +1490,7 @@ namespace Movie.API.Controllers
                 };
                 _context.MovieQuizResults.Add(newResult);
             }
+
 
             bool perfectAwardAdded = false;
             if (rating == 100)
@@ -1511,6 +1515,8 @@ namespace Movie.API.Controllers
                 .Select(r => r.MovieId)
                 .Distinct()
                 .CountAsync();
+
+            if (existingResult == null) totalCompleted++;
 
             if (totalCompleted == 10)
             {
@@ -1707,6 +1713,95 @@ namespace Movie.API.Controllers
             });
 
             return questions;
+        }
+
+        [HttpGet("recommended")]
+        [Authorize]
+        public async Task<ActionResult<IEnumerable<object>>> GetRecommended()
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            var historyIds = await _context.WatchHistory
+                .Where(h => h.UserId == userId)
+                .Select(h => h.MovieId)
+                .ToListAsync();
+
+            var likedIds = await _context.MovieReactions
+                .Where(r => r.UserId == userId && r.Type == ReactionType.Like)
+                .Select(r => r.MovieId)
+                .ToListAsync();
+
+            var interactedIds = historyIds.Concat(likedIds).Distinct().ToList();
+
+            if (!interactedIds.Any())
+            {
+                return Ok(new List<object>()); 
+            }
+
+            var interactedGenresRaw = await _context.Movies
+                .AsNoTracking()
+                .Where(m => interactedIds.Contains(m.Id) && !string.IsNullOrEmpty(m.Genre))
+                .Select(m => m.Genre)
+                .ToListAsync();
+
+            var favoriteGenres = interactedGenresRaw
+                .SelectMany(g => g.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                .Select(g => g.Trim().ToLower())
+                .GroupBy(g => g)
+                .OrderByDescending(g => g.Count())
+                .Take(3)
+                .Select(g => g.Key)
+                .ToList();
+
+            if (!favoriteGenres.Any())
+            {
+                return Ok(new List<object>());
+            }
+
+            var blockedGenres = await GetUserBlockedGenres();
+            var blockedActorIds = await GetUserBlockedActorIds();
+
+            var query = _context.Movies
+                .Include(m => m.MovieActors)
+                .AsNoTracking()
+                .Where(m => !interactedIds.Contains(m.Id) && !string.IsNullOrEmpty(m.Genre));
+
+            foreach (var genre in blockedGenres)
+            {
+                query = query.Where(m => !m.Genre.ToLower().Contains(genre));
+            }
+
+            if (blockedActorIds.Any())
+            {
+                query = query.Where(m => !m.MovieActors.Any(ma => blockedActorIds.Contains(ma.ActorId)));
+            }
+
+            var candidates = await query
+                .OrderByDescending(m => m.AverageRating)
+                .Take(100)
+                .ToListAsync();
+
+            var recommended = candidates
+                .Where(m =>
+                {
+                    var mGenres = m.Genre.ToLower();
+                    return favoriteGenres.Any(fg => mGenres.Contains(fg));
+                })
+                .Take(10)
+                .Select(m => new
+                {
+                    id = m.Id,
+                    title = m.Title,
+                    posterUrl = m.PosterUrl,
+                    averageRating = m.AverageRating,
+                    year = m.Year,
+                    genre = m.Genre,
+                    type = m.IsSeries ? "Series" : "Movie",
+                    viewsCount = m.ViewsCount
+                })
+                .ToList();
+
+            return Ok(recommended);
         }
     }
 }

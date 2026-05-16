@@ -1,0 +1,777 @@
+version=1
+
+# This file caches language service data to improve the performance of C# Dev Kit.
+# It is not intended for manual editing. It can safely be deleted and will be
+# regenerated automatically. For more information, see https://aka.ms/lscache
+#
+# To control where cache files are stored, use the following VS Code setting:
+#   "dotnet.projectsystem.cacheInProjectFolder": true
+
+[project]
+language=C#
+primary
+lastDtbSucceeded
+
+[properties]
+AssemblyName=Movie.API
+CommandLineArgsForDesignTimeEvaluation=-langversion:12.0 -define:TRACE
+CompilerGeneratedFilesOutputPath=
+MaxSupportedLangVersion=12.0
+ProjectAssetsFile=<PATH>obj/project.assets.json
+RootNamespace=Movie.API
+RunAnalyzers=
+RunAnalyzersDuringLiveAnalysis=
+SolutionPath=<PATH>../Kovix.sln
+TargetFrameworkIdentifier=.NETCoreApp
+TargetPath=<PATH>bin/Debug/net8.0/Movie.API.dll
+TargetRefPath=<PATH>obj/Debug/net8.0/ref/Movie.API.dll
+TemporaryDependencyNodeTargetIdentifier=net8.0
+
+[commandLineArguments]
+/noconfig
+/unsafe-
+/checked-
+/nowarn:1701,1702,1701,1702
+/fullpaths
+/nostdlib+
+/errorreport:prompt
+/warn:8
+/define:TRACE;DEBUG;NET;NET8_0;NETCOREAPP;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NETCOREAPP1_0_OR_GREATER;NETCOREAPP1_1_OR_GREATER;NETCOREAPP2_0_OR_GREATER;NETCOREAPP2_1_OR_GREATER;NETCOREAPP2_2_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER
+/highentropyva+
+/nullable:enable
+/debug+
+/debug:portable
+/filealign:512
+/optimize-
+/out:obj\Debug\net8.0\Movie.API.dll
+/refout:obj\Debug\net8.0\refint\Movie.API.dll
+/target:exe
+/warnaserror-
+/utf8output
+/deterministic+
+/langversion:12.0
+/warnaserror+:NU1605,SYSLIB0011
+
+[sourceFiles]
+Controllers/
+ ActorsController.cs
+ AdminMovieAwardsController.cs
+ AdminTierListsController.cs
+ AdminUserAwardsController.cs
+ AdminUsersController.cs
+ AppealsController.cs
+ AuthController.cs
+ BlocksController.cs
+ CharactersController.cs
+ ChatController.cs
+ ContentFilterController.cs
+ CriticReviewsController.cs
+ ForumController.cs
+ FriendsController.cs
+ ModeratorController.cs
+ MoviePhotosController.cs
+ MoviesController.cs
+ NewsController.cs
+ NotificationsController.cs
+ ReportsController.cs
+ ReviewerApplicationsController.cs
+ ReviewsController.cs
+ SubscriptionController.cs
+ SupportController.cs
+ TierListsController.cs
+ UsersController.cs
+ WatchlistController.cs
+Data/
+ ApplicationDbContext.cs
+ DataSeeder.cs
+DTOs/
+ ActorDto.cs
+ ActorLookupDto.cs
+ ActorMovieDto.cs
+ AppealProcessDto.cs
+ ApplicationCreateDto.cs
+ AssignVoiceActorDto.cs
+ AwardDto.cs
+ BlockUserDto.cs
+ CastDto.cs
+ ChangePasswordDto.cs
+ ChangeRoleDto.cs
+ CharacterResponseDto.cs
+ ConfirmPaymentDto.cs
+ CreateCharacterWithRolesDto.cs
+ CreateMovieDto.cs
+ CreatePostDto.cs
+ CreateReviewDto.cs
+ CreateSupportTicketDto.cs
+ CreateTierListDto.cs
+ CreateTopicDto.cs
+ CriticReviewCreateDto.cs
+ EditCategoryDto.cs
+ EditMessageDto.cs
+ EditPostDto.cs
+ EditTopicDto.cs
+ EpisodeDto.cs
+ ExternalAuthDto.cs
+ ForgotPasswordDto.cs
+ ForumCategoryDto.cs
+ ForumPostDto.cs
+ ForumTopicPreviewDto.cs
+ FranchiseMovieDto.cs
+ FriendDto.cs
+ LeaderboardUserDto.cs
+ LoginDto.cs
+ MessagePinDto.cs
+ MessageReactionDto.cs
+ MessageReplyDto.cs
+ ModerateTierListDto.cs
+ MovieAwardCreateDto.cs
+ MovieDetailDto.cs
+ MovieFiltersDto.cs
+ MovieQuizResultDto.cs
+ PagedResult.cs
+ PinMessageDto.cs
+ QuizAnswerDto.cs
+ QuizDto.cs
+ QuizSubmissionDto.cs
+ ReactionRequestDto.cs
+ ReactionStatsDto.cs
+ RegisterDto.cs
+ ReplySupportTicketDto.cs
+ ReportDto.cs
+ ResetPasswordDto.cs
+ ResolveReportDto.cs
+ ReviewVote.cs
+ ReviewWithVotesDto.cs
+ SubscriptionDTO.cs
+ SupportTicketDto.cs
+ TierListDetailDto.cs
+ TierListItemDto.cs
+ TierListPreviewDto.cs
+ TmdbSearchResultDto.cs
+ UpdateReviewDto.cs
+ UpdateTitleDto.cs
+ UserAwardCreateDto.cs
+ UserAwardDto.cs
+ UserContentSettingsDto.cs
+ UserMovieStatsDto.cs
+ UserProfileDto.cs
+ UserQuizStatsDto.cs
+ UserShortDto.cs
+ UserUpdateDto.cs
+ VerifyEmailDto.cs
+ VoiceActorDto.cs
+ WatchlistDto.cs
+Hubs/
+ ChatHub.cs
+ NotificationHub.cs
+Migrations/
+ 20251213200124_InitialCreate.cs
+ 20251213200124_InitialCreate.Designer.cs
+ 20251214064245_InitialModify.cs
+ 20251214064245_InitialModify.Designer.cs
+ 20251214070509_AddData.cs
+ 20251214070509_AddData.Designer.cs
+ 20251214070959_AddData1.cs
+ 20251214070959_AddData1.Designer.cs
+ 20251214073132_AddAuth.cs
+ 20251214073132_AddAuth.Designer.cs
+ 20251214074243_FixPasswords.cs
+ 20251214074243_FixPasswords.Designer.cs
+ 20251214074841_InitialCreate2.cs
+ 20251214074841_InitialCreate2.Designer.cs
+ 20251214112056_AddAvatar.cs
+ 20251214112056_AddAvatar.Designer.cs
+ 20251215132345_AddReviewVotesFixed.cs
+ 20251215132345_AddReviewVotesFixed.Designer.cs
+ 20251215132958_AddReviewVotesFixed2.cs
+ 20251215132958_AddReviewVotesFixed2.Designer.cs
+ 20260106130708_AddReactionTypeColumn.cs
+ 20260106130708_AddReactionTypeColumn.Designer.cs
+ 20260106133218_AddReactionType.cs
+ 20260106133218_AddReactionType.Designer.cs
+ 20260106134632_AddMovieReactions.cs
+ 20260106134632_AddMovieReactions.Designer.cs
+ 20260107133303_ChangeIsWatchedToStatus.cs
+ 20260107133303_ChangeIsWatchedToStatus.Designer.cs
+ 20260113054300_AddUserBlocks.cs
+ 20260113054300_AddUserBlocks.Designer.cs
+ 20260113122255_AddMessages.cs
+ 20260113122255_AddMessages.Designer.cs
+ 20260114104357_AddMessageDeleteUserRelation.cs
+ 20260114104357_AddMessageDeleteUserRelation.Designer.cs
+ 20260116141723_AddReports.cs
+ 20260116141723_AddReports.Designer.cs
+ 20260116141846_RemoveReports.cs
+ 20260116141846_RemoveReports.Designer.cs
+ 20260116142417_FixReports.cs
+ 20260116142417_FixReports.Designer.cs
+ 20260116153202_FixReport.cs
+ 20260116153202_FixReport.Designer.cs
+ 20260117171329_AddUserStatusFields.cs
+ 20260117171329_AddUserStatusFields.Designer.cs
+ 20260118140019_AddIsReadToMessage.cs
+ 20260118140019_AddIsReadToMessage.Designer.cs
+ 20260118151810_AddIsReadToMessage2.cs
+ 20260118151810_AddIsReadToMessage2.Designer.cs
+ 20260119102453_AddIsBlockedToUser.cs
+ 20260119102453_AddIsBlockedToUser.Designer.cs
+ 20260120063845_AddReactionsToMovie.cs
+ 20260120063845_AddReactionsToMovie.Designer.cs
+ 20260122133603_AddBlockedGenres.cs
+ 20260122133603_AddBlockedGenres.Designer.cs
+ 20260125072435_AddWatchHistory.cs
+ 20260125072435_AddWatchHistory.Designer.cs
+ 20260126065450_AddSocialAuthFields.cs
+ 20260126065450_AddSocialAuthFields.Designer.cs
+ 20260130080330_AddMovieVisits.cs
+ 20260130080330_AddMovieVisits.Designer.cs
+ 20260130084745_RemovePopularity.cs
+ 20260130084745_RemovePopularity.Designer.cs
+ 20260202150750_AddPasswordResetFieldsToUser.cs
+ 20260202150750_AddPasswordResetFieldsToUser.Designer.cs
+ 20260202153346_AddUserFollows.cs
+ 20260202153346_AddUserFollows.Designer.cs
+ 20260202170237_AddSenderIdToNotification.cs
+ 20260202170237_AddSenderIdToNotification.Designer.cs
+ 20260207102405_AddEpisodes.cs
+ 20260207102405_AddEpisodes.Designer.cs
+ 20260207103030_AddisSeries.cs
+ 20260207103030_AddisSeries.Designer.cs
+ 20260207104011_ChangeLogic.cs
+ 20260207104011_ChangeLogic.Designer.cs
+ 20260208083126_UniqueEpisodeRating.cs
+ 20260208083126_UniqueEpisodeRating.Designer.cs
+ 20260216103748_AddActorsTable.cs
+ 20260216103748_AddActorsTable.Designer.cs
+ 20260216112601_AddActorsAndCast.cs
+ 20260216112601_AddActorsAndCast.Designer.cs
+ 20260302101605_AddUrlToNotifications.cs
+ 20260302101605_AddUrlToNotifications.Designer.cs
+ 20260302113358_AddUserBlockedActors.cs
+ 20260302113358_AddUserBlockedActors.Designer.cs
+ 20260303105703_AddAppealsTable.cs
+ 20260303105703_AddAppealsTable.Designer.cs
+ 20260306075741_UpdateReportResolution.cs
+ 20260306075741_UpdateReportResolution.Designer.cs
+ 20260306084545_AddViewsCountToMovies.cs
+ 20260306084545_AddViewsCountToMovies.Designer.cs
+ 20260308113009_ConfigureFranchiseRelations.cs
+ 20260308113009_ConfigureFranchiseRelations.Designer.cs
+ 20260308122157_AddFranchisesRelation.cs
+ 20260308122157_AddFranchisesRelation.Designer.cs
+ 20260322112342_AddActorDateOfBirth.cs
+ 20260322112342_AddActorDateOfBirth.Designer.cs
+ 20260322114149_RemoveActorDateOfBirth.cs
+ 20260322114149_RemoveActorDateOfBirth.Designer.cs
+ 20260323120021_AddVoiceActorsAndCharacters.cs
+ 20260323120021_AddVoiceActorsAndCharacters.Designer.cs
+ 20260404051651_AddExternalIds.cs
+ 20260404051651_AddExternalIds.Designer.cs
+ 20260404053101_AddIsMainRoleToVoiceActingRole.cs
+ 20260404053101_AddIsMainRoleToVoiceActingRole.Designer.cs
+ 20260412051515_AddMoviePhotosTable.cs
+ 20260412051515_AddMoviePhotosTable.Designer.cs
+ 20260413062241_AddNewsTable.cs
+ 20260413062241_AddNewsTable.Designer.cs
+ 20260413081602_UpdateMovieModel.cs
+ 20260413081602_UpdateMovieModel.Designer.cs
+ 20260413091421_UpdateMovieDatabaseSchema.cs
+ 20260413091421_UpdateMovieDatabaseSchema.Designer.cs
+ 20260430131425_AddCriticReviewRelations.cs
+ 20260430131425_AddCriticReviewRelations.Designer.cs
+ 20260430140550_AddReviewerApplications.cs
+ 20260430140550_AddReviewerApplications.Designer.cs
+ 20260502073240_AddAwardsSystem.cs
+ 20260502073240_AddAwardsSystem.Designer.cs
+ 20260503094349_AddSelectedTitle.cs
+ 20260503094349_AddSelectedTitle.Designer.cs
+ 20260503102558_FixSelectedAwardForeignKey.cs
+ 20260503102558_FixSelectedAwardForeignKey.Designer.cs
+ 20260506140225_AddTierLists.cs
+ 20260506140225_AddTierLists.Designer.cs
+ 20260507044442_AddForumSystem.cs
+ 20260507044442_AddForumSystem.Designer.cs
+ 20260508052801_AddCategoryModeration.cs
+ 20260508052801_AddCategoryModeration.Designer.cs
+ 20260508062407_AddNestedPosts.cs
+ 20260508062407_AddNestedPosts.Designer.cs
+ 20260508065858_AddTierListCustomization.cs
+ 20260508065858_AddTierListCustomization.Designer.cs
+ 20260509093350_AddPremiumStatus.cs
+ 20260509093350_AddPremiumStatus.Designer.cs
+ 20260509121024_AddTierListReactions.cs
+ 20260509121024_AddTierListReactions.Designer.cs
+ 20260509125549_AddReactionsAndFixAppeals.cs
+ 20260509125549_AddReactionsAndFixAppeals.Designer.cs
+ 20260511070230_AddMovieQuizResults.cs
+ 20260511070230_AddMovieQuizResults.Designer.cs
+ 20260513050858_AddChatCustomization.cs
+ 20260513050858_AddChatCustomization.Designer.cs
+ 20260513054349_RemoveMessageEffectField.cs
+ 20260513054349_RemoveMessageEffectField.Designer.cs
+ 20260513142430_AddIsPinForSelfToMessagePin.cs
+ 20260513142430_AddIsPinForSelfToMessagePin.Designer.cs
+ 20260514052236_AddSupportTickets.cs
+ 20260514052236_AddSupportTickets.Designer.cs
+ 20260514052357_AddSupportTickets1.cs
+ 20260514052357_AddSupportTickets1.Designer.cs
+ 20260514053807_AddTicketReplies.cs
+ 20260514053807_AddTicketReplies.Designer.cs
+ 20260515170035_AddEmailVerification.cs
+ 20260515170035_AddEmailVerification.Designer.cs
+ 20260516132229_AddTestScoreToUser.cs
+ 20260516132229_AddTestScoreToUser.Designer.cs
+ ApplicationDbContextModelSnapshot.cs
+Models/
+ Actor.cs
+ Appeal.cs
+ Character.cs
+ CreateForumCategoryDto.cs
+ CriticReview.cs
+ Enums/
+  AppealStatus.cs
+  FriendshipStatus.cs
+  ReactionType.cs
+  TierListStatus.cs
+  WatchStatus.cs
+ Episode.cs
+ ForumCategory.cs
+ ForumPost.cs
+ ForumTopic.cs
+ Franchise.cs
+ Friendship.cs
+ Jikan/
+  JikanCharacterData.cs
+  JikanCharacterResponse.cs
+  JikanEntity.cs
+  JikanImages.cs
+  JikanJpg.cs
+  JikanVoiceActor.cs
+ Message.cs
+ MessageDelete.cs
+ MessagePin.cs
+ MessageReaction.cs
+ MessageReadStatus.cs
+ MessageReply.cs
+ MovieActor.cs
+ MovieAward.cs
+ MovieEntity.cs
+ MoviePhoto.cs
+ MovieQuizResult.cs
+ MovieReaction.cs
+ NewsItem.cs
+ Notification.cs
+ Report.cs
+ Review.cs
+ ReviewerApplication.cs
+ SupportTicket.cs
+ TierList.cs
+ TierListItem.cs
+ TierListReaction.cs
+ TMdb/
+  TmdbCast.cs
+  TmdbCredits.cs
+  TmdbMovieResult.cs
+  TmdbSearchResult.cs
+ User.cs
+ UserAward.cs
+ UserBlock.cs
+ UserBlockedActor.cs
+ UserEpisodeRating.cs
+ UserFollow.cs
+ VoiceActingRole.cs
+ WatchHistoryItem.cs
+ Watchlist.cs
+obj/Debug/net8.0/
+ .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
+ Movie.API.AssemblyInfo.cs
+ Movie.API.GlobalUsings.g.cs
+Program.cs
+Services/
+ CustomUserIdProvider.cs
+ EmailService.cs
+ EmailSettings.cs
+ IEmailService.cs
+ MalIntegrationService.cs
+SignalR/NameIdentifierUserIdProvider.cs
+
+[metadataReferences]
+<DOTNET>/packs/Microsoft.AspNetCore.App.Ref/8.0.19/ref/net8.0/
+ Microsoft.AspNetCore.Antiforgery.dll
+ Microsoft.AspNetCore.Authentication.Abstractions.dll
+ Microsoft.AspNetCore.Authentication.BearerToken.dll
+ Microsoft.AspNetCore.Authentication.Cookies.dll
+ Microsoft.AspNetCore.Authentication.Core.dll
+ Microsoft.AspNetCore.Authentication.dll
+ Microsoft.AspNetCore.Authentication.OAuth.dll
+ Microsoft.AspNetCore.Authorization.dll
+ Microsoft.AspNetCore.Authorization.Policy.dll
+ Microsoft.AspNetCore.Components.Authorization.dll
+ Microsoft.AspNetCore.Components.dll
+ Microsoft.AspNetCore.Components.Endpoints.dll
+ Microsoft.AspNetCore.Components.Forms.dll
+ Microsoft.AspNetCore.Components.Server.dll
+ Microsoft.AspNetCore.Components.Web.dll
+ Microsoft.AspNetCore.Connections.Abstractions.dll
+ Microsoft.AspNetCore.CookiePolicy.dll
+ Microsoft.AspNetCore.Cors.dll
+ Microsoft.AspNetCore.DataProtection.Abstractions.dll
+ Microsoft.AspNetCore.DataProtection.dll
+ Microsoft.AspNetCore.DataProtection.Extensions.dll
+ Microsoft.AspNetCore.Diagnostics.Abstractions.dll
+ Microsoft.AspNetCore.Diagnostics.dll
+ Microsoft.AspNetCore.Diagnostics.HealthChecks.dll
+ Microsoft.AspNetCore.dll
+ Microsoft.AspNetCore.HostFiltering.dll
+ Microsoft.AspNetCore.Hosting.Abstractions.dll
+ Microsoft.AspNetCore.Hosting.dll
+ Microsoft.AspNetCore.Hosting.Server.Abstractions.dll
+ Microsoft.AspNetCore.Html.Abstractions.dll
+ Microsoft.AspNetCore.Http.Abstractions.dll
+ Microsoft.AspNetCore.Http.Connections.Common.dll
+ Microsoft.AspNetCore.Http.Connections.dll
+ Microsoft.AspNetCore.Http.dll
+ Microsoft.AspNetCore.Http.Extensions.dll
+ Microsoft.AspNetCore.Http.Features.dll
+ Microsoft.AspNetCore.Http.Results.dll
+ Microsoft.AspNetCore.HttpLogging.dll
+ Microsoft.AspNetCore.HttpOverrides.dll
+ Microsoft.AspNetCore.HttpsPolicy.dll
+ Microsoft.AspNetCore.Identity.dll
+ Microsoft.AspNetCore.Localization.dll
+ Microsoft.AspNetCore.Localization.Routing.dll
+ Microsoft.AspNetCore.Metadata.dll
+ Microsoft.AspNetCore.Mvc.Abstractions.dll
+ Microsoft.AspNetCore.Mvc.ApiExplorer.dll
+ Microsoft.AspNetCore.Mvc.Core.dll
+ Microsoft.AspNetCore.Mvc.Cors.dll
+ Microsoft.AspNetCore.Mvc.DataAnnotations.dll
+ Microsoft.AspNetCore.Mvc.dll
+ Microsoft.AspNetCore.Mvc.Formatters.Json.dll
+ Microsoft.AspNetCore.Mvc.Formatters.Xml.dll
+ Microsoft.AspNetCore.Mvc.Localization.dll
+ Microsoft.AspNetCore.Mvc.Razor.dll
+ Microsoft.AspNetCore.Mvc.RazorPages.dll
+ Microsoft.AspNetCore.Mvc.TagHelpers.dll
+ Microsoft.AspNetCore.Mvc.ViewFeatures.dll
+ Microsoft.AspNetCore.OutputCaching.dll
+ Microsoft.AspNetCore.RateLimiting.dll
+ Microsoft.AspNetCore.Razor.dll
+ Microsoft.AspNetCore.Razor.Runtime.dll
+ Microsoft.AspNetCore.RequestDecompression.dll
+ Microsoft.AspNetCore.ResponseCaching.Abstractions.dll
+ Microsoft.AspNetCore.ResponseCaching.dll
+ Microsoft.AspNetCore.ResponseCompression.dll
+ Microsoft.AspNetCore.Rewrite.dll
+ Microsoft.AspNetCore.Routing.Abstractions.dll
+ Microsoft.AspNetCore.Routing.dll
+ Microsoft.AspNetCore.Server.HttpSys.dll
+ Microsoft.AspNetCore.Server.IIS.dll
+ Microsoft.AspNetCore.Server.IISIntegration.dll
+ Microsoft.AspNetCore.Server.Kestrel.Core.dll
+ Microsoft.AspNetCore.Server.Kestrel.dll
+ Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.dll
+ Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.dll
+ Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.dll
+ Microsoft.AspNetCore.Session.dll
+ Microsoft.AspNetCore.SignalR.Common.dll
+ Microsoft.AspNetCore.SignalR.Core.dll
+ Microsoft.AspNetCore.SignalR.dll
+ Microsoft.AspNetCore.SignalR.Protocols.Json.dll
+ Microsoft.AspNetCore.StaticFiles.dll
+ Microsoft.AspNetCore.WebSockets.dll
+ Microsoft.AspNetCore.WebUtilities.dll
+ Microsoft.Extensions.Caching.Abstractions.dll
+ Microsoft.Extensions.Caching.Memory.dll
+ Microsoft.Extensions.Configuration.Abstractions.dll
+ Microsoft.Extensions.Configuration.Binder.dll
+ Microsoft.Extensions.Configuration.CommandLine.dll
+ Microsoft.Extensions.Configuration.dll
+ Microsoft.Extensions.Configuration.EnvironmentVariables.dll
+ Microsoft.Extensions.Configuration.FileExtensions.dll
+ Microsoft.Extensions.Configuration.Ini.dll
+ Microsoft.Extensions.Configuration.Json.dll
+ Microsoft.Extensions.Configuration.KeyPerFile.dll
+ Microsoft.Extensions.Configuration.UserSecrets.dll
+ Microsoft.Extensions.Configuration.Xml.dll
+ Microsoft.Extensions.DependencyInjection.Abstractions.dll
+ Microsoft.Extensions.DependencyInjection.dll
+ Microsoft.Extensions.Diagnostics.Abstractions.dll
+ Microsoft.Extensions.Diagnostics.dll
+ Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.dll
+ Microsoft.Extensions.Diagnostics.HealthChecks.dll
+ Microsoft.Extensions.Features.dll
+ Microsoft.Extensions.FileProviders.Abstractions.dll
+ Microsoft.Extensions.FileProviders.Composite.dll
+ Microsoft.Extensions.FileProviders.Embedded.dll
+ Microsoft.Extensions.FileProviders.Physical.dll
+ Microsoft.Extensions.FileSystemGlobbing.dll
+ Microsoft.Extensions.Hosting.Abstractions.dll
+ Microsoft.Extensions.Hosting.dll
+ Microsoft.Extensions.Http.dll
+ Microsoft.Extensions.Localization.Abstractions.dll
+ Microsoft.Extensions.Localization.dll
+ Microsoft.Extensions.Logging.Abstractions.dll
+ Microsoft.Extensions.Logging.Configuration.dll
+ Microsoft.Extensions.Logging.Console.dll
+ Microsoft.Extensions.Logging.Debug.dll
+ Microsoft.Extensions.Logging.dll
+ Microsoft.Extensions.Logging.EventLog.dll
+ Microsoft.Extensions.Logging.EventSource.dll
+ Microsoft.Extensions.Logging.TraceSource.dll
+ Microsoft.Extensions.ObjectPool.dll
+ Microsoft.Extensions.Options.ConfigurationExtensions.dll
+ Microsoft.Extensions.Options.DataAnnotations.dll
+ Microsoft.Extensions.Options.dll
+ Microsoft.Extensions.Primitives.dll
+ Microsoft.Extensions.WebEncoders.dll
+ Microsoft.JSInterop.dll
+ Microsoft.Net.Http.Headers.dll
+ System.Diagnostics.EventLog.dll
+ System.IO.Pipelines.dll
+ System.Security.Cryptography.Xml.dll
+ System.Threading.RateLimiting.dll
+<DOTNET>/packs/Microsoft.NETCore.App.Ref/8.0.19/ref/net8.0/
+ Microsoft.CSharp.dll
+ Microsoft.VisualBasic.Core.dll
+ Microsoft.VisualBasic.dll
+ Microsoft.Win32.Primitives.dll
+ Microsoft.Win32.Registry.dll
+ mscorlib.dll
+ netstandard.dll
+ System.AppContext.dll
+ System.Buffers.dll
+ System.Collections.Concurrent.dll
+ System.Collections.dll
+ System.Collections.Immutable.dll
+ System.Collections.NonGeneric.dll
+ System.Collections.Specialized.dll
+ System.ComponentModel.Annotations.dll
+ System.ComponentModel.DataAnnotations.dll
+ System.ComponentModel.dll
+ System.ComponentModel.EventBasedAsync.dll
+ System.ComponentModel.Primitives.dll
+ System.ComponentModel.TypeConverter.dll
+ System.Configuration.dll
+ System.Console.dll
+ System.Core.dll
+ System.Data.Common.dll
+ System.Data.DataSetExtensions.dll
+ System.Data.dll
+ System.Diagnostics.Contracts.dll
+ System.Diagnostics.Debug.dll
+ System.Diagnostics.DiagnosticSource.dll
+ System.Diagnostics.FileVersionInfo.dll
+ System.Diagnostics.Process.dll
+ System.Diagnostics.StackTrace.dll
+ System.Diagnostics.TextWriterTraceListener.dll
+ System.Diagnostics.Tools.dll
+ System.Diagnostics.TraceSource.dll
+ System.Diagnostics.Tracing.dll
+ System.dll
+ System.Drawing.dll
+ System.Drawing.Primitives.dll
+ System.Dynamic.Runtime.dll
+ System.Formats.Asn1.dll
+ System.Formats.Tar.dll
+ System.Globalization.Calendars.dll
+ System.Globalization.dll
+ System.Globalization.Extensions.dll
+ System.IO.Compression.Brotli.dll
+ System.IO.Compression.dll
+ System.IO.Compression.FileSystem.dll
+ System.IO.Compression.ZipFile.dll
+ System.IO.dll
+ System.IO.FileSystem.AccessControl.dll
+ System.IO.FileSystem.dll
+ System.IO.FileSystem.DriveInfo.dll
+ System.IO.FileSystem.Primitives.dll
+ System.IO.FileSystem.Watcher.dll
+ System.IO.IsolatedStorage.dll
+ System.IO.MemoryMappedFiles.dll
+ System.IO.Pipes.AccessControl.dll
+ System.IO.Pipes.dll
+ System.IO.UnmanagedMemoryStream.dll
+ System.Linq.dll
+ System.Linq.Expressions.dll
+ System.Linq.Parallel.dll
+ System.Linq.Queryable.dll
+ System.Memory.dll
+ System.Net.dll
+ System.Net.Http.dll
+ System.Net.Http.Json.dll
+ System.Net.HttpListener.dll
+ System.Net.Mail.dll
+ System.Net.NameResolution.dll
+ System.Net.NetworkInformation.dll
+ System.Net.Ping.dll
+ System.Net.Primitives.dll
+ System.Net.Quic.dll
+ System.Net.Requests.dll
+ System.Net.Security.dll
+ System.Net.ServicePoint.dll
+ System.Net.Sockets.dll
+ System.Net.WebClient.dll
+ System.Net.WebHeaderCollection.dll
+ System.Net.WebProxy.dll
+ System.Net.WebSockets.Client.dll
+ System.Net.WebSockets.dll
+ System.Numerics.dll
+ System.Numerics.Vectors.dll
+ System.ObjectModel.dll
+ System.Reflection.DispatchProxy.dll
+ System.Reflection.dll
+ System.Reflection.Emit.dll
+ System.Reflection.Emit.ILGeneration.dll
+ System.Reflection.Emit.Lightweight.dll
+ System.Reflection.Extensions.dll
+ System.Reflection.Metadata.dll
+ System.Reflection.Primitives.dll
+ System.Reflection.TypeExtensions.dll
+ System.Resources.Reader.dll
+ System.Resources.ResourceManager.dll
+ System.Resources.Writer.dll
+ System.Runtime.CompilerServices.Unsafe.dll
+ System.Runtime.CompilerServices.VisualC.dll
+ System.Runtime.dll
+ System.Runtime.Extensions.dll
+ System.Runtime.Handles.dll
+ System.Runtime.InteropServices.dll
+ System.Runtime.InteropServices.JavaScript.dll
+ System.Runtime.InteropServices.RuntimeInformation.dll
+ System.Runtime.Intrinsics.dll
+ System.Runtime.Loader.dll
+ System.Runtime.Numerics.dll
+ System.Runtime.Serialization.dll
+ System.Runtime.Serialization.Formatters.dll
+ System.Runtime.Serialization.Json.dll
+ System.Runtime.Serialization.Primitives.dll
+ System.Runtime.Serialization.Xml.dll
+ System.Security.AccessControl.dll
+ System.Security.Claims.dll
+ System.Security.Cryptography.Algorithms.dll
+ System.Security.Cryptography.Cng.dll
+ System.Security.Cryptography.Csp.dll
+ System.Security.Cryptography.dll
+ System.Security.Cryptography.Encoding.dll
+ System.Security.Cryptography.OpenSsl.dll
+ System.Security.Cryptography.Primitives.dll
+ System.Security.Cryptography.X509Certificates.dll
+ System.Security.dll
+ System.Security.Principal.dll
+ System.Security.Principal.Windows.dll
+ System.Security.SecureString.dll
+ System.ServiceModel.Web.dll
+ System.ServiceProcess.dll
+ System.Text.Encoding.CodePages.dll
+ System.Text.Encoding.dll
+ System.Text.Encoding.Extensions.dll
+ System.Text.Encodings.Web.dll
+ System.Text.Json.dll
+ System.Text.RegularExpressions.dll
+ System.Threading.Channels.dll
+ System.Threading.dll
+ System.Threading.Overlapped.dll
+ System.Threading.Tasks.Dataflow.dll
+ System.Threading.Tasks.dll
+ System.Threading.Tasks.Extensions.dll
+ System.Threading.Tasks.Parallel.dll
+ System.Threading.Thread.dll
+ System.Threading.ThreadPool.dll
+ System.Threading.Timer.dll
+ System.Transactions.dll
+ System.Transactions.Local.dll
+ System.ValueTuple.dll
+ System.Web.dll
+ System.Web.HttpUtility.dll
+ System.Windows.dll
+ System.Xml.dll
+ System.Xml.Linq.dll
+ System.Xml.ReaderWriter.dll
+ System.Xml.Serialization.dll
+ System.Xml.XDocument.dll
+ System.Xml.XmlDocument.dll
+ System.Xml.XmlSerializer.dll
+ System.Xml.XPath.dll
+ System.Xml.XPath.XDocument.dll
+ WindowsBase.dll
+<NUGET>/
+ azure.core/1.38.0/lib/net6.0/Azure.Core.dll
+ azure.identity/1.11.4/lib/netstandard2.0/Azure.Identity.dll
+ bcrypt.net-next/4.0.3/lib/net6.0/BCrypt.Net-Next.dll
+ bogus/35.6.5/lib/net6.0/Bogus.dll
+ google.apis.auth/1.73.0/lib/net6.0/Google.Apis.Auth.dll
+ google.apis.core/1.73.0/lib/net6.0/Google.Apis.Core.dll
+ google.apis/1.73.0/lib/net6.0/Google.Apis.dll
+ gtranslate/2.3.1/lib/net8.0/GTranslate.dll
+ microsoft.aspnetcore.authentication.jwtbearer/8.0.11/lib/net8.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll
+ microsoft.aspnetcore.cryptography.internal/8.0.22/lib/net8.0/Microsoft.AspNetCore.Cryptography.Internal.dll
+ microsoft.aspnetcore.cryptography.keyderivation/8.0.22/lib/net8.0/Microsoft.AspNetCore.Cryptography.KeyDerivation.dll
+ microsoft.aspnetcore.identity.entityframeworkcore/8.0.22/lib/net8.0/Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
+ microsoft.aspnetcore.openapi/8.0.19/lib/net8.0/Microsoft.AspNetCore.OpenApi.dll
+ microsoft.bcl.asyncinterfaces/6.0.0/lib/netstandard2.1/Microsoft.Bcl.AsyncInterfaces.dll
+ microsoft.data.sqlclient/5.1.6/ref/net6.0/Microsoft.Data.SqlClient.dll
+ microsoft.entityframeworkcore.abstractions/8.0.22/lib/net8.0/Microsoft.EntityFrameworkCore.Abstractions.dll
+ microsoft.entityframeworkcore.inmemory/8.0.22/lib/net8.0/Microsoft.EntityFrameworkCore.InMemory.dll
+ microsoft.entityframeworkcore.relational/8.0.22/lib/net8.0/Microsoft.EntityFrameworkCore.Relational.dll
+ microsoft.entityframeworkcore.sqlserver/8.0.22/lib/net8.0/Microsoft.EntityFrameworkCore.SqlServer.dll
+ microsoft.entityframeworkcore/8.0.22/lib/net8.0/Microsoft.EntityFrameworkCore.dll
+ microsoft.extensions.identity.core/8.0.22/lib/net8.0/Microsoft.Extensions.Identity.Core.dll
+ microsoft.extensions.identity.stores/8.0.22/lib/net8.0/Microsoft.Extensions.Identity.Stores.dll
+ microsoft.identity.client.extensions.msal/4.61.3/lib/net6.0/Microsoft.Identity.Client.Extensions.Msal.dll
+ microsoft.identity.client/4.61.3/lib/net6.0/Microsoft.Identity.Client.dll
+ microsoft.identitymodel.abstractions/7.1.2/lib/net8.0/Microsoft.IdentityModel.Abstractions.dll
+ microsoft.identitymodel.jsonwebtokens/7.1.2/lib/net8.0/Microsoft.IdentityModel.JsonWebTokens.dll
+ microsoft.identitymodel.logging/7.1.2/lib/net8.0/Microsoft.IdentityModel.Logging.dll
+ microsoft.identitymodel.protocols.openidconnect/7.1.2/lib/net8.0/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+ microsoft.identitymodel.protocols/7.1.2/lib/net8.0/Microsoft.IdentityModel.Protocols.dll
+ microsoft.identitymodel.tokens/7.1.2/lib/net8.0/Microsoft.IdentityModel.Tokens.dll
+ microsoft.openapi/1.6.14/lib/netstandard2.0/Microsoft.OpenApi.dll
+ microsoft.sqlserver.server/1.0.0/lib/netstandard2.0/Microsoft.SqlServer.Server.dll
+ newtonsoft.json/13.0.4/lib/net6.0/Newtonsoft.Json.dll
+ stripe.net/51.1.0/lib/net8.0/Stripe.net.dll
+ swashbuckle.aspnetcore.swagger/6.6.2/lib/net8.0/Swashbuckle.AspNetCore.Swagger.dll
+ swashbuckle.aspnetcore.swaggergen/6.6.2/lib/net8.0/Swashbuckle.AspNetCore.SwaggerGen.dll
+ swashbuckle.aspnetcore.swaggerui/6.6.2/lib/net8.0/Swashbuckle.AspNetCore.SwaggerUI.dll
+ system.clientmodel/1.0.0/lib/net6.0/System.ClientModel.dll
+ system.codedom/7.0.0/lib/net7.0/System.CodeDom.dll
+ system.configuration.configurationmanager/8.0.0/lib/net8.0/System.Configuration.ConfigurationManager.dll
+ system.identitymodel.tokens.jwt/7.1.2/lib/net8.0/System.IdentityModel.Tokens.Jwt.dll
+ system.management/7.0.2/lib/net7.0/System.Management.dll
+ system.memory.data/1.0.2/lib/netstandard2.0/System.Memory.Data.dll
+ system.security.cryptography.protecteddata/8.0.0/lib/net8.0/System.Security.Cryptography.ProtectedData.dll
+
+[analyzerReferences]
+<DOTNET>/packs/Microsoft.AspNetCore.App.Ref/8.0.19/analyzers/dotnet/cs/
+ Microsoft.AspNetCore.App.Analyzers.dll
+ Microsoft.AspNetCore.App.CodeFixes.dll
+ Microsoft.AspNetCore.Components.Analyzers.dll
+<DOTNET>/packs/Microsoft.AspNetCore.App.Ref/8.0.19/analyzers/dotnet/roslyn4.4/cs/
+ Microsoft.Extensions.Logging.Generators.dll
+ Microsoft.Extensions.Options.SourceGeneration.dll
+<DOTNET>/packs/Microsoft.NETCore.App.Ref/8.0.19/analyzers/dotnet/cs/
+ Microsoft.Interop.ComInterfaceGenerator.dll
+ Microsoft.Interop.JavaScript.JSImportGenerator.dll
+ Microsoft.Interop.LibraryImportGenerator.dll
+ Microsoft.Interop.SourceGeneration.dll
+ System.Text.Json.SourceGeneration.dll
+ System.Text.RegularExpressions.Generator.dll
+<DOTNET>/sdk/9.0.304/Sdks/Microsoft.NET.Sdk.Razor/source-generators/
+ Microsoft.AspNetCore.Razor.Utilities.Shared.dll
+ Microsoft.CodeAnalysis.Razor.Compiler.dll
+ Microsoft.Extensions.ObjectPool.dll
+ System.Collections.Immutable.dll
+<DOTNET>/sdk/9.0.304/Sdks/Microsoft.NET.Sdk.Web/analyzers/cs/
+ Microsoft.AspNetCore.Analyzers.dll
+ Microsoft.AspNetCore.Mvc.Analyzers.dll
+<DOTNET>/sdk/9.0.304/Sdks/Microsoft.NET.Sdk/analyzers/
+ Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll
+ Microsoft.CodeAnalysis.NetAnalyzers.dll
+<NUGET>/microsoft.codeanalysis.analyzers/3.3.3/analyzers/dotnet/cs/
+ Microsoft.CodeAnalysis.Analyzers.dll
+ Microsoft.CodeAnalysis.CSharp.Analyzers.dll
+<NUGET>/microsoft.entityframeworkcore.analyzers/8.0.22/analyzers/dotnet/cs/Microsoft.EntityFrameworkCore.Analyzers.dll
+
+[analyzerConfigFiles]
+<DOTNET>/sdk/9.0.304/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_default.globalconfig
+obj/Debug/net8.0/Movie.API.GeneratedMSBuildEditorConfig.editorconfig

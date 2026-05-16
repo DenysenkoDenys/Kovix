@@ -41,5 +41,6 @@ namespace Movie.API.Models
         public bool IsEmailVerified { get; set; } = false;
         public string? EmailVerificationCode { get; set; }
         public DateTime? EmailVerificationCodeExpiry { get; set; }
+        public int TestScore { get; set; } = 0;
     }
 }

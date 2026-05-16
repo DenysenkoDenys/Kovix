@@ -56,7 +56,8 @@ export const moviesAPI = {
   incrementView: (id) => api.post(`/movies/${id}/increment-view`),
   getFranchises: () => api.get('/movies/franchises'),
   getLatestReleases: () => api.get('/movies/latest-releases'),
-  getSimilar: (id) => api.get(`/movies/${id}/similar`)
+  getSimilar: (id) => api.get(`/movies/${id}/similar`),
+  getRecommended: () => api.get('/movies/recommended')
 };
 
 export const reviewsAPI = {
@@ -97,7 +98,8 @@ export const usersAPI = {
   unfollow: (id) => api.delete(`/users/${id}/unfollow`),
   getFollowers: (id) => api.get(`/users/${id}/followers`),
   getFollowing: (id) => api.get(`/users/${id}/following`),
-  block: (id) => api.put(`/users/${id}/block`)
+  block: (id) => api.put(`/users/${id}/block`),
+  getLeaderboard: (type = 'reviews', limit = 50) => api.get(`/users/leaderboard?type=${type}&limit=${limit}`)
 };
 
 export const friendsAPI = {

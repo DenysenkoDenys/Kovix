@@ -7,6 +7,7 @@ import MovieCard from '../components/MovieCard';
 import RecentlyViewed from '../components/RecentlyViewed';
 import PopularActors from '../components/PopularActors';
 import HeroBanner from '../components/HeroBanner';
+import RecommendedSection from '../components/RecommendedSection';
 import SlickSlider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -277,6 +278,8 @@ function HomePage() {
       <RecentlyViewed />
 
       <PopularActors />
+
+      <RecommendedSection />
 
       <Modal
         show={showTrailer}

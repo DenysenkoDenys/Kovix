@@ -59,6 +59,7 @@ import MembershipPage from './pages/MembershipPage';
 import PaymentSuccessPage from './pages/PaymentSuccessPage';
 import FAQPage from './pages/FAQPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
+import LeaderboardPage from './pages/LeaderboardPage';
 import SupportWidget from './components/SupportWidget';
 
 import { useEffect } from 'react';
@@ -112,6 +113,7 @@ function App() {
                   <Route path="/membership" element={<MembershipPage />} />
                   <Route path="/payment/success" element={<PaymentSuccessPage />} />
                   <Route path="/verify-email" element={<VerifyEmailPage />} />
+                  <Route path="/leaderboard" element={<LeaderboardPage />} />
                   <Route
                     path="/movies/:movieId"
                     element={

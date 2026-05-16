@@ -433,5 +433,68 @@ namespace Movie.API.Controllers
                 return StatusCode(500, new { message = "Помилка при розрахунку статистики", details = ex.Message });
             }
         }
+
+        [HttpGet("leaderboard")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetLeaderboard([FromQuery] string type = "reviews", [FromQuery] int limit = 50)
+        {
+            try
+            {
+                var query = _context.Users
+                    .AsNoTracking()
+                    .Where(u => !u.IsBlocked);
+
+                if (type == "tests")
+                {
+                    var testLeaders = await query
+                        .Where(u => u.TestScore > 0)
+                        .OrderByDescending(u => u.TestScore)
+                        .Take(limit)
+                        .Select(u => new LeaderboardUserDto
+                        {
+                            Id = u.Id,
+                            Username = u.Username,
+                            AvatarUrl = u.AvatarUrl,
+                            Role = u.Role,
+                            ReviewsCount = u.Reviews.Count,
+                            TestScore = u.TestScore,
+                            SelectedAwardIcon = u.SelectedAward.Icon,
+                            SelectedAwardName = u.SelectedAward.Name
+                        })
+                        .ToListAsync();
+
+                    return Ok(testLeaders);
+                }
+                else
+                {
+                    var reviewLeaders = await query
+                        .Where(u => u.Reviews.Count > 0)
+                        .OrderByDescending(u => u.Reviews.Count)
+                        .Take(limit)
+                        .Select(u => new LeaderboardUserDto
+                        {
+                            Id = u.Id,
+                            Username = u.Username,
+                            AvatarUrl = u.AvatarUrl,
+                            Role = u.Role,
+                            ReviewsCount = u.Reviews.Count,
+                            TestScore = u.TestScore,
+                            SelectedAwardIcon = u.SelectedAward.Icon,
+                            SelectedAwardName = u.SelectedAward.Name
+                        })
+                        .ToListAsync();
+
+                    return Ok(reviewLeaders);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\n❌ ПОМИЛКА ЛІДЕРБОРДУ: {ex.Message}");
+                if (ex.InnerException != null)
+                    Console.WriteLine($"🔍 ДЕТАЛІ SQL: {ex.InnerException.Message}");
+
+                return StatusCode(500, new { message = "Помилка сервера", details = ex.Message });
+            }
+        }
     }
 }
