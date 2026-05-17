@@ -208,6 +208,24 @@ export const newsAPI = {
   delete: (id) => api.delete(`/news/${id}`)
 };
 
+export const newsPostsAPI = {
+  getAll: (page = 1, pageSize = 9, search = '', publishedOnly = false) => 
+      api.get('/newsposts', { params: { page, pageSize, search, publishedOnly } }),
+      
+  getById: (id) => api.get(`/newsposts/${id}`),
+  update: (id, data) => api.put(`/newsposts/${id}`, data),
+  create: (data) => api.post('/newsposts', data),
+  delete: (id) => api.delete(`/newsposts/${id}`),
+  getLatest: (limit = 3) => api.get(`/newsposts/latest?limit=${limit}`),
+  upload: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/newsposts/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  }
+};
+
 export const criticReviewsAPI = {
   getByMovie: (movieId) => api.get(`/criticreviews/movie/${movieId}`),
   create: (data) => api.post('/criticreviews', data),

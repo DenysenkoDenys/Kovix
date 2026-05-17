@@ -75,7 +75,7 @@ function Navigation() {
             <img
               src={logoImg}
               alt="Kovix Logo"
-              height="50" 
+              height="50"
               className="d-inline-block align-top"
               style={{ objectFit: 'contain' }}
             />
@@ -207,6 +207,10 @@ function Navigation() {
                       🕰️ Історія
                     </NavDropdown.Item>
 
+                    <NavDropdown.Item as={Link} to="/newsposts">
+                      📰 Новини
+                    </NavDropdown.Item>
+
                     {isAdmin() && (
                       <>
                         <NavDropdown.Divider />
@@ -236,6 +240,10 @@ function Navigation() {
 
                         <NavDropdown.Item as={Link} to="/admin/appeals" className="text-info">
                           ⚖️ Апеляції
+                        </NavDropdown.Item>
+
+                        <NavDropdown.Item as={Link} to="/admin/news" className="text-info">
+                          📰 Керування новинами
                         </NavDropdown.Item>
                       </>
                     )}

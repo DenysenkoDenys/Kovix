@@ -60,6 +60,9 @@ import PaymentSuccessPage from './pages/PaymentSuccessPage';
 import FAQPage from './pages/FAQPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
 import LeaderboardPage from './pages/LeaderboardPage';
+import NewsDetailPage from './pages/NewsDetailPage';
+import AdminNewsPage from './pages/AdminNewsPage';
+import AllNewsPage from './pages/AllNewsPage';
 import SupportWidget from './components/SupportWidget';
 
 import { useEffect } from 'react';
@@ -78,120 +81,127 @@ function App() {
           <FriendsProvider>
             <AchievementProvider>
               <Router>
-              <div className="App">
-                <PromoBanner />
-                <NewsBanner />
-                <Navigation />
-                <Routes>
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/movie/:id" element={<MovieDetailPage />} />
-                  <Route path="/search" element={<SearchPage />} />
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/register" element={<RegisterPage />} />
-                  <Route path="/profile" element={<ProfilePage />} />
-                  <Route path="/movies" element={<AllMoviesPage />} />
-                  <Route path="/my-lists" element={<MyListsPage />} />
-                  <Route path="/admin/reports" element={<AdminReportsPage />} />
-                  <Route path="/top" element={<TopMoviesPage />} />
-                  <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                  <Route path="/reset-password" element={<ResetPasswordPage />} />
-                  <Route path="/my-reviews" element={<UserReviewsPage />} />
-                  <Route path="/actors" element={<ActorsPage />} />
-                  <Route path="/actors/:id" element={<ActorDetailPage />} />
-                  <Route path="/character/:id" element={<CharacterDetailPage />} />
-                  <Route path="/voice-actor/:id" element={<VoiceActorDetailPage />} />
-                  <Route path="/movie/:id/cast" element={<MovieCastPage />} />
-                  <Route path="/privacy" element={<PrivacyPage />} />
-                  <Route path="/terms" element={<TermsPage />} />
-                  <Route path="/news/:id" element={<NewsDetailsPage />} />
-                  <Route path="/news" element={<NewsPage />} />
-                  <Route path="/movie/:id/critic-reviews" element={<CriticReviewsPage />} />
-                  <Route path="/forum" element={<ForumPage />} />
-                  <Route path="/forum/category/:id" element={<ForumCategoryPage />} />
-                  <Route path="/forum/topic/:id" element={<ForumTopicPage />} />
-                  <Route path="/admin/forum-moderation" element={<AdminForumModerationPage />} />
-                  <Route path="/membership" element={<MembershipPage />} />
-                  <Route path="/payment/success" element={<PaymentSuccessPage />} />
-                  <Route path="/verify-email" element={<VerifyEmailPage />} />
-                  <Route path="/leaderboard" element={<LeaderboardPage />} />
-                  <Route
-                    path="/movies/:movieId"
-                    element={
+                <div className="App">
+                  <PromoBanner />
+                  <NewsBanner />
+                  <Navigation />
+                  <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/movie/:id" element={<MovieDetailPage />} />
+                    <Route path="/search" element={<SearchPage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
+                    <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/movies" element={<AllMoviesPage />} />
+                    <Route path="/my-lists" element={<MyListsPage />} />
+                    <Route path="/admin/reports" element={<AdminReportsPage />} />
+                    <Route path="/top" element={<TopMoviesPage />} />
+                    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                    <Route path="/reset-password" element={<ResetPasswordPage />} />
+                    <Route path="/my-reviews" element={<UserReviewsPage />} />
+                    <Route path="/actors" element={<ActorsPage />} />
+                    <Route path="/actors/:id" element={<ActorDetailPage />} />
+                    <Route path="/character/:id" element={<CharacterDetailPage />} />
+                    <Route path="/voice-actor/:id" element={<VoiceActorDetailPage />} />
+                    <Route path="/movie/:id/cast" element={<MovieCastPage />} />
+                    <Route path="/privacy" element={<PrivacyPage />} />
+                    <Route path="/terms" element={<TermsPage />} />
+                    <Route path="/news/:id" element={<NewsDetailsPage />} />
+                    <Route path="/news" element={<NewsPage />} />
+                    <Route path="/movie/:id/critic-reviews" element={<CriticReviewsPage />} />
+                    <Route path="/forum" element={<ForumPage />} />
+                    <Route path="/forum/category/:id" element={<ForumCategoryPage />} />
+                    <Route path="/forum/topic/:id" element={<ForumTopicPage />} />
+                    <Route path="/admin/forum-moderation" element={<AdminForumModerationPage />} />
+                    <Route path="/membership" element={<MembershipPage />} />
+                    <Route path="/payment/success" element={<PaymentSuccessPage />} />
+                    <Route path="/verify-email" element={<VerifyEmailPage />} />
+                    <Route path="/leaderboard" element={<LeaderboardPage />} />
+                    <Route path="/newsposts/:id" element={<NewsDetailPage />} />
+                    <Route path="/newsposts" element={<AllNewsPage />} />
+                    <Route path="/admin/news" element={
+                      <ProtectedRoute adminOnly>
+                        <AdminNewsPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route
+                      path="/movies/:movieId"
+                      element={
+                        <BlockedRoute>
+                          <MoviePage />
+                        </BlockedRoute>
+                      }
+                    />
+                    <Route path="/blacklist" element={
+                      <ProtectedRoute>
+                        <BlacklistPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/chat" element={
                       <BlockedRoute>
-                        <MoviePage />
+                        <ChatPage />
                       </BlockedRoute>
-                    }
-                  />
-                  <Route path="/blacklist" element={
-                    <ProtectedRoute>
-                      <BlacklistPage />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/chat" element={
-                    <BlockedRoute>
-                      <ChatPage />
-                    </BlockedRoute>
-                  } />
-                  <Route path="/users/:id" element={
-                    <BlockedRoute>
-                      <UserPublicProfilePage />
-                    </BlockedRoute>
-                  } />
-                  <Route path="/history" element={
-                    <BlockedRoute>
-                      <HistoryPage />
-                    </BlockedRoute>
-                  } />
-                  <Route path="/admin/appeals" element={
-                    <ProtectedRoute>
-                      <AdminAppealsPage />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/admin/critic-applications" element={
-                    <ProtectedRoute>
-                      <AdminCriticApplicationsPage />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/appeal" element={
-                    <ProtectedRoute>
-                      <AppealPage />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/admin/roles" element={
-                    <ProtectedRoute>
-                      <AdminRolesPage />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/moderator" element={
-                    <ProtectedRoute>
-                      <ModeratorPage />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/tierlists" element={<TierListsPage />} />
-                  <Route path="/tierlists/:id" element={<TierListDetailPage />} />
-                  <Route path="/tierlists/:id/edit" element={
-                    <ProtectedRoute>
-                      <EditTierListPage />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/admin/tierlists" element={
-                    <ProtectedRoute>
-                      <AdminTierListModerationPage />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/admin/support" element={
-                    <ProtectedRoute>
-                      <AdminSupportPage />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/faq" element={<FAQPage />} />
-                  <Route path="*" element={<NotFoundPage />} />
-                </Routes>
-              </div>
-              <SupportWidget />
-              <CookiePopup />
-              <Footer />
-            </Router>
+                    } />
+                    <Route path="/users/:id" element={
+                      <BlockedRoute>
+                        <UserPublicProfilePage />
+                      </BlockedRoute>
+                    } />
+                    <Route path="/history" element={
+                      <BlockedRoute>
+                        <HistoryPage />
+                      </BlockedRoute>
+                    } />
+                    <Route path="/admin/appeals" element={
+                      <ProtectedRoute>
+                        <AdminAppealsPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/admin/critic-applications" element={
+                      <ProtectedRoute>
+                        <AdminCriticApplicationsPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/appeal" element={
+                      <ProtectedRoute>
+                        <AppealPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/admin/roles" element={
+                      <ProtectedRoute>
+                        <AdminRolesPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/moderator" element={
+                      <ProtectedRoute>
+                        <ModeratorPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/tierlists" element={<TierListsPage />} />
+                    <Route path="/tierlists/:id" element={<TierListDetailPage />} />
+                    <Route path="/tierlists/:id/edit" element={
+                      <ProtectedRoute>
+                        <EditTierListPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/admin/tierlists" element={
+                      <ProtectedRoute>
+                        <AdminTierListModerationPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/admin/support" element={
+                      <ProtectedRoute>
+                        <AdminSupportPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/faq" element={<FAQPage />} />
+                    <Route path="*" element={<NotFoundPage />} />
+                  </Routes>
+                </div>
+                <SupportWidget />
+                <CookiePopup />
+                <Footer />
+              </Router>
             </AchievementProvider>
           </FriendsProvider>
         </ThemeProvider>
