@@ -25,7 +25,6 @@ export const PresenceProvider = ({ children }) => {
 
         connection.start()
             .then(() => {
-                console.log('🟢 Presence connected');
                 // eslint-disable-next-line react-hooks/set-state-in-effect
                 setConnected(true);
             })

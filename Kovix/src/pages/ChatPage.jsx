@@ -105,34 +105,25 @@ function ChatPage() {
     const handleUnpin = async (messageId, isPinForSelf = false, e) => {
         if (e) e.stopPropagation();
         try {
-            console.log(`Спроба відкріпити повідомлення ${messageId}`);
             await chatAPI.pinMessage(messageId, !isPinForSelf, isPinForSelf);
-            console.log(`Повідомлення ${messageId} успішно оновлено`);
             setPinsTrigger(prev => prev + 1);
         } catch (err) {
             console.error("Помилка відкріплення:", err);
         }
     };
 
-    const canUnpinMessage = (pinnedByName) => {
-        if (isGlobalChat) {
-            return canManagePinsInGlobal;
-        }
-        return pinnedByName === user?.username || user?.role === 'Admin' || user?.role === 'Moderator';
-    };
+    const canUnpinMessage = (pinnedMsg) => {
+        if (!pinnedMsg) return false;
 
-    const canPinMessage = () => {
-        if (isGlobalChat) {
-            return canManagePinsInGlobal;
+        if (pinnedMsg.isPinForSelf && pinnedMsg.pinnedByName === user?.username) {
+            return true;
         }
-        return true;
+
+        if (isGlobalChat) return canManagePinsInGlobal;
+        return pinnedMsg.pinnedByName === user?.username || canManagePinsInGlobal;
     };
 
     const handlePinMessageWithType = (message) => {
-        if (!canPinMessage()) {
-            alert('У вас немає дозволу закріплювати повідомлення в глобальному чаті');
-            return;
-        }
         setMessageToPinType(message);
         setShowPinTypeModal(true);
     };
@@ -141,7 +132,6 @@ function ChatPage() {
         if (!messageToPinType) return;
         try {
             await chatAPI.pinMessage(messageToPinType.id, isPinForEveryone, !isPinForEveryone);
-            console.log(`Повідомлення закріплено (для ${isPinForEveryone ? 'всіх' : 'себе'})`);
             setPinsTrigger(prev => prev + 1);
             setShowPinTypeModal(false);
             setMessageToPinType(null);
@@ -352,11 +342,9 @@ function ChatPage() {
     useEffect(() => {
         const loadPins = async () => {
             try {
-                console.log(`Завантажую закріплені повідомлення для чату: ${activeChat === null ? 'Загальний' : activeChat}`);
                 const res = activeChat === null
                     ? await chatAPI.getGeneralPins()
                     : await chatAPI.getPrivatePins(activeChat);
-                console.log(`Завантажено ${res.data.length} закріплених повідомлень:`, res.data);
                 setPinnedMessages(res.data);
             } catch (err) {
                 console.error("Помилка завантаження закріплених:", err);
@@ -446,7 +434,7 @@ function ChatPage() {
             await fetch(`${getApiBaseUrl()}/api/reports`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-                body: JSON.stringify({ reportedUserId: String(targetMessage.senderId), messageId: targetMessage.id, content: targetMessage.content, reason: reportReason })
+                body: JSON.stringify({ reportedUserId: targetMessage.senderId, messageId: targetMessage.id, content: targetMessage.content, reason: reportReason })
             });
             alert("Скаргу надіслано"); setShowReportModal(false);
         } catch (e) { console.error(e); }
@@ -787,12 +775,12 @@ function ChatPage() {
 
                                                 <div style={{ wordBreak: 'break-word', fontSize: '16px', lineHeight: '1.6' }}>
                                                     {msg.replyTo && (
-                                                        <div 
-                                                            className="message-quote mb-2" 
-                                                            style={{ 
-                                                                cursor: 'pointer', 
-                                                                padding: '6px 10px', 
-                                                                backgroundColor: isMe ? 'rgba(255,255,255,0.15)' : 'rgba(33, 150, 243, 0.1)', 
+                                                        <div
+                                                            className="message-quote mb-2"
+                                                            style={{
+                                                                cursor: 'pointer',
+                                                                padding: '6px 10px',
+                                                                backgroundColor: isMe ? 'rgba(255,255,255,0.15)' : 'rgba(33, 150, 243, 0.1)',
                                                                 borderLeft: `4px solid ${isMe ? '#fff' : 'var(--primary-color)'}`,
                                                                 borderRadius: '4px'
                                                             }}
@@ -951,7 +939,7 @@ function ChatPage() {
                                 const pinnedMsg = pinnedMessages.find(p => p.messageId === contextMenu.message.id);
 
                                 if (isPinned) {
-                                    return canUnpinMessage(pinnedMsg?.pinnedByName) ? (
+                                    return canUnpinMessage(pinnedMsg) ? (
                                         <div
                                             onClick={(e) => { handleUnpin(contextMenu.message.id, pinnedMsg?.isPinForSelf, e); setContextMenu(null); }}
                                             className="p-2 hover-bg"
@@ -961,7 +949,7 @@ function ChatPage() {
                                         </div>
                                     ) : null;
                                 } else {
-                                    return canPinMessage() ? (
+                                    return (
                                         <div
                                             onClick={() => {
                                                 handlePinMessageWithType(contextMenu.message);
@@ -972,7 +960,7 @@ function ChatPage() {
                                         >
                                             📌 Закріпити
                                         </div>
-                                    ) : null;
+                                    );
                                 }
                             })()}
 
@@ -997,7 +985,7 @@ function ChatPage() {
                                 <p className="text-center text-muted my-3">Немає закріплених повідомлень.</p>
                             ) : (
                                 sortedPins.map(pin => {
-                                    const canUnpinThis = canUnpinMessage(pin.pinnedByName);
+                                    const canUnpinThis = canUnpinMessage(pin);
                                     return (
                                         <div
                                             key={pin.id}
@@ -1054,20 +1042,50 @@ function ChatPage() {
                                 >
                                     👤 Закріпити для себе
                                 </Button>
-                                <Button
-                                    variant="outline-primary"
-                                    onClick={() => pinMessageForType(true)}
-                                    style={{
-                                        borderColor: 'var(--primary-color)',
-                                        color: 'var(--primary-color)',
-                                        padding: '12px',
-                                        fontSize: '16px'
-                                    }}
-                                >
-                                    👥 Закріпити для всіх
-                                </Button>
+                                
+                                {(!isGlobalChat || canManagePinsInGlobal) && (
+                                    <Button
+                                        variant="outline-primary"
+                                        onClick={() => pinMessageForType(true)}
+                                        style={{
+                                            borderColor: 'var(--primary-color)',
+                                            color: 'var(--primary-color)',
+                                            padding: '12px',
+                                            fontSize: '16px'
+                                        }}
+                                    >
+                                        👥 Закріпити для всіх
+                                    </Button>
+                                )}
                             </div>
                         </Modal.Body>
+                    </Modal>
+
+                    <Modal show={showReportModal} onHide={() => setShowReportModal(false)} centered>
+                        <Modal.Header closeButton style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', borderColor: 'var(--border-color)' }}>
+                            <Modal.Title>⚠️ Поскаржитися на повідомлення</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-main)' }}>
+                            <div className="mb-2 small" style={{ color: 'var(--text-secondary)' }}>
+                                Поскаржитися на повідомлення від: <span className="fw-bold">{targetMessage?.senderName}</span>
+                            </div>
+                            <Form>
+                                <Form.Group className="mb-3">
+                                    <Form.Control
+                                        as="textarea"
+                                        rows={4}
+                                        value={reportReason}
+                                        onChange={(e) => setReportReason(e.target.value)}
+                                        placeholder="Опишіть причину скарги..."
+                                        style={{ backgroundColor: 'var(--bg-main)', color: 'var(--text-main)', borderColor: 'var(--border-color)' }}
+                                    />
+                                </Form.Group>
+                            </Form>
+                        </Modal.Body>
+                        <Modal.Footer style={{ backgroundColor: 'var(--bg-card)', borderTop: '1px solid var(--border-color)' }}>
+                            <Button variant="secondary" onClick={() => setShowReportModal(false)}>Відмінити</Button>
+                            <Button variant="danger" onClick={submitReport} disabled={!reportReason || !targetMessage}>Надіслати скаргу</Button>
+                        </Modal.Footer>
                     </Modal>
                 </Col>
             </Row>

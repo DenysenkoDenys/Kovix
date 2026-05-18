@@ -39,6 +39,12 @@ public class AppealsController : ControllerBase
             return BadRequest("Ваш акаунт не заблокований.");
         }
 
+        var totalAppealsCount = await _context.Appeals.CountAsync(a => a.UserId == userId);
+        if (totalAppealsCount >= 5)
+        {
+            return BadRequest("Ви вичерпали ліміт апеляцій (максимум 5). Зверніться до адміністрації іншим способом.");
+        }
+
         var username = User.Identity?.Name ?? "Користувач";
 
         var existing = await _context.Appeals.AnyAsync(a => a.UserId == userId && a.Status == AppealStatus.Pending);
@@ -83,14 +89,26 @@ public class AppealsController : ControllerBase
     {
         var appeals = await _context.Appeals
             .Include(a => a.User)
+            .ThenInclude(u => u.SelectedAward)
             .OrderByDescending(a => a.CreatedAt)
             .Select(a => new {
                 a.Id,
                 a.Content,
-                a.Status,
+                Status = (int)a.Status, 
                 a.AdminComment,
                 a.CreatedAt,
-                User = new { a.User.Username }
+                user = a.User == null ? null : new
+                {
+                    id = a.User.Id,
+                    username = a.User.Username,
+                    role = a.User.Role,
+                    selectedAward = a.User.SelectedAward == null ? null : new
+                    {
+                        id = a.User.SelectedAward.Id,
+                        name = a.User.SelectedAward.Name,
+                        icon = a.User.SelectedAward.Icon
+                    }
+                }
             })
             .ToListAsync();
 
@@ -114,7 +132,15 @@ public class AppealsController : ControllerBase
             .OrderByDescending(a => a.CreatedAt)
             .FirstOrDefaultAsync();
 
-        return Ok(appeal);
+        if (appeal == null) return Ok(null);
+
+        return Ok(new {
+            id = appeal.Id,
+            content = appeal.Content,
+            status = (int)appeal.Status,
+            adminComment = appeal.AdminComment,
+            createdAt = appeal.CreatedAt
+        });
     }
 
     [HttpPut("{id}/process")]

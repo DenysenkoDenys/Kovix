@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Movie.API.Data;
 
@@ -11,9 +12,11 @@ using Movie.API.Data;
 namespace Movie.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260518104156_AddAppealsCreditToUser")]
+    partial class AddAppealsCreditToUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1211,12 +1214,6 @@ namespace Movie.API.Migrations
                     b.Property<DateTime?>("PasswordResetTokenExpires")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("PremiumReminder1Sent")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("PremiumReminder7Sent")
-                        .HasColumnType("bit");
-
                     b.Property<DateTime?>("PremiumUntil")
                         .HasColumnType("datetime2");
 
@@ -1255,9 +1252,7 @@ namespace Movie.API.Migrations
                             IsEmailVerified = false,
                             IsOnline = false,
                             IsPremium = false,
-                            PasswordHash = "$2a$11$1g/xdDKCww9lEDanKmJm3uUVsFyNID5y9Y8/oVF5yMoIXCeB1Y0dS",
-                            PremiumReminder1Sent = false,
-                            PremiumReminder7Sent = false,
+                            PasswordHash = "$2a$11$OC78WwkHXF7FRY6ugvFRleQxd/hb82xYzcqX6oeDRr5ibUZOYlxXO",
                             Role = "Admin",
                             TestScore = 0,
                             Username = "admin"

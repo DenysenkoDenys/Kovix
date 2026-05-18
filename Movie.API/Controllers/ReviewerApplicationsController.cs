@@ -33,6 +33,9 @@ namespace Movie.API.Controllers
             if (user.Role == "Reviewer" || user.Role == "Admin")
                 return BadRequest("Ви вже маєте розширені права.");
 
+            if (user.IsBlocked)
+                return BadRequest("Заблоковані користувачі не можуть подавати заявки.");
+
             var existingPending = await _context.ReviewerApplications
                 .AnyAsync(a => a.UserId == userId && a.Status == AppealStatus.Pending);
 

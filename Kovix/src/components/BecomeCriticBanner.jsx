@@ -11,6 +11,8 @@ const BecomeCriticBanner = () => {
 
     if (!user || user.role === 'Reviewer' || user.role === 'Admin') return null;
 
+    const isBlocked = user.isBlocked === true || user.isBlocked === 'True';
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -32,9 +34,12 @@ const BecomeCriticBanner = () => {
                 <Card.Body className="p-4">
                     <h4 className="fw-bold mb-2" style={{ color: 'var(--primary-color)' }}>🎬 Бажаєте стати офіційним кінокритиком Kovix?</h4>
                     <p className="text-muted mb-3">Отримайте спеціальний бейдж, пишіть розгорнуті рецензії та впливайте на рейтинг фільмів!</p>
-                    <Button variant="warning" className="fw-bold px-4" onClick={() => setShowModal(true)}>
-                        Подати заявку
-                    </Button>
+                    <div>
+                        <Button variant="warning" className="fw-bold px-4" onClick={() => setShowModal(true)} disabled={isBlocked}>
+                            Подати заявку
+                        </Button>
+                        {isBlocked && <div className="small text-danger mt-2">Ви заблоковані - не можете подавати заявки на статус критика.</div>}
+                    </div>
                 </Card.Body>
             </Card>
 

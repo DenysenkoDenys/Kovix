@@ -243,6 +243,7 @@ export const applicationsAPI = {
 export const adminUsersAPI = {
   getAll: () => api.get(`/adminUsers`),
   changeRole: (id, newRole) => api.put(`/adminUsers/${id}/role`, { newRole: newRole }),
+  adjustAppeals: (userId, amount, reason = '') => api.post(`/users/${userId}/appeals/adjust`, { amount, reason }),
   delete: (id) => api.delete(`/criticreviews/${id}`)
 };
 

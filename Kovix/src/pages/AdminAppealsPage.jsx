@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Container, Table, Button, Badge, Spinner } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 import { appealsAPI } from '../services/api';
 import { FiCheck, FiX, FiMessageSquare } from 'react-icons/fi';
 import UserTitleBadge from '../components/UserTitleBadge';
@@ -73,11 +74,14 @@ function AdminAppealsPage() {
                     <tbody>
                         {appeals.map(appeal => (
                             <tr key={appeal.id} style={{ opacity: appeal.status !== 0 ? 0.7 : 1 }}>
-                                <td className="fw-bold text-info d-flex align-items-center gap-2">@{appeal.user?.username}
-                                    <UserTitleBadge
-                                        role={appeal.user?.role}
-                                        selectedAward={appeal.user?.selectedAward}
-                                    />
+                                <td>
+                                    <div className="d-flex align-items-center gap-2">
+                                        <Link to={`/users/${appeal.user?.id}`} className="fw-bold text-info text-decoration-none">@{appeal.user?.username}</Link>
+                                        <UserTitleBadge
+                                            role={appeal.user?.role}
+                                            selectedAward={appeal.user?.selectedAward}
+                                        />
+                                    </div>
                                 </td>
                                 <td>{new Date(appeal.createdAt).toLocaleDateString()}</td>
                                 <td>{getStatusBadge(appeal.status)}</td>

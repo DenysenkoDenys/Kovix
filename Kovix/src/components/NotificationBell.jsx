@@ -55,7 +55,6 @@ function NotificationBell() {
         };
 
         const achievementHandler = (achievement) => {
-            console.log('🎖️ Achievement received:', achievement);
             if (showAchievement) {
                 showAchievement({
                     name: achievement.name,
@@ -78,7 +77,6 @@ function NotificationBell() {
 
         notificationConnection.on('ReceiveNotification', handler);
         notificationConnection.on('AchievementUnlocked', achievementHandler);
-        console.log('📡 SignalR listeners registered');
 
         return () => {
             notificationConnection.off('ReceiveNotification', handler);

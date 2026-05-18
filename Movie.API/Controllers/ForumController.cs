@@ -310,12 +310,30 @@ namespace Movie.API.Controllers
         [Authorize(Roles = "Admin,Moderator")]
         public async Task<ActionResult> DeletePost(int id)
         {
-            var post = await _context.ForumPosts.FindAsync(id);
+            var post = await _context.ForumPosts
+                .Include(p => p.Replies)
+                .FirstOrDefaultAsync(p => p.Id == id);
+            
             if (post == null) return NotFound("Повідомлення не знайдено");
 
-            _context.ForumPosts.Remove(post);
+            async Task DeletePostAndChildren(ForumPost p)
+            {
+                var children = await _context.ForumPosts
+                    .Include(child => child.Replies)
+                    .Where(child => child.ParentPostId == p.Id)
+                    .ToListAsync();
+
+                foreach (var child in children)
+                {
+                    await DeletePostAndChildren(child);
+                }
+
+                _context.ForumPosts.Remove(p);
+            }
+
+            await DeletePostAndChildren(post);
             await _context.SaveChangesAsync();
-            return Ok(new { message = "Повідомлення успішно видалено" });
+            return Ok(new { message = "Повідомлення та всі відповіді успішно видалено" });
         }
 
         [HttpPut("categories/{id}")]

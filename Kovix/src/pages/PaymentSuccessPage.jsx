@@ -17,14 +17,23 @@ function PaymentSuccessPage() {
 
         const confirmPayment = async () => {
             try {
+                const guardKey = `payment_confirm_${sessionId}`;
+                if (localStorage.getItem(guardKey)) {
+                    setStatus('success');
+                    setTimeout(() => window.location.href = '/');
+                    return;
+                }
+
+                localStorage.setItem(guardKey, '1');
                 await subscriptionAPI.confirmPayment({ sessionId });
                 setStatus('success');
-                
+
                 setTimeout(() => {
-                    window.location.href = '/'; 
+                    window.location.href = '/';
                 }, 3000);
             } catch (error) {
                 console.error('Помилка підтвердження платежу:', error);
+                localStorage.removeItem(`payment_confirm_${sessionId}`);
                 setStatus('error');
             }
         };

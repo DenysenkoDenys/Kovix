@@ -14,5 +14,7 @@
         public bool IsFollowingByMe { get; set; }
         public List<UserAwardDto> Awards { get; set; } = new List<UserAwardDto>();
         public AwardDto? SelectedAward { get; set; }
+        public int AppealsCount { get; set; }
+        public int AppealsRemaining { get; set; }
     }
 }

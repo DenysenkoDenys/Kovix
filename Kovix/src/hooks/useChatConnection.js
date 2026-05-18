@@ -15,7 +15,6 @@ export const useChatConnection = (onConnectedCallback) => {
 
     useEffect(() => {
         if (chatConnection && callbackRef.current) {
-            console.log('✅ Chat connection available');
             callbackRef.current(chatConnection);
         }
     }, [chatConnection]);

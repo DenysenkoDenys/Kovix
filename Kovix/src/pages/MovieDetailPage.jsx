@@ -16,6 +16,8 @@ import defaultAvatarImg from '../assets/NotFoundAvatar.png';
 import '../style/App.css';
 import { API_BASE_URL } from '../utils/apiConfig';
 import AdminMovieAwardModal from '../components/AdminMovieAwardModal';
+import CustomPlayer from '../components/CustomPlayer';
+import PlayerSelector from '../components/PlayerSelector';
 import { adminMovieAwardsAPI } from '../services/api';
 import MovieQuizModal from '../components/MovieQuizModal';
 
@@ -64,6 +66,7 @@ function MovieDetailPage() {
   const [showAwardModal, setShowAwardModal] = useState(false);
   const [awardToEdit, setAwardToEdit] = useState(null);
   const [showQuizModal, setShowQuizModal] = useState(false);
+  const [preferredPlayer, setPreferredPlayer] = useState(localStorage.getItem('preferredPlayer') || 'default');
 
   useEffect(() => {
     loadMovieData();
@@ -418,9 +421,19 @@ function MovieDetailPage() {
 
           {movie.trailerUrl && (
             <div className="mb-4">
-              <div className="ratio ratio-16x9 shadow-sm rounded overflow-hidden">
-                <iframe src={movie.trailerUrl} title="Trailer" allowFullScreen></iframe>
+              <div className="d-flex justify-content-between align-items-start mb-2">
+                <div />
+                <PlayerSelector value={preferredPlayer} onChange={setPreferredPlayer} />
               </div>
+
+              {preferredPlayer === 'custom' ? (
+                <CustomPlayer src={movie.trailerUrl} poster={movie.posterUrl ? (movie.posterUrl.startsWith('http') ? movie.posterUrl : `${API_BASE_URL}${movie.posterUrl}`) : undefined} title={movie.title} />
+              ) : (
+                <div className="ratio ratio-16x9 shadow-sm rounded overflow-hidden">
+                  <iframe src={movie.trailerUrl} title="Trailer" allowFullScreen></iframe>
+                </div>
+              )}
+
               {user && (
                 <div className="mt-3 d-flex justify-content-end">
                   <Button

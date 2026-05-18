@@ -149,18 +149,44 @@ namespace Movie.API.Controllers
 
             int userId = int.Parse(userIdClaim.Value);
 
-            var user = await _context.Users
-                .Include(u => u.Reviews!)
-                    .ThenInclude(r => r.Movie)
-                .Include(u => u.Awards)
-                .Include(u => u.SelectedAward) 
-                .FirstOrDefaultAsync(u => u.Id == userId);
+            var fullUser = await _context.Users
+                .AsNoTracking()
+                .Where(u => u.Id == userId)
+                .Select(u => new
+                {
+                    u.Id,
+                    u.Username,
+                    u.Email,
+                    u.Role,
+                    u.AvatarUrl,
+                    u.IsBlocked,
+                    u.IsPremium,
+                    u.PremiumUntil,
+                    u.CreatedAt,
+                    u.BlockedGenres,
+                    Reviews = u.Reviews!.Select(r => new { r.Id, r.MovieId, r.Rating, r.Comment, r.CreatedAt }).ToList(),
+                    Awards = u.Awards.Select(a => new
+                    {
+                        a.Id,
+                        a.Name,
+                        a.Icon,
+                        a.Description,
+                        a.IssuedAt
+                    }).ToList(),
+                    SelectedAward = u.SelectedAward != null ? new
+                    {
+                        u.SelectedAward.Id,
+                        u.SelectedAward.Name,
+                        u.SelectedAward.Icon
+                    } : null,
+                    AppealsCount = u.Appeals.Count,
+                    AppealsRemaining = Math.Max(0, 5 - u.Appeals.Count)
+                })
+                .FirstOrDefaultAsync();
 
-            if (user == null) return NotFound();
+            if (fullUser == null) return NotFound();
 
-            user.PasswordHash = "";
-
-            return Ok(user);
+            return Ok(fullUser);
         }
 
         [HttpPut("me")]

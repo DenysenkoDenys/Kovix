@@ -90,6 +90,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 builder.Services.AddTransient<IEmailService, EmailService>();
+builder.Services.AddHostedService<PremiumExpirationService>();
 
 
 builder.Services.AddControllers().AddJsonOptions(x =>

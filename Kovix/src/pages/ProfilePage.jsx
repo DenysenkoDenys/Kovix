@@ -373,6 +373,10 @@ function ProfilePage() {
               )}
             </div>
 
+            {typeof profile.appealsRemaining !== 'undefined' && (
+              <div className="mb-3 small text-muted">⚖️ Апеляції: <strong>{profile.appealsCount ?? 0}</strong> / 5 • Залишилось: <strong>{profile.appealsRemaining}</strong></div>
+            )}
+
             <div className="d-grid gap-2 mt-auto">
               {profile.role === 'Admin' && (
                 <Button variant="warning" className="fw-bold mb-2" onClick={() => navigate('/admin/reports')}>

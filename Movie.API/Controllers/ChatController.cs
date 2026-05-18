@@ -304,15 +304,27 @@ namespace Movie.API.Controllers
                 chatUserForPin = Math.Min(userId, otherUserId);
             }
 
-            var existingPin = await _context.MessagePins
-                .FirstOrDefaultAsync(p => p.MessageId == messageId &&
-                                          p.ChatUserId == chatUserForPin &&
-                                          p.IsPinForSelf == dto.PinForSelf &&
-                                          p.PinnedBy == userId);
+            MessagePin? existingPin;
+
+            if (!dto.PinForSelf)
+            {
+                existingPin = await _context.MessagePins
+                    .FirstOrDefaultAsync(p => p.MessageId == messageId &&
+                                              p.ChatUserId == chatUserForPin &&
+                                              !p.IsPinForSelf);
+            }
+            else
+            {
+                existingPin = await _context.MessagePins
+                    .FirstOrDefaultAsync(p => p.MessageId == messageId &&
+                                              p.ChatUserId == chatUserForPin &&
+                                              p.IsPinForSelf &&
+                                              p.PinnedBy == userId);
+            }
 
             if (existingPin != null)
             {
-                _context.MessagePins.Remove(existingPin); 
+                _context.MessagePins.Remove(existingPin);
             }
             else
             {
@@ -336,9 +348,8 @@ namespace Movie.API.Controllers
             var currentUserId = GetUserId();
 
             var pins = await _context.MessagePins
-                .Where(p =>
-                    (p.ChatUserId == null && !p.IsPinForSelf) ||
-                    (p.IsPinForSelf && p.PinnedBy == currentUserId && p.ChatUserId == currentUserId))
+                .Where(p => p.ChatUserId == null)
+                .Where(p => !p.IsPinForSelf || p.PinnedBy == currentUserId)
                 .Where(p => !p.Message!.IsDeleted)
                 .Include(p => p.Message)
                 .Include(p => p.Message!.Sender)

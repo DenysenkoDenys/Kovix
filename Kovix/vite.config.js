@@ -3,6 +3,19 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
+  build: {
+    commonjsOptions: {
+      transformMixedEsModules: true
+    },
+    rollupOptions: {
+      onwarn(warning, warn) {
+        if (typeof warning.message === 'string' && warning.message.includes('contains an annotation that Rollup cannot interpret')) {
+          return;
+        }
+        warn(warning);
+      }
+    }
+  },
   server: {
     proxy: {
       '/api': {

@@ -41,13 +41,11 @@ function AppealPage() {
             .catch(err => console.error("❌ SignalR error:", err));
 
         const onAppealUpdated = async () => {
-            console.log("📩 Appeal updated");
             await loadAppeal();
             await refreshUser();
         };
 
         const onUserUpdated = async () => {
-            console.log("👤 User updated");
             await refreshUser();
         };
 

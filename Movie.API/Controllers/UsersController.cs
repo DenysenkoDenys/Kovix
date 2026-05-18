@@ -152,6 +152,9 @@ namespace Movie.API.Controllers
                         Name = u.SelectedAward.Name,
                         Icon = u.SelectedAward.Icon
                     } : null
+                    ,
+                    AppealsCount = u.Appeals.Count,
+                    AppealsRemaining = Math.Max(0, 5 - u.Appeals.Count + u.AppealsCredit)
                 })
                 .FirstOrDefaultAsync();
 
@@ -159,6 +162,22 @@ namespace Movie.API.Controllers
                 return NotFound();
 
             return Ok(userProfile);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("{id}/appeals/adjust")]
+        public async Task<IActionResult> AdjustAppeals(int id, [FromBody] Movie.API.DTOs.AdjustAppealsDto dto)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null) return NotFound();
+
+            user.AppealsCredit += dto.Amount;
+            await _context.SaveChangesAsync();
+
+            var appealsCount = await _context.Appeals.CountAsync(a => a.UserId == id);
+            var appealsRemaining = Math.Max(0, 5 - appealsCount + user.AppealsCredit);
+
+            return Ok(new { appealsCount, appealsRemaining, appealsCredit = user.AppealsCredit });
         }
 
         private bool UserExists(int id)

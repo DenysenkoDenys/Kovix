@@ -21,7 +21,7 @@ const CommentNode = ({
     topicIsClosed, 
     handleCreatePost, 
     handleDeletePost, 
-    handleSavePostEdit 
+    handleSavePostEdit
 }) => {
     const [isReplying, setIsReplying] = useState(false);
     const [replyText, setReplyText] = useState('');
@@ -29,13 +29,29 @@ const CommentNode = ({
     const [editText, setEditText] = useState(post.content);
     const [processing, setProcessing] = useState(false);
 
-    const [isCollapsed, setIsCollapsed] = useState(level > 0);
+    const [showReplies, setShowReplies] = useState(false);
+    
+    const CHILDREN_PER_LOAD = 5;
+    const [displayedChildrenCount, setDisplayedChildrenCount] = useState(CHILDREN_PER_LOAD);
+    const MAX_NESTING_LEVEL = 5;
 
     const isAuthor = user && user.id === post.authorId;
     const canEditPost = isAuthor;
     const canDeletePost = isAuthor || isModOrAdmin;
 
-    const marginLeft = level > 0 ? `${Math.min(level * 2.5, 10)}rem` : '0';
+    const incrementalMargin = level > 0 && level <= MAX_NESTING_LEVEL ? '2.5rem' : '0';
+
+    useEffect(() => {
+        if (post.children && post.children.length > 0) {
+            const now = new Date();
+            const hasRecentReply = post.children.some(child => (now - new Date(child.createdAt)) < 5000);
+            
+            if (hasRecentReply) {
+                setShowReplies(true);
+                setDisplayedChildrenCount(prev => Math.max(prev, post.children.length));
+            }
+        }
+    }, [post.children]);
 
     const onReplySubmit = async () => {
         setProcessing(true);
@@ -45,7 +61,6 @@ const CommentNode = ({
         if (success) {
             setIsReplying(false);
             setReplyText('');
-            setIsCollapsed(false);
         }
     };
 
@@ -53,68 +68,21 @@ const CommentNode = ({
         setProcessing(true);
         const success = await handleSavePostEdit(post.id, editText);
         setProcessing(false);
-
-        if (success) {
-            setIsEditing(false);
-        }
+        if (success) setIsEditing(false);
     };
-
-    const countAllChildren = (node) => {
-        if (!node.children || node.children.length === 0) return 0;
-        return node.children.length + node.children.reduce((acc, child) => acc + countAllChildren(child), 0);
-    };
-
-    const totalMessages = countAllChildren(post) + 1;
-
-    if (isCollapsed) {
-        return (
-            <div
-                style={{
-                    marginLeft,
-                    borderLeft: level > 0 ? '2px solid var(--border-color)' : 'none',
-                    paddingLeft: level > 0 ? '15px' : '0',
-                    marginBottom: '10px'
-                }}
-            >
-                <div
-                    onClick={() => setIsCollapsed(false)}
-                    className="p-2 rounded d-inline-block"
-                    style={{
-                        cursor: 'pointer',
-                        backgroundColor: 'var(--bg-card)',
-                        border: '1px solid var(--primary-color)',
-                        color: 'var(--text-main)'
-                    }}
-                    title="Розгорнути гілку"
-                >
-                    <span className="me-2 fw-bold text-primary">[+]</span>
-
-                    <strong style={{ color: 'var(--primary-color)' }}>
-                        {post.authorName}
-                    </strong>
-
-                    <span className="ms-2">
-                        {new Date(post.createdAt).toLocaleDateString('uk-UA')}
-                    </span>
-
-                    <span className="ms-2 fst-italic text-muted">
-                        ({totalMessages} повідомлень згорнуто)
-                    </span>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div
             style={{
-                marginLeft,
+                marginLeft: incrementalMargin,
                 borderLeft: level > 0 ? '2px solid var(--border-color)' : 'none',
-                paddingLeft: level > 0 ? '15px' : '0'
+                paddingLeft: level > 0 ? '15px' : '0',
+                marginTop: level > 0 ? '1rem' : '0',
+                marginBottom: '1rem'
             }}
         >
             <Card
-                className="mb-3 shadow-sm border-0"
+                className="shadow-sm border-0"
                 style={{ backgroundColor: 'var(--bg-card)' }}
             >
                 <Card.Body className="p-0">
@@ -142,30 +110,15 @@ const CommentNode = ({
                                     }}
                                 >
                                     <img
-                                        src={
-                                            post.authorAvatarUrl
-                                                ? `${API_BASE_URL}${post.authorAvatarUrl}`
-                                                : defaultAvatar
-                                        }
+                                        src={post.authorAvatarUrl ? `${API_BASE_URL}${post.authorAvatarUrl}` : defaultAvatar}
                                         alt={post.authorName}
-                                        style={{
-                                            width: '100%',
-                                            height: '100%',
-                                            objectFit: 'cover'
-                                        }}
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                     />
                                 </div>
-
-                                <strong
-                                    style={{
-                                        color: 'var(--primary-color)',
-                                        fontSize: '0.9rem'
-                                    }}
-                                >
+                                <strong style={{ color: 'var(--primary-color)', fontSize: '0.9rem' }}>
                                     {post.authorName}
                                 </strong>
                             </Link>
-
                             <div className="mt-2">
                                 {getRoleBadge(post.authorRole)}
                             </div>
@@ -177,24 +130,8 @@ const CommentNode = ({
                                 style={{ borderColor: 'var(--border-color)' }}
                             >
                                 <div className="small text-muted">
-                                    <span
-                                        className="fw-bold me-2"
-                                        style={{ cursor: 'pointer' }}
-                                        onClick={() => setIsCollapsed(true)}
-                                        title="Згорнути гілку"
-                                    >
-                                        [–]
-                                    </span>
-
-                                    {new Date(post.createdAt).toLocaleString(
-                                        'uk-UA'
-                                    )}
-
-                                    {post.updatedAt && (
-                                        <span className="ms-2 fst-italic">
-                                            (ред.)
-                                        </span>
-                                    )}
+                                    {new Date(post.createdAt).toLocaleString('uk-UA')}
+                                    {post.updatedAt && <span className="ms-2 fst-italic">(ред.)</span>}
                                 </div>
 
                                 <div className="d-flex gap-3 small">
@@ -203,9 +140,7 @@ const CommentNode = ({
                                             variant="link"
                                             size="sm"
                                             className="p-0 text-decoration-none"
-                                            onClick={() =>
-                                                setIsReplying(!isReplying)
-                                            }
+                                            onClick={() => setIsReplying(!isReplying)}
                                         >
                                             💬 Відповісти
                                         </Button>
@@ -216,9 +151,7 @@ const CommentNode = ({
                                             variant="link"
                                             size="sm"
                                             className="p-0 text-decoration-none text-secondary"
-                                            onClick={() =>
-                                                setIsEditing(true)
-                                            }
+                                            onClick={() => setIsEditing(true)}
                                         >
                                             ✏️ Редагувати
                                         </Button>
@@ -229,9 +162,7 @@ const CommentNode = ({
                                             variant="link"
                                             size="sm"
                                             className="p-0 text-decoration-none text-danger"
-                                            onClick={() =>
-                                                handleDeletePost(post.id)
-                                            }
+                                            onClick={() => handleDeletePost(post.id)}
                                         >
                                             🗑️ Видалити
                                         </Button>
@@ -252,30 +183,12 @@ const CommentNode = ({
                                             as="textarea"
                                             rows={3}
                                             value={editText}
-                                            onChange={(e) =>
-                                                setEditText(e.target.value)
-                                            }
+                                            onChange={(e) => setEditText(e.target.value)}
+                                            style={{ backgroundColor: 'var(--bg-input)', color: 'var(--text-main)', borderColor: 'var(--border-color)' }}
                                         />
-
                                         <div className="mt-2 d-flex gap-2 justify-content-end">
-                                            <Button
-                                                variant="secondary"
-                                                size="sm"
-                                                onClick={() =>
-                                                    setIsEditing(false)
-                                                }
-                                            >
-                                                Скасувати
-                                            </Button>
-
-                                            <Button
-                                                variant="success"
-                                                size="sm"
-                                                onClick={onEditSubmit}
-                                                disabled={processing}
-                                            >
-                                                Зберегти
-                                            </Button>
+                                            <Button variant="secondary" size="sm" onClick={() => setIsEditing(false)}>Скасувати</Button>
+                                            <Button variant="success" size="sm" onClick={onEditSubmit} disabled={processing}>Зберегти</Button>
                                         </div>
                                     </>
                                 ) : (
@@ -284,36 +197,18 @@ const CommentNode = ({
                             </div>
 
                             {isReplying && (
-                                <div className="mt-3">
+                                <div className="mt-3 border-top pt-3" style={{ borderColor: 'var(--border-color)' }}>
                                     <Form.Control
                                         as="textarea"
                                         rows={2}
                                         placeholder={`Відповідь для ${post.authorName}...`}
                                         value={replyText}
-                                        onChange={(e) =>
-                                            setReplyText(e.target.value)
-                                        }
+                                        onChange={(e) => setReplyText(e.target.value)}
+                                        style={{ backgroundColor: 'var(--bg-input)', color: 'var(--text-main)', borderColor: 'var(--border-color)' }}
                                     />
-
                                     <div className="mt-2 d-flex justify-content-end gap-2">
-                                        <Button
-                                            size="sm"
-                                            variant="secondary"
-                                            onClick={() =>
-                                                setIsReplying(false)
-                                            }
-                                        >
-                                            Скасувати
-                                        </Button>
-
-                                        <Button
-                                            size="sm"
-                                            variant="primary"
-                                            onClick={onReplySubmit}
-                                            disabled={processing}
-                                        >
-                                            Відправити
-                                        </Button>
+                                        <Button size="sm" variant="secondary" onClick={() => setIsReplying(false)}>Скасувати</Button>
+                                        <Button size="sm" variant="primary" onClick={onReplySubmit} disabled={processing}>Відправити</Button>
                                     </div>
                                 </div>
                             )}
@@ -322,20 +217,57 @@ const CommentNode = ({
                 </Card.Body>
             </Card>
 
-            {post.children &&
-                post.children.map((child) => (
-                    <CommentNode
-                        key={child.id}
-                        post={child}
-                        level={level + 1}
-                        user={user}
-                        isModOrAdmin={isModOrAdmin}
-                        topicIsClosed={topicIsClosed}
-                        handleCreatePost={handleCreatePost}
-                        handleDeletePost={handleDeletePost}
-                        handleSavePostEdit={handleSavePostEdit}
-                    />
-                ))}
+            {post.children && post.children.length > 0 && (
+                <div className="mt-2">
+                    {!showReplies ? (
+                        <Button 
+                            variant="outline-primary" 
+                            size="sm" 
+                            className="rounded-pill px-3"
+                            onClick={() => setShowReplies(true)}
+                        >
+                            ↳ Показати відповіді ({post.children.length})
+                        </Button>
+                    ) : (
+                        <div className="replies-container border-start ps-3" style={{ borderColor: 'var(--border-color)' }}>
+                            {post.children.slice(0, displayedChildrenCount).map(child => (
+                                <CommentNode 
+                                    key={child.id} 
+                                    post={child} 
+                                    level={level + 1} 
+                                    user={user} 
+                                    isModOrAdmin={isModOrAdmin} 
+                                    topicIsClosed={topicIsClosed}
+                                    handleCreatePost={handleCreatePost}
+                                    handleDeletePost={handleDeletePost}
+                                    handleSavePostEdit={handleSavePostEdit}
+                                />
+                            ))}
+                            
+                            <div className="d-flex align-items-center gap-3 mt-3">
+                                {displayedChildrenCount < post.children.length && (
+                                    <Button
+                                        variant="outline-info"
+                                        size="sm"
+                                        className="rounded-pill px-3"
+                                        onClick={() => setDisplayedChildrenCount(prev => prev + CHILDREN_PER_LOAD)}
+                                    >
+                                        ⬇ Показати ще ({post.children.length - displayedChildrenCount})
+                                    </Button>
+                                )}
+                                <Button
+                                    variant="link"
+                                    size="sm"
+                                    className="text-muted text-decoration-none p-0"
+                                    onClick={() => setShowReplies(false)}
+                                >
+                                    Сховати відповіді
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 };
@@ -356,6 +288,9 @@ function ForumTopicPage() {
     const [editTopicTitle, setEditTopicTitle] = useState('');
 
     const [searchQuery, setSearchQuery] = useState('');
+    
+    const ROOTS_PER_LOAD = 10;
+    const [displayedRootsCount, setDisplayedRootsCount] = useState(ROOTS_PER_LOAD);
 
     useEffect(() => { loadTopic(); }, [id]);
 
@@ -367,6 +302,17 @@ function ForumTopicPage() {
         } catch (err) { setError('Не вдалося завантажити тему.'); } 
         finally { setLoading(false); }
     };
+
+    useEffect(() => {
+        if (topicData && topicData.posts) {
+            const now = new Date();
+            const hasRecentRoot = topicData.posts.some(p => !p.parentPostId && (now - new Date(p.createdAt)) < 5000);
+            if (hasRecentRoot) {
+                const totalRoots = topicData.posts.filter(p => !p.parentPostId).length;
+                setDisplayedRootsCount(prev => Math.max(prev, totalRoots));
+            }
+        }
+    }, [topicData]);
 
     const handleCreatePost = async (content, parentId = null) => {
         if (!content.trim()) return false;
@@ -384,7 +330,20 @@ function ForumTopicPage() {
         if (window.confirm('Видалити це повідомлення? Всі відповіді на нього також зникнуть!')) {
             try {
                 await forumAPI.deletePost(postId);
-                setTopicData(prev => ({ ...prev, posts: prev.posts.filter(p => p.id !== postId) }));
+                const idsToDelete = new Set();
+                const collectChildrenIds = (posts) => {
+                    posts.forEach(post => {
+                        if (post.id === postId || idsToDelete.has(post.parentPostId)) {
+                            idsToDelete.add(post.id);
+                            if (post.children && post.children.length > 0) collectChildrenIds(post.children);
+                        }
+                    });
+                };
+                collectChildrenIds(topicData.posts);
+                setTopicData(prev => ({ 
+                    ...prev, 
+                    posts: prev.posts.filter(p => !idsToDelete.has(p.id))
+                }));
             } catch (err) { alert('Помилка при видаленні.'); }
         }
     };
@@ -465,19 +424,34 @@ function ForumTopicPage() {
                 {commentTree.length === 0 ? (
                     <div className="text-center py-4 text-muted">Повідомлень не знайдено.</div>
                 ) : (
-                    commentTree.map(rootPost => (
-                        <CommentNode 
-                            key={rootPost.id} 
-                            post={rootPost} 
-                            level={0} 
-                            user={user} 
-                            isModOrAdmin={isModOrAdmin} 
-                            topicIsClosed={topicData.isClosed}
-                            handleCreatePost={handleCreatePost}
-                            handleDeletePost={handleDeletePost}
-                            handleSavePostEdit={handleSavePostEdit}
-                        />
-                    ))
+                    <>
+                        {commentTree.slice(0, displayedRootsCount).map(rootPost => (
+                            <CommentNode 
+                                key={rootPost.id} 
+                                post={rootPost} 
+                                level={0} 
+                                user={user} 
+                                isModOrAdmin={isModOrAdmin} 
+                                topicIsClosed={topicData.isClosed}
+                                handleCreatePost={handleCreatePost}
+                                handleDeletePost={handleDeletePost}
+                                handleSavePostEdit={handleSavePostEdit}
+                            />
+                        ))}
+                        
+                        {displayedRootsCount < commentTree.length && (
+                            <div className="text-center mt-4">
+                                <Button 
+                                    variant="outline-primary" 
+                                    size="lg" 
+                                    className="rounded-pill px-5"
+                                    onClick={() => setDisplayedRootsCount(prev => prev + ROOTS_PER_LOAD)}
+                                >
+                                    Показати більше повідомлень ({commentTree.length - displayedRootsCount})
+                                </Button>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
 
@@ -489,7 +463,7 @@ function ForumTopicPage() {
                         <h5 className="mb-3" style={{ color: 'var(--text-main)' }}>Написати в тему</h5>
                         <Form>
                             <Form.Group className="mb-3">
-                                <Form.Control as="textarea" rows={4} placeholder="Ваше повідомлення..." value={replyContent} onChange={(e) => setReplyContent(e.target.value)} style={{ backgroundColor: 'var(--bg-input)', color: 'var(--text-main)' }} />
+                                <Form.Control as="textarea" rows={4} placeholder="Ваше повідомлення..." value={replyContent} onChange={(e) => setReplyContent(e.target.value)} style={{ backgroundColor: 'var(--bg-input)', color: 'var(--text-main)', borderColor: 'var(--border-color)' }} />
                             </Form.Group>
                             <div className="d-flex justify-content-end">
                                 <Button variant="primary" onClick={() => handleCreatePost(replyContent, null)} disabled={replying}>{replying ? 'Відправка...' : 'Відправити'}</Button>

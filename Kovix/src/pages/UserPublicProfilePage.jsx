@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { Container, Card, Spinner, Row, Col, Badge, Button, Modal, ListGroup, Form } from 'react-bootstrap';
 import { useAuth } from '../contexts/AuthContext';
-import { usersAPI, reviewsAPI, friendsAPI } from '../services/api';
+import { usersAPI, reviewsAPI, friendsAPI, adminUsersAPI } from '../services/api';
 import { useFriends } from '../contexts/FriendsContext';
 import { formatLastSeen } from '../utils/dateUtils';
 import defaultPosterImg from '../assets/NotFoundPoster.webp';
@@ -27,6 +27,7 @@ function UserPublicProfilePage() {
     const [isBlocked, setIsBlocked] = useState(false);
     const [isOnline, setIsOnline] = useState(false);
     const [lastActive, setLastActive] = useState(null);
+    const [adjustingAppeals, setAdjustingAppeals] = useState(false);
 
     const [followersCount, setFollowersCount] = useState(0);
     const [followingCount, setFollowingCount] = useState(0);
@@ -84,6 +85,8 @@ function UserPublicProfilePage() {
 
             const p = profileRes.data;
             setUserProfile(p);
+            p.appealsCount = p.appealsCount ?? 0;
+            p.appealsRemaining = typeof p.appealsRemaining !== 'undefined' ? p.appealsRemaining : Math.max(0, 5 - p.appealsCount);
             setIsBlocked(p.isBlocked);
             setIsOnline(p.isOnline);
             setLastActive(p.lastActive);
@@ -226,6 +229,22 @@ function UserPublicProfilePage() {
         }
     };
 
+    const handleAdjustAppeals = async (amount) => {
+        if (!isAdmin) return;
+        if (!window.confirm(`Ви впевнені, що хочете ${amount > 0 ? 'додати' : 'забрати'} ${Math.abs(amount)} апеляцію(й)?`)) return;
+        try {
+            setAdjustingAppeals(true);
+            const res = await adminUsersAPI.adjustAppeals(id, amount);
+            const data = res.data;
+            setUserProfile(prev => prev ? ({ ...prev, appealsCount: data.appealsCount, appealsRemaining: data.appealsRemaining }) : prev);
+            setAdjustingAppeals(false);
+        } catch (e) {
+            console.error(e);
+            setAdjustingAppeals(false);
+            alert('Помилка при зміні апеляцій');
+        }
+    };
+
     const handleLoadMoreReviews = () => {
         setVisibleReviewsCount(prevCount => prevCount + 5);
     };
@@ -358,6 +377,25 @@ function UserPublicProfilePage() {
                 )}
 
                 {isBlocked && <Badge bg="danger" className="align-self-center p-2">⛔ Цей акаунт заблоковано</Badge>}
+
+                {typeof userProfile.appealsRemaining !== 'undefined' && (
+                    <div className="mt-3 small text-muted d-flex justify-content-center align-items-center gap-2">
+                        {
+                            (() => {
+                                const count = userProfile.appealsCount ?? 0;
+                                const remaining = userProfile.appealsRemaining ?? 0;
+                                const total = count + remaining;
+                                return <div className="text-center">⚖️ Апеляції: <strong>{count}</strong> / {total} • Залишилось: <strong>{remaining}</strong></div>;
+                            })()
+                        }
+                        {isAdmin && (
+                            <div className="d-flex gap-1">
+                                <Button size="sm" variant="success" onClick={() => handleAdjustAppeals(1)} disabled={adjustingAppeals}>+1</Button>
+                                <Button size="sm" variant="danger" onClick={() => handleAdjustAppeals(-1)} disabled={adjustingAppeals}>-1</Button>
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 <p className="mb-0 mt-2 small" style={{ color: 'var(--text-secondary)' }}>
                     На сайті з {new Date(userProfile.createdAt).toLocaleDateString('uk-UA')}

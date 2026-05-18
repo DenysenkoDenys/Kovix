@@ -23,7 +23,6 @@ const SocialLogin = () => {
 
       login(token);
 
-      console.log("Logged in successfully");
 
       navigate('/');
 
