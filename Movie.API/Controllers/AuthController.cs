@@ -8,6 +8,7 @@ using Movie.API.DTOs;
 using Movie.API.Models;
 using Movie.API.Services;
 using System.IdentityModel.Tokens.Jwt;
+using System.Text.RegularExpressions;
 using System.Security.Claims;
 using System.Text;
 
@@ -20,17 +21,28 @@ namespace Movie.API.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _configuration;
         private readonly IEmailService _emailService;
+        private readonly SecurityService _security;
 
-        public AuthController(ApplicationDbContext context, IConfiguration configuration, IEmailService emailService)
+        public AuthController(ApplicationDbContext context, IConfiguration configuration, IEmailService emailService, SecurityService security)
         {
             _context = context;
             _configuration = configuration;
             _emailService = emailService;
+            _security = security;
         }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto request)
         {
+
+            if (request == null) return BadRequest("Invalid request");
+            if (string.IsNullOrWhiteSpace(request.Username) || request.Username.Length < 3 || request.Username.Length > 30)
+                return BadRequest("Username must be 3-30 characters.");
+            if (string.IsNullOrWhiteSpace(request.Email) || !IsValidEmail(request.Email))
+                return BadRequest("Invalid email address.");
+            if (string.IsNullOrWhiteSpace(request.Password) || request.Password.Length < 8)
+                return BadRequest("Password must be at least 8 characters.");
+
 
             if (string.IsNullOrEmpty(request.CaptchaToken))
             {
@@ -86,15 +98,28 @@ namespace Movie.API.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<string>> Login(LoginDto request)
         {
+            if (request == null || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+                return BadRequest("Invalid login data.");
+
+            if (!IsValidEmail(request.Email))
+                return BadRequest("Invalid email address.");
+
+            if (_security.IsLocked(request.Email))
+            {
+                return StatusCode(423, "Акаунт тимчасово заблоковано через численні невдалі спроби. Спробуйте пізніше.");
+            }
+
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
 
             if (user == null)
             {
+                _security.RegisterFailedAttempt(request.Email ?? "");
                 return BadRequest("Користувача не знайдено.");
             }
 
             if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             {
+                _security.RegisterFailedAttempt(request.Email ?? "");
                 return BadRequest("Невірний пароль.");
             }
 
@@ -111,6 +136,8 @@ namespace Movie.API.Controllers
             }
 
             string token = CreateToken(user);
+
+            _security.ResetFailedAttempts(user.Email ?? "");
             return Ok(new { token, role = user.Role, username = user.Username });
         }
 
@@ -138,6 +165,20 @@ namespace Movie.API.Controllers
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        private static bool IsValidEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email)) return false;
+            try
+            {
+                var pattern = @"^[^\s@]+@[^\s@]+\.[^\s@]+$";
+                return Regex.IsMatch(email, pattern, RegexOptions.IgnoreCase);
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         [HttpGet("me")]
@@ -210,10 +251,20 @@ namespace Movie.API.Controllers
 
             if (dto.Avatar != null)
             {
+                var maxBytes = 2 * 1024 * 1024;
+                if (dto.Avatar.Length > maxBytes)
+                    return BadRequest("Файл аватара занадто великий. Максимум 2 MB.");
+
+                var allowed = new[] { "image/png", "image/jpeg", "image/jpg", "image/webp", "image/avif" };
+                if (!allowed.Contains(dto.Avatar.ContentType))
+                    return BadRequest("Непідтримуваний формат зображення.");
+
                 var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
                 if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
 
-                var uniqueFileName = Guid.NewGuid().ToString() + "_" + dto.Avatar.FileName;
+                var originalName = Path.GetFileName(dto.Avatar.FileName);
+                var ext = Path.GetExtension(originalName);
+                var uniqueFileName = Guid.NewGuid().ToString() + ext;
                 var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
                 using (var stream = new FileStream(filePath, FileMode.Create))

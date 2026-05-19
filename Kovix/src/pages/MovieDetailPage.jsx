@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Container, Row, Col, Badge, Spinner, Button, Form, Card } from 'react-bootstrap';
-import { moviesAPI, reviewsAPI, watchlistAPI } from '../services/api';
+import { moviesAPI, reviewsAPI, watchlistAPI, adminMovieAwardsAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import ReviewForm from '../components/ReviewForm';
 import ReviewList from '../components/ReviewList';
@@ -18,7 +18,6 @@ import { API_BASE_URL } from '../utils/apiConfig';
 import AdminMovieAwardModal from '../components/AdminMovieAwardModal';
 import CustomPlayer from '../components/CustomPlayer';
 import PlayerSelector from '../components/PlayerSelector';
-import { adminMovieAwardsAPI } from '../services/api';
 import MovieQuizModal from '../components/MovieQuizModal';
 
 const LIKE_ID = 6;
@@ -53,7 +52,7 @@ function MovieDetailPage() {
   const [isFavorite, setIsFavorite] = useState(false);
 
   const [showEpisodeModal, setShowEpisodeModal] = useState(false);
-  const [selectedEpisode, setSelectedEpisode] = useState(null)
+  const [selectedEpisode, setSelectedEpisode] = useState(null);
 
   const [currentSeason, setCurrentSeason] = useState(1);
   const [currentEpisode, setCurrentEpisode] = useState(1);
@@ -159,7 +158,6 @@ function MovieDetailPage() {
       };
       
       const filteredHistory = savedHistory.filter(m => m.id !== movieData.id);
-      
       const newHistory = [movieData, ...filteredHistory].slice(0, 10);
       localStorage.setItem('kovix_recent_movies', JSON.stringify(newHistory));
 
@@ -221,21 +219,37 @@ function MovieDetailPage() {
     newEpisode = currentEpisode
   } = {}) => {
     if (!user) return alert("Будь ласка, увійдіть!");
+    const prevStatus = watchStatus;
+    const prevFavorite = isFavorite;
+    const prevSeason = currentSeason;
+    const prevEpisode = currentEpisode;
 
-    setWatchStatus(parseInt(newStatus));
+    const parsedStatus = parseInt(newStatus, 10);
+    const finalStatus = isNaN(parsedStatus) ? 0 : parsedStatus;
+
+    const parsedSeason = newSeason !== undefined ? parseInt(newSeason) || 1 : undefined;
+    const parsedEpisode = newEpisode !== undefined ? parseInt(newEpisode) || 1 : undefined;
+
+    setWatchStatus(finalStatus);
     setIsFavorite(newFavorite);
-    setCurrentSeason(parseInt(newSeason));
-    setCurrentEpisode(parseInt(newEpisode));
+    if (movie?.isSeries) {
+      setCurrentSeason(parsedSeason);
+      setCurrentEpisode(parsedEpisode);
+    }
 
     try {
       await watchlistAPI.update(id, {
-        status: parseInt(newStatus),
+        status: finalStatus,
         isFavorite: newFavorite,
-        season: movie.isSeries ? parseInt(newSeason) : undefined,
-        episode: movie.isSeries ? parseInt(newEpisode) : undefined
+        season: movie?.isSeries ? parsedSeason : undefined,
+        episode: movie?.isSeries ? parsedEpisode : undefined
       });
     } catch (error) {
-      console.error(error);
+      console.error('Watchlist update failed:', error);
+      setWatchStatus(prevStatus);
+      setIsFavorite(prevFavorite);
+      setCurrentSeason(prevSeason);
+      setCurrentEpisode(prevEpisode);
       alert("Не вдалося зберегти зміни");
     }
   };
@@ -285,7 +299,6 @@ function MovieDetailPage() {
 
     try {
       const response = await moviesAPI.rateEpisode(episodeId, rating);
-
       const { episodeAverage, seriesAverage } = response.data;
 
       setMovie(prevMovie => ({

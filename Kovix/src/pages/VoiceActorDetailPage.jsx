@@ -62,9 +62,7 @@ function VoiceActorDetailPage() {
                                 }
                             }
                         }
-                    } catch {
-                        // Silent catch
-                    }
+                    } catch {}
                 
                     setVoiceRoles(allVoiceRoles);
                 }

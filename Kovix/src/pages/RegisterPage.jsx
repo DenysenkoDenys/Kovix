@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { authAPI } from '../services/api';
 import SocialLogin from '../components/SocialLogin';
 import ReCAPTCHA from "react-google-recaptcha";
+import PageTransition from '../components/PageTransition';
 import '../style/App.css';
 
 function RegisterPage() {
@@ -58,86 +59,92 @@ function RegisterPage() {
   };
 
   return (
-    <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: '80vh' }}>
-      <Card style={{ width: '400px' }} className="shadow">
-        <Card.Body>
-          <h2 className="text-center mb-4">Реєстрація</h2>
-          {error && <Alert variant="danger">{error}</Alert>}
+    <PageTransition direction="right">
+      <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: '80vh' }}>
+        <Card style={{ width: '400px' }} className="shadow">
+          <Card.Body>
+            <h2 className="text-center mb-4">Реєстрація</h2>
+            {error && <Alert variant="danger">{error}</Alert>}
 
-          <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3">
-              <Form.Label>Ім'я користувача</Form.Label>
-              <Form.Control
-                name="username"
-                type="text"
-                value={formData.username}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Пароль</Form.Label>
-              <Form.Control
-                name="password"
-                type="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Підтвердження паролю</Form.Label>
-              <Form.Control
-                name="confirmPassword"
-                type="password"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
+            <Form onSubmit={handleSubmit}>
+              <Form.Group className="mb-3">
+                <Form.Label>Ім'я користувача</Form.Label>
+                <Form.Control
+                  name="username"
+                  type="text"
+                  value={formData.username}
+                  onChange={handleChange}
+                  autoComplete="username"
+                  required
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Email</Form.Label>
+                <Form.Control
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  autoComplete="email"
+                  required
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Пароль</Form.Label>
+                <Form.Control
+                  name="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  autoComplete="new-password"
+                  required
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Підтвердження паролю</Form.Label>
+                <Form.Control
+                  name="confirmPassword"
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  autoComplete="new-password"
+                  required
+                />
+              </Form.Group>
 
-            <Form.Group className="mb-4 d-flex justify-content-center recaptcha-wrapper">
-              <ReCAPTCHA
-                sitekey="6LcFI3UsAAAAAGkQhHzy-pri_rHxlygZs2wt2hMO"
-                theme="dark"
-                onChange={(token) => {
-                  setCaptchaToken(token);
-                  setError('');
-                }}
-              />
-            </Form.Group>
+              <Form.Group className="mb-4 d-flex justify-content-center recaptcha-wrapper">
+                <ReCAPTCHA
+                  sitekey="6LcFI3UsAAAAAGkQhHzy-pri_rHxlygZs2wt2hMO"
+                  theme="dark"
+                  onChange={(token) => {
+                    setCaptchaToken(token);
+                    setError('');
+                  }}
+                />
+              </Form.Group>
 
-            <Button className="w-100" type="submit">Зареєструватися</Button>
-          </Form>
+              <Button className="w-100" type="submit">Зареєструватися</Button>
+            </Form>
 
-          <div className="d-flex align-items-center my-3">
-            <hr className="flex-grow-1" />
-            <span className="mx-2 text-muted small">АБО</span>
-            <hr className="flex-grow-1" />
-          </div>
+            <div className="d-flex align-items-center my-3">
+              <hr className="flex-grow-1" />
+              <span className="mx-2 text-muted small">АБО</span>
+              <hr className="flex-grow-1" />
+            </div>
 
-          <div className="text-center mb-2 text-muted small">
-            Увійти через соціальні мережі
-          </div>
+            <div className="text-center mb-2 text-muted small">
+              Увійти через соціальні мережі
+            </div>
 
-          <SocialLogin />
+            <SocialLogin />
 
-          <div className="text-center mt-3">
-            Вже є акаунт? <Link to="/login">Увійти</Link>
-          </div>
-        </Card.Body>
-      </Card>
-    </Container>
+            <div className="text-center mt-3">
+              Вже є акаунт? <Link to="/login">Увійти</Link>
+            </div>
+          </Card.Body>
+        </Card>
+      </Container>
+    </PageTransition>
   );
 }
 

@@ -234,11 +234,11 @@ namespace Movie.API.Controllers
                     IsMainRole = ma.IsMainRole,
                     PhotoUrl = ma.Actor.PhotoUrl
                 }).ToList(),
-                Awards = movie.Awards.Select(a => new AwardDto 
-                { 
-                    Id = a.Id, 
-                    Name = a.Name, 
-                    Icon = a.Icon 
+                Awards = movie.Awards.Select(a => new AwardDto
+                {
+                    Id = a.Id,
+                    Name = a.Name,
+                    Icon = a.Icon
                 }).ToList(),
                 MalId = movie.MalId,
                 TmdbId = movie.TmdbId,
@@ -255,7 +255,7 @@ namespace Movie.API.Controllers
                         Id = fm.Id,
                         Title = fm.Title,
                         Order = fm.OrderInFranchise ?? 0,
-                        IsCurrent = fm.Id == movie.Id 
+                        IsCurrent = fm.Id == movie.Id
                     }).ToList();
             }
 
@@ -302,7 +302,7 @@ namespace Movie.API.Controllers
 
             bool hasReactionAward = await _context.UserAwards.AnyAsync(ua => ua.UserId == userId && ua.Name == "Емоційний глядач");
             bool awardAdded = false;
-            
+
             if (!hasReactionAward)
             {
                 _context.UserAwards.Add(new UserAward
@@ -315,10 +315,8 @@ namespace Movie.API.Controllers
                 awardAdded = true;
             }
 
-            // Зберегти реакцію та досягнення (якщо були)
             await _context.SaveChangesAsync();
-            
-            // Відправити SignalR сповіщення тільки якщо досягнення було додано
+
             if (awardAdded)
             {
                 await _notificationHubContext.Clients.User(userId.ToString()).SendAsync(
@@ -476,7 +474,7 @@ namespace Movie.API.Controllers
                     MalId = dto.MalId,
                     TmdbId = dto.TmdbId,
                     CastImported = false,
-                    MovieActors = new List<MovieActor>() 
+                    MovieActors = new List<MovieActor>()
                 };
 
                 if (dto.Cast != null)
@@ -484,7 +482,7 @@ namespace Movie.API.Controllers
                     var distinctCast = dto.Cast.GroupBy(c => c.ActorId).Select(g => g.First());
                     foreach (var castMember in distinctCast)
                     {
-                        if (castMember.ActorId > 0) 
+                        if (castMember.ActorId > 0)
                         {
                             movie.MovieActors.Add(new MovieActor
                             {
@@ -687,8 +685,8 @@ namespace Movie.API.Controllers
 
             var awards = await _context.MovieAwards
                 .AsNoTracking()
-                .Select(ma => new AwardDto 
-                { 
+                .Select(ma => new AwardDto
+                {
                     Id = ma.Id,
                     Name = ma.Name,
                     Icon = ma.Icon
@@ -1079,11 +1077,11 @@ namespace Movie.API.Controllers
 
 
         [HttpGet("latest")]
-        [AllowAnonymous] 
+        [AllowAnonymous]
         public async Task<IActionResult> GetLatestMovie()
         {
             var latestMovie = await _context.Movies
-                .OrderByDescending(m => m.Id) 
+                .OrderByDescending(m => m.Id)
                 .Select(m => new
                 {
                     m.Id,
@@ -1178,8 +1176,9 @@ namespace Movie.API.Controllers
                 movie.CastImported = true;
                 await _context.SaveChangesAsync();
 
-                return Ok(new { 
-                    Message = "Касту успішно автоімпортовано", 
+                return Ok(new
+                {
+                    Message = "Касту успішно автоімпортовано",
                     ImportSource = importSource,
                     IsAnime = movie.IsSeries,
                     movie.MalId,
@@ -1209,7 +1208,7 @@ namespace Movie.API.Controllers
                 m.Title,
                 m.Description,
                 m.PosterUrl,
-                BannerUrl = m.PosterUrl, 
+                BannerUrl = m.PosterUrl,
                 Type = m.IsSeries ? "Series" : "Movie",
 
                 LatestSeason = m.IsSeries && m.Episodes != null && m.Episodes.Any()
@@ -1352,7 +1351,7 @@ namespace Movie.API.Controllers
                     bool isMainRole = order < 6;
 
                     var character = await _context.Characters.FirstOrDefaultAsync(c => c.Name == characterName);
-                    
+
                     if (character == null)
                     {
                         character = new Character
@@ -1380,7 +1379,7 @@ namespace Movie.API.Controllers
                                 var personJson = await personResponse.Content.ReadAsStringAsync();
                                 dynamic personData = Newtonsoft.Json.JsonConvert.DeserializeObject(personJson);
                                 biography = personData.biography ?? "";
-                                
+
                                 if (personData.birthday != null && !string.IsNullOrEmpty(personData.birthday.ToString()))
                                 {
                                     if (DateTime.TryParse(personData.birthday.ToString(), out DateTime bd))
@@ -1404,7 +1403,7 @@ namespace Movie.API.Controllers
 
                     var voiceRoleExists = await _context.VoiceActingRoles
                         .AnyAsync(v => v.CharacterId == character.Id && v.ActorId == actor.Id && v.MovieId == movieId);
-                    
+
                     if (!voiceRoleExists)
                     {
                         _context.VoiceActingRoles.Add(new VoiceActingRole
@@ -1432,8 +1431,9 @@ namespace Movie.API.Controllers
             var movie = await _context.Movies.FirstOrDefaultAsync(m => m.Id == movieId);
             if (movie == null)
                 return NotFound("Фільм не знайдено");
+
             var questions = GenerateMovieQuizQuestions(movie);
-            
+
             return Ok(questions);
         }
 
@@ -1609,7 +1609,7 @@ namespace Movie.API.Controllers
             yearOptions.Add((movie.Year + 3).ToString());
             var yearShuffled = yearOptions.OrderBy(x => random.Next()).ToList();
             int yearCorrectIndex = yearShuffled.IndexOf(movie.Year.ToString());
-            
+
             questions.Add(new QuizQuestionDto
             {
                 Question = $"У якому році вийшов фільм \"{movie.Title}\"?",
@@ -1631,7 +1631,7 @@ namespace Movie.API.Controllers
                     genreOptions.AddRange(wrongGenres);
                     var genreShuffled = genreOptions.OrderBy(x => random.Next()).ToList();
                     int genreCorrectIndex = genreShuffled.IndexOf(genres[0]);
-                    
+
                     questions.Add(new QuizQuestionDto
                     {
                         Question = $"Який із цих жанрів належить до \"{movie.Title}\"?",
@@ -1652,7 +1652,7 @@ namespace Movie.API.Controllers
                 }
                 var directorShuffled = directorOptions.OrderBy(x => random.Next()).ToList();
                 int directorCorrectIndex = directorShuffled.IndexOf(movie.Director);
-                
+
                 questions.Add(new QuizQuestionDto
                 {
                     Question = $"Хто режисер фільму \"{movie.Title}\"?",
@@ -1661,8 +1661,8 @@ namespace Movie.API.Controllers
                 });
             }
 
-            var typeOptions = new List<string> 
-            { 
+            var typeOptions = new List<string>
+            {
                 movie.IsSeries ? "Серіал" : "Фільм",
                 movie.IsSeries ? "Фільм" : "Серіал",
                 "Мультфільм",
@@ -1670,7 +1670,7 @@ namespace Movie.API.Controllers
             };
             var typeShuffled = typeOptions.OrderBy(x => random.Next()).ToList();
             int typeCorrectIndex = typeShuffled.IndexOf(movie.IsSeries ? "Серіал" : "Фільм");
-            
+
             questions.Add(new QuizQuestionDto
             {
                 Question = $"Це фільм чи серіал: \"{movie.Title}\"?",
@@ -1681,17 +1681,17 @@ namespace Movie.API.Controllers
             var ratingStr = $"{movie.AverageRating:F1}";
             var ratingOptions = new List<string> { ratingStr };
             double rating = Math.Round(movie.AverageRating, 1);
-            
+
             var alternatives = new HashSet<string> { ratingStr };
-            var ratingVariants = new[] 
-            { 
+            var ratingVariants = new[]
+            {
                 Math.Max(1, rating - 1.5),
                 Math.Min(10, rating + 1.5),
                 Math.Max(1, rating - 3),
                 Math.Min(10, rating + 2),
                 Math.Max(1, rating - 2)
             };
-            
+
             foreach (var alt in ratingVariants)
             {
                 var altStr = $"{alt:F1}";
@@ -1701,10 +1701,10 @@ namespace Movie.API.Controllers
                     alternatives.Add(altStr);
                 }
             }
-            
+
             var ratingShuffled = ratingOptions.OrderBy(x => random.Next()).ToList();
             int ratingCorrectIndex = ratingShuffled.IndexOf(ratingStr);
-            
+
             questions.Add(new QuizQuestionDto
             {
                 Question = $"Який рейтинг у фільму \"{movie.Title}\"?",
@@ -1735,7 +1735,7 @@ namespace Movie.API.Controllers
 
             if (!interactedIds.Any())
             {
-                return Ok(new List<object>()); 
+                return Ok(new List<object>());
             }
 
             var interactedGenresRaw = await _context.Movies

@@ -5,6 +5,7 @@ import { newsPostsAPI } from '../services/api';
 import { getApiBaseUrl } from '../utils/apiConfig';
 import { useAuth } from '../contexts/AuthContext';
 import defaultPosterImg from '../assets/NotFoundPoster.webp';
+import { getUploadErrorMessage, validateImageFile } from '../utils/uploadValidation';
 
 export default function ComingSoonBlog() {
     const [newsposts, setNews] = useState([]);
@@ -84,8 +85,9 @@ export default function ComingSoonBlog() {
     };
 
     const uploadFile = async (file) => {
-        if (!file.type.startsWith('image/')) {
-            alert('Будь ласка, виберіть зображення!');
+        const validationError = validateImageFile(file);
+        if (validationError) {
+            alert(validationError);
             return;
         }
 
@@ -96,7 +98,7 @@ export default function ComingSoonBlog() {
             setUploadingImage(false);
         } catch (error) {
             console.error('Помилка завантаження:', error);
-            alert('Не вдалося завантажити зображення');
+            alert(getUploadErrorMessage(error));
             setUploadingImage(false);
         }
     };

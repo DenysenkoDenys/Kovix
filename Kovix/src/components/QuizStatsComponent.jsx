@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, Spinner, Alert, Row, Col, Badge } from 'react-bootstrap';
 
 const QuizStatsComponent = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadQuizStats();
@@ -132,8 +134,23 @@ const QuizStatsComponent = () => {
             <h5 className="mb-3" style={{ color: 'var(--text-main)' }}>
               Останні результати
             </h5>
-            <div className="d-flex flex-column gap-2">
-              {stats.recentResults.slice(0, 5).map((result) => (
+            
+            <div 
+              className="d-flex flex-column gap-2 pe-2" 
+              style={{ 
+                maxHeight: '250px',
+                overflowY: 'auto',
+                paddingRight: '5px'
+              }}
+            >
+              <style>{`
+                ::-webkit-scrollbar { width: 6px; }
+                ::-webkit-scrollbar-track { background: var(--bg-main); }
+                ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+                ::-webkit-scrollbar-thumb:hover { background: #555; }
+              `}</style>
+
+              {stats.recentResults.map((result) => (
                 <div
                   key={result.id}
                   className="d-flex justify-content-between align-items-center p-2 rounded"
@@ -149,7 +166,12 @@ const QuizStatsComponent = () => {
                 >
                   <div>
                     <div style={{ color: 'var(--text-main)', fontSize: '0.9rem', fontWeight: 500 }}>
-                      {result.movieTitle}
+                      <a
+                        onClick={() => navigate(`/movie/${result.movieId}`)}
+                        style={{ cursor: 'pointer', color: 'inherit', textDecoration: 'none' }}
+                      >
+                        {result.movieTitle}
+                      </a>
                     </div>
                     <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
                       {result.correctAnswers}/{result.totalQuestions} правильних

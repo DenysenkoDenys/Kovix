@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Movie.API.Data;
 using Movie.API.Hubs;
+using Microsoft.Extensions.Caching.Memory;
 using Movie.API.Services;
 using Movie.API.SignalR;
 using System.Text;
@@ -100,6 +101,9 @@ builder.Services.AddControllers().AddJsonOptions(x =>
 });
 builder.Services.AddMemoryCache();
 
+builder.Services.AddSingleton<SecurityService>();
+
+
 builder.Services.AddSignalR();
 
 builder.Services.AddSingleton<IUserIdProvider, NameIdentifierUserIdProvider>();
@@ -115,6 +119,53 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+else
+{
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+
+app.Use(async (context, next) =>
+{
+    var headers = context.Response.Headers;
+
+    headers["X-Content-Type-Options"] = "nosniff";
+    headers["X-Frame-Options"] = "DENY";
+    headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+    headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()";
+    headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' https://www.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' ws: wss:;";
+
+    if (headers.ContainsKey("Server")) headers.Remove("Server");
+
+    await next();
+});
+
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path.ToString().ToLowerInvariant();
+    if (path.StartsWith("/api/auth/login") || path.StartsWith("/api/auth/register") || path.StartsWith("/api/auth/external-login"))
+    {
+        var cache = context.RequestServices.GetRequiredService<Microsoft.Extensions.Caching.Memory.IMemoryCache>();
+        var ip = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        var key = $"rl:{ip}:{path}";
+        var limit = 20; 
+        var window = TimeSpan.FromMinutes(1);
+
+        if (!cache.TryGetValue<int>(key, out var attempts)) attempts = 0;
+        attempts++;
+        cache.Set(key, attempts, new MemoryCacheEntryOptions { AbsoluteExpirationRelativeToNow = window });
+
+        if (attempts > limit)
+        {
+            context.Response.StatusCode = 429;
+            await context.Response.WriteAsync("Too many requests. Please try again later.");
+            return;
+        }
+    }
+
+    await next();
+});
 
 app.UseRouting();
 

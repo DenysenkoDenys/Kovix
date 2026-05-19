@@ -31,10 +31,10 @@ namespace Movie.API.Controllers
 
             if (entry == null)
             {
-                return Ok(new WatchlistDto { Status = WatchStatus.None, IsFavorite = false });
+                return Ok(new WatchlistDto { Status = 0, IsFavorite = false });
             }
 
-            return Ok(new WatchlistDto { Status = entry.Status, IsFavorite = entry.IsFavorite });
+            return Ok(new WatchlistDto { Status = (int)entry.Status, IsFavorite = entry.IsFavorite });
         }
 
         [HttpPost("movie/{movieId}")]
@@ -45,13 +45,15 @@ namespace Movie.API.Controllers
             var entry = await _context.Watchlists
                 .FirstOrDefaultAsync(w => w.MovieId == movieId && w.UserId == userId);
 
+            var newStatus = (WatchStatus)dto.Status;
+
             if (entry == null)
             {
                 entry = new Watchlist
                 {
                     UserId = userId,
                     MovieId = movieId,
-                    Status = dto.Status,
+                    Status = newStatus,
                     IsFavorite = dto.IsFavorite,
                     AddedAt = DateTime.UtcNow
                 };
@@ -59,10 +61,11 @@ namespace Movie.API.Controllers
             }
             else
             {
-                entry.Status = dto.Status;
+                var previousStatus = entry.Status;
+                entry.Status = newStatus;
                 entry.IsFavorite = dto.IsFavorite;
 
-                if (entry.Status != dto.Status)
+                if (previousStatus != newStatus)
                 {
                     entry.AddedAt = DateTime.UtcNow;
                 }
@@ -78,10 +81,10 @@ namespace Movie.API.Controllers
                     Icon = "🍿",
                     Description = "За перший доданий фільм до списку переглядів"
                 });
-                await _context.SaveChangesAsync();
             }
+
             await _context.SaveChangesAsync();
-            return Ok(entry);
+            return Ok(new { Status = (int)entry.Status, IsFavorite = entry.IsFavorite });
         }
 
         [HttpGet("my-list")]
@@ -95,9 +98,9 @@ namespace Movie.API.Controllers
                 .Select(w => new
                 {
                     w.MovieId,
-                    w.Movie.Title,
-                    w.Movie.PosterUrl,
-                    w.Status,
+                    Title = w.Movie != null ? w.Movie.Title : string.Empty,
+                    PosterUrl = w.Movie != null ? w.Movie.PosterUrl : null,
+                    Status = (int)w.Status, 
                     w.IsFavorite
                 })
                 .ToListAsync();

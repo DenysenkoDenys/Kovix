@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { moviePhotosAPI } from '../services/api';
 import { FaPlus, FaTrash, FaCloudUploadAlt, FaTimes, FaShareAlt, FaChevronLeft, FaChevronRight, FaChevronDown } from 'react-icons/fa';
 import { API_BASE_URL } from '../utils/apiConfig';
+import { getUploadErrorMessage, validateImageFile } from '../utils/uploadValidation';
 
 const PhotoLightbox = ({ show, onHide, photos, initialIndex, movieTitle, movieId, isAdmin, onDeletePhoto }) => {
     const [currentIndex, setCurrentIndex] = useState(initialIndex || 0);
@@ -239,12 +240,34 @@ const MoviePhotos = ({ movieId, movieTitle }) => {
     const onDrop = (e) => {
         e.preventDefault();
         setIsDragging(false);
-        const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
-        setSelectedFiles(prev => [...prev, ...files]);
+        const files = Array.from(e.dataTransfer.files);
+        const validFiles = [];
+
+        for (const file of files) {
+            const validationError = validateImageFile(file);
+            if (validationError) {
+                alert(validationError);
+                return;
+            }
+            validFiles.push(file);
+        }
+
+        setSelectedFiles(prev => [...prev, ...validFiles]);
     };
     const onFileSelect = (e) => {
-        const files = Array.from(e.target.files).filter(f => f.type.startsWith('image/'));
-        setSelectedFiles(prev => [...prev, ...files]);
+        const files = Array.from(e.target.files);
+        const validFiles = [];
+
+        for (const file of files) {
+            const validationError = validateImageFile(file);
+            if (validationError) {
+                alert(validationError);
+                return;
+            }
+            validFiles.push(file);
+        }
+
+        setSelectedFiles(prev => [...prev, ...validFiles]);
     };
     const removeSelectedFile = (index) => {
         setSelectedFiles(prev => prev.filter((_, i) => i !== index));
@@ -277,7 +300,7 @@ const MoviePhotos = ({ movieId, movieTitle }) => {
             loadPhotos();
         } catch (err) {
             console.error(err);
-            alert("Помилка збереження світлин.");
+            alert(getUploadErrorMessage(err, 'Помилка збереження світлин.'));
         } finally {
             setIsSaving(false);
         }

@@ -94,12 +94,8 @@ function Navigation() {
                 🎭 Актори
               </Nav.Link>
 
-              <Nav.Link as={Link} to="/top" className="fw-bold text-warning">
-                🏆 Топ-100
-              </Nav.Link>
-
               <Nav.Link as={Link} to="/news" className="fw-semibold d-flex align-items-center gap-1">
-                <FaNewspaper /> Новини
+                <FaNewspaper /> Оголошення
               </Nav.Link>
 
               <Nav.Link as={Link} to="/tierlists" className="fw-semibold">
@@ -110,7 +106,6 @@ function Navigation() {
                 KovixPRO
               </Nav.Link>
               <Nav.Link as={Link} to="/leaderboard">🏆 Рейтинг</Nav.Link>
-              <Nav.Link as={Link} to="/forum">Форум</Nav.Link>
             </Nav>
             <Nav className="align-items-center gap-2">
 
@@ -210,6 +205,15 @@ function Navigation() {
                     <NavDropdown.Item as={Link} to="/newsposts">
                       📰 Новини
                     </NavDropdown.Item>
+
+                    <NavDropdown.Item as={Link} to="/forum">
+                      💬 Форум
+                    </NavDropdown.Item>
+
+                    <NavDropdown.Item as={Link} to="/top">
+                      🏆 Топ-100
+                    </NavDropdown.Item>
+
 
                     {isAdmin() && (
                       <>

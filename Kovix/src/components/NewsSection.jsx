@@ -85,7 +85,7 @@ const NewsSection = () => {
     return (
         <Container className="mt-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>📢 Новини та оголошення</h2>
+                <h2 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>📢 Оголошення</h2>
                 {isAdmin && isAdmin() && (
                     <Button variant="success" size="sm" onClick={handleShowCreate} className="fw-bold">
                         <FaPlus className="me-1" /> Створити новину

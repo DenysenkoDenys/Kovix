@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Container, Table, Button, Modal, Form, Spinner, InputGroup, Pagination } from 'react-bootstrap';
 import { newsPostsAPI } from '../services/api';
 import { getApiBaseUrl } from '../utils/apiConfig';
+import { getUploadErrorMessage, validateImageFile } from '../utils/uploadValidation';
 
 export default function AdminNewsPage() {
     const [news, setNews] = useState([]);
@@ -15,7 +16,6 @@ export default function AdminNewsPage() {
     const [totalPages, setTotalPages] = useState(1);
     const pageSize = 10;
 
-    // Стейт для Drag & Drop
     const [isDragging, setIsDragging] = useState(false);
     const [uploadingImage, setUploadingImage] = useState(false);
 
@@ -84,7 +84,6 @@ export default function AdminNewsPage() {
         }
     };
 
-    // --- ЛОГІКА DRAG & DROP ---
     const handleDragOver = (e) => {
         e.preventDefault();
         setIsDragging(true);
@@ -112,8 +111,9 @@ export default function AdminNewsPage() {
     };
 
     const uploadFile = async (file) => {
-        if (!file.type.startsWith('image/')) {
-            alert('Будь ласка, виберіть зображення!');
+        const validationError = validateImageFile(file);
+        if (validationError) {
+            alert(validationError);
             return;
         }
 
@@ -124,7 +124,7 @@ export default function AdminNewsPage() {
             setUploadingImage(false);
         } catch (error) {
             console.error('Помилка завантаження:', error);
-            alert('Не вдалося завантажити зображення');
+            alert(getUploadErrorMessage(error));
             setUploadingImage(false);
         }
     };

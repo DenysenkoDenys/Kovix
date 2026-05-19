@@ -12,6 +12,15 @@ namespace Movie.API.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _env;
+        private const long MaxImageBytes = 2 * 1024 * 1024;
+        private static readonly HashSet<string> AllowedImageTypes = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "image/png",
+            "image/jpeg",
+            "image/jpg",
+            "image/webp",
+            "image/avif"
+        };
 
         public MoviePhotosController(ApplicationDbContext context, IWebHostEnvironment env)
         {
@@ -56,7 +65,16 @@ namespace Movie.API.Controllers
 
             foreach (var file in files)
             {
-                if (file.Length > 0 && file.ContentType.StartsWith("image/"))
+                if (file.Length == 0)
+                    continue;
+
+                if (file.Length > MaxImageBytes)
+                    return BadRequest("Фото занадто велике. Максимальний розмір — 2 MB.");
+
+                if (!AllowedImageTypes.Contains(file.ContentType))
+                    return BadRequest("Будь ласка, виберіть зображення.");
+
+                if (file.Length > 0)
                 {
                     var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
                     var filePath = Path.Combine(uploadsFolder, uniqueFileName);

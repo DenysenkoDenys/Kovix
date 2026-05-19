@@ -33,7 +33,7 @@ describe('dateUtils - formatLastSeen', () => {
   describe('Recently offline (less than 1 minute ago)', () => {
     it('should return "Був(ла) щойно" when user was online less than 1 minute ago', () => {
       const now = new Date();
-      const oneSecondAgo = new Date(now.getTime() - 1000); // 1 second ago
+      const oneSecondAgo = new Date(now.getTime() - 1000); 
       const result = formatLastSeen(oneSecondAgo.toISOString(), false);
       expect(result).toBe('Був(ла) щойно');
     });
@@ -42,7 +42,7 @@ describe('dateUtils - formatLastSeen', () => {
       const now = new Date();
       const thirtySecondsAgo = new Date(now.getTime() - 30000);
       let dateStr = thirtySecondsAgo.toISOString();
-      dateStr = dateStr.endsWith('Z') ? dateStr.slice(0, -1) : dateStr; // Remove Z to test auto-add
+      dateStr = dateStr.endsWith('Z') ? dateStr.slice(0, -1) : dateStr; 
       const result = formatLastSeen(dateStr, false);
       expect(result).toBe('Був(ла) щойно');
     });

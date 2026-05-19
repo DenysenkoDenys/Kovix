@@ -12,6 +12,15 @@ namespace Movie.API.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _env;
+        private const long MaxImageBytes = 2 * 1024 * 1024;
+        private static readonly HashSet<string> AllowedImageTypes = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "image/png",
+            "image/jpeg",
+            "image/jpg",
+            "image/webp",
+            "image/avif"
+        };
 
         public NewsPostsController(ApplicationDbContext context, IWebHostEnvironment env)
         {
@@ -131,7 +140,10 @@ namespace Movie.API.Controllers
             if (file == null || file.Length == 0)
                 return BadRequest(new { error = "Файл не вибрано" });
 
-            if (!file.ContentType.StartsWith("image/"))
+            if (file.Length > MaxImageBytes)
+                return BadRequest(new { error = "Фото занадто велике. Максимальний розмір — 2 MB." });
+
+            if (!AllowedImageTypes.Contains(file.ContentType))
                 return BadRequest(new { error = "Будь ласка, виберіть зображення" });
 
             try

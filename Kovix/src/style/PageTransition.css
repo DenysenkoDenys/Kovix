@@ -1,0 +1,38 @@
+.page-transition-wrapper {
+  width: 100%;
+}
+
+.page-transition-wrapper {
+  opacity: 0;
+  transform: translateX(40px) scale(0.98);
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-40px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(40px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.page-enter-left {
+  animation: slideInFromLeft 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.page-enter-right {
+  animation: slideInFromRight 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}

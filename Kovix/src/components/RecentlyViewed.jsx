@@ -52,14 +52,24 @@ const RecentlyViewed = () => {
                         <Link to={`/movie/${movie.id}`} className="text-decoration-none">
                             <Card className="h-100 border-0 shadow-sm hover-card bg-transparent">
                                 <div style={{ overflow: 'hidden', borderRadius: '8px' }}>
-                                    <Card.Img 
-                                        variant="top" 
-                                        src={movie.posterUrl ? `${API_BASE_URL}${movie.posterUrl}` : defaultPosterImg} 
-                                        alt={movie.title}
-                                        style={{ height: '220px', objectFit: 'cover', transition: 'transform 0.3s' }}
-                                        onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
-                                        onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
-                                    />
+                                    {
+                                        (() => {
+                                            const poster = movie.posterUrl;
+                                            const src = poster
+                                                ? (poster.startsWith('http') ? poster : `${API_BASE_URL}${poster}`)
+                                                : defaultPosterImg;
+                                            return (
+                                                <Card.Img
+                                                    variant="top"
+                                                    src={src}
+                                                    alt={movie.title}
+                                                    style={{ height: '220px', objectFit: 'cover', transition: 'transform 0.3s' }}
+                                                    onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+                                                    onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                                                />
+                                            );
+                                        })()
+                                    }
                                 </div>
                                 <div className="mt-2 text-center text-truncate fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.9rem' }}>
                                     {movie.title}

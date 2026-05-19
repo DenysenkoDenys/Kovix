@@ -132,6 +132,30 @@ namespace Movie.API.Controllers
                 };
                 _context.Notifications.Add(newNotif);
 
+                bool hasFriendAwardRequester = await _context.UserAwards.AnyAsync(ua => ua.UserId == requesterId && ua.Name == "Перший друг");
+                if (!hasFriendAwardRequester)
+                {
+                    _context.UserAwards.Add(new UserAward
+                    {
+                        UserId = requesterId,
+                        Name = "Перший друг",
+                        Icon = "🤝",
+                        Description = "За першого доданого друга"
+                    });
+                }
+
+                bool hasFriendAwardAccepter = await _context.UserAwards.AnyAsync(ua => ua.UserId == currentUserId && ua.Name == "Перший друг");
+                if (!hasFriendAwardAccepter)
+                {
+                    _context.UserAwards.Add(new UserAward
+                    {
+                        UserId = currentUserId,
+                        Name = "Перший друг",
+                        Icon = "🤝",
+                        Description = "За першого доданого друга"
+                    });
+                }
+
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
@@ -144,6 +168,21 @@ namespace Movie.API.Controllers
                         senderId = currentUserId,
                         createdAt = newNotif.CreatedAt
                     });
+
+                if (!hasFriendAwardRequester)
+                {
+                    await _hubContext.Clients.User(requesterId.ToString()).SendAsync(
+                        "AchievementUnlocked",
+                        new { name = "Перший друг", icon = "🤝", description = "За першого доданого друга" }
+                    );
+                }
+                if (!hasFriendAwardAccepter)
+                {
+                    await _hubContext.Clients.User(currentUserId.ToString()).SendAsync(
+                        "AchievementUnlocked",
+                        new { name = "Перший друг", icon = "🤝", description = "За першого доданого друга" }
+                    );
+                }
 
                 return Ok();
             }

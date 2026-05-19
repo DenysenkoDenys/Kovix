@@ -15,6 +15,7 @@ import BecomeCriticBanner from '../components/BecomeCriticBanner';
 import AdminUserAwardModal from '../components/AdminUserAwardModal';
 import { adminUserAwardsAPI } from '../services/api';
 import UserTitleBadge from '../components/UserTitleBadge';
+import { getUploadErrorMessage, validateImageFile } from '../utils/uploadValidation';
 const DEFAULT_AVATAR = defaultAvatarImg
 
 function ProfilePage() {
@@ -224,6 +225,13 @@ function ProfilePage() {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      alert(validationError);
+      return;
+    }
+
     setSelectedFile(file);
     setPreviewUrl(URL.createObjectURL(file));
     setShouldDeleteAvatar(false);
@@ -253,12 +261,13 @@ function ProfilePage() {
     const files = e.dataTransfer.files;
     if (files && files.length > 0) {
       const file = files[0];
-      if (file.type.startsWith('image/')) {
+      const validationError = validateImageFile(file);
+      if (validationError) {
+        alert(validationError);
+      } else {
         setSelectedFile(file);
         setPreviewUrl(URL.createObjectURL(file));
         setShouldDeleteAvatar(false);
-      } else {
-        alert('Будь ласка, завантажте файл зображення');
       }
     }
   };
@@ -277,8 +286,8 @@ function ProfilePage() {
       login(token, res.data.username, res.data.role, res.data.isBlocked);
 
       setShowEdit(false);
-    } catch {
-      alert("Не вдалося оновити профіль");
+    } catch (err) {
+      alert(getUploadErrorMessage(err, 'Не вдалося оновити профіль'));
     }
   };
 
