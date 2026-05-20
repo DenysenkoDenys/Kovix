@@ -71,15 +71,14 @@ function Navigation() {
         className="mb-4 sticky-top shadow-sm"
       >
         <Container>
-          <Navbar.Brand as={Link} to="/" className="d-flex align-items-center gap-2 text-warning">
+            <Navbar.Brand as={Link} to="/" className="d-flex align-items-center gap-2 text-warning">
             <img
               src={logoImg}
               alt="Kovix Logo"
-              height="50"
-              className="d-inline-block align-top"
+              className="d-inline-block align-top site-logo"
               style={{ objectFit: 'contain' }}
             />
-            <span className="fw-bold">Kovix</span>
+            <span className="fw-bold brand-text">Kovix</span>
           </Navbar.Brand>
 
           <Navbar.Toggle />
@@ -107,7 +106,7 @@ function Navigation() {
               </Nav.Link>
               <Nav.Link as={Link} to="/leaderboard">🏆 Рейтинг</Nav.Link>
             </Nav>
-            <Nav className="align-items-center gap-2">
+            <Nav className="align-items-center gap-2 nav-actions">
 
               {user && <NotificationBell />}
 
