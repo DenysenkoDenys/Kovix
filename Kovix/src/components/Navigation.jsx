@@ -81,9 +81,7 @@ function Navigation() {
             <span className="fw-bold brand-text">Kovix</span>
           </Navbar.Brand>
 
-          <Navbar.Toggle />
-
-          <Navbar.Collapse>
+          <Navbar.Collapse id="main-navbar-nav" className="w-100 navbar-collapse-mobile">
             <Nav className="me-auto">
               <Nav.Link as={Link} to="/movies" className="fw-semibold">
                 🎥 Каталог
@@ -106,8 +104,9 @@ function Navigation() {
               </Nav.Link>
               <Nav.Link as={Link} to="/leaderboard">🏆 Рейтинг</Nav.Link>
             </Nav>
-            <Nav className="align-items-center gap-2 nav-actions">
+          </Navbar.Collapse>
 
+            <Nav className="align-items-center gap-2 nav-actions ms-auto">
               {user && <NotificationBell />}
 
               {user && (
@@ -155,6 +154,8 @@ function Navigation() {
                       ➕
                     </Button>
                   )}
+
+                  <Navbar.Toggle aria-controls="main-navbar-nav" className="ms-1" />
 
                   <NavDropdown
                     align="end"
@@ -217,6 +218,10 @@ function Navigation() {
                     {isAdmin() && (
                       <>
                         <NavDropdown.Divider />
+
+                        <NavDropdown.Item as={Link} to="/admin">
+                          ⚙️ Адмін панель
+                        </NavDropdown.Item>
 
                         <NavDropdown.Item
                           onClick={() => setShowAddModal(true)}
@@ -296,20 +301,8 @@ function Navigation() {
                 </>
               )}
             </Nav>
-          </Navbar.Collapse>
         </Container>
       </Navbar>
-
-      <AdminMovieModal
-        show={showAddModal}
-        onHide={() => setShowAddModal(false)}
-        onSuccess={() => window.location.reload()}
-      />
-
-      <ThemeSettings
-        show={showThemeModal}
-        onHide={() => setShowThemeModal(false)}
-      />
     </>
   );
 }

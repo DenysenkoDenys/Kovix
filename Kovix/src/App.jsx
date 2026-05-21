@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { SignalRProvider } from './contexts/SignalRContext';
+import { PresenceProvider } from './contexts/PresenceContext';
 import Navigation from './components/Navigation';
 import HomePage from './pages/HomePage';
 import MovieDetailPage from './pages/MovieDetailPage';
@@ -76,16 +77,17 @@ function App() {
 
   return (
     <SignalRProvider>
-      <AuthProvider>
-        <ThemeProvider>
-          <FriendsProvider>
-            <AchievementProvider>
-              <Router>
-                <div className="App">
-                  <PromoBanner />
-                  <NewsBanner />
-                  <Navigation />
-                  <Routes>
+      <PresenceProvider>
+        <AuthProvider>
+          <ThemeProvider>
+            <FriendsProvider>
+              <AchievementProvider>
+                <Router>
+                  <div className="App">
+                    <PromoBanner />
+                    <NewsBanner />
+                    <Navigation />
+                    <Routes>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/movie/:id" element={<MovieDetailPage />} />
                     <Route path="/search" element={<SearchPage />} />
@@ -196,16 +198,17 @@ function App() {
                     } />
                     <Route path="/faq" element={<FAQPage />} />
                     <Route path="*" element={<NotFoundPage />} />
-                  </Routes>
-                </div>
-                <SupportWidget />
-                <CookiePopup />
-                <Footer />
-              </Router>
-            </AchievementProvider>
-          </FriendsProvider>
-        </ThemeProvider>
-      </AuthProvider>
+                    </Routes>
+                  </div>
+                  <SupportWidget />
+                  <CookiePopup />
+                  <Footer />
+                </Router>
+              </AchievementProvider>
+            </FriendsProvider>
+          </ThemeProvider>
+        </AuthProvider>
+      </PresenceProvider>
     </SignalRProvider>
   );
 }

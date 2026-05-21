@@ -18,6 +18,7 @@ export const SignalRProvider = ({ children }) => {
     const [chatConnection, setChatConnection] = useState(null);
 
     useEffect(() => {
+        let cancelled = false;
         const token = localStorage.getItem('token');
         if (!token) {
             console.warn('No token found. SignalR connections skipped.');
@@ -40,17 +41,46 @@ export const SignalRProvider = ({ children }) => {
             .withAutomaticReconnect()
             .build();
 
-        Promise.all([
-            notifConn.start().then(() => console.log('✅ SignalR notifications connected')),
-            chatConn.start().then(() => console.log('✅ SignalR chat connected'))
-        ]).catch(err => {
-            console.error('SignalR connection error:', err);
-        });
+        const isExpectedAbort = (err) => {
+            const message = String(err?.message || err || '');
+            return err?.name === 'AbortError'
+                || message.includes('negotiation')
+                || message.includes('stopped')
+                || message.includes('canceled')
+                || message.includes('cancelled');
+        };
 
-        setNotificationConnection(notifConn);
-        setChatConnection(chatConn);
+        const startConnections = async () => {
+            const results = await Promise.allSettled([
+                notifConn.start(),
+                chatConn.start()
+            ]);
+
+            if (cancelled) {
+                return;
+            }
+
+            results.forEach((result, index) => {
+                if (result.status === 'fulfilled') {
+                    console.log(index === 0
+                        ? '✅ SignalR notifications connected'
+                        : '✅ SignalR chat connected');
+                    return;
+                }
+
+                if (!isExpectedAbort(result.reason)) {
+                    console.error('SignalR connection error:', result.reason);
+                }
+            });
+
+            setNotificationConnection(notifConn);
+            setChatConnection(chatConn);
+        };
+
+        startConnections();
 
         return () => {
+            cancelled = true;
             notifConn.stop().catch(() => {});
             chatConn.stop().catch(() => {});
         };

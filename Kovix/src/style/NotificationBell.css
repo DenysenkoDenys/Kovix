@@ -1,12 +1,12 @@
 .notification-btn {
     background: transparent;
-    padding-right: 6px; 
+    padding-right: 2px;
 }
 
 .bell-icon {
     font-size: 1.5rem;
-    margin-right: 12px;   
-    margin-bottom: 2px;     
+    margin-right: 6px;
+    margin-bottom: 2px;
     transition: transform 0.2s ease, filter 0.2s ease;
 }
 
@@ -38,4 +38,14 @@
     align-items: center;
     justify-content: center;    
     box-shadow: 0 0 0 2px var(--bg-panel);
+}
+
+@media (max-width: 768px) {
+    .notification-btn {
+        padding-right: 0;
+    }
+
+    .bell-icon {
+        margin-right: 2px;
+    }
 }
