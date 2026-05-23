@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Modal, Button, Card, Form, Spinner, Alert } from 'react-bootstrap';
-import { API_BASE_URL } from '../utils/apiConfig';
+import { API_ROOT_URL } from '../utils/apiConfig';
 
 const MovieQuizModal = ({ show, onHide, movieId, movieTitle }) => {
   const [questions, setQuestions] = useState([]);
@@ -22,7 +22,7 @@ const MovieQuizModal = ({ show, onHide, movieId, movieTitle }) => {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`${API_BASE_URL}/api/movies/${movieId}/quiz-questions`, {
+      const response = await fetch(`${API_ROOT_URL}/movies/${movieId}/quiz-questions`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -71,7 +71,7 @@ const MovieQuizModal = ({ show, onHide, movieId, movieTitle }) => {
   const handleSubmitQuiz = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/movies/${movieId}/submit-quiz`, {
+      const response = await fetch(`${API_ROOT_URL}/movies/${movieId}/submit-quiz`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { API_BASE_URL } from '../utils/apiConfig';
+import { API_ROOT_URL } from '../utils/apiConfig';
 
 const ImportMalCharacters = ({ movieId, onImportSuccess }) => {
     const [malAnimeId, setMalAnimeId] = useState('');
@@ -12,7 +12,7 @@ const ImportMalCharacters = ({ movieId, onImportSuccess }) => {
         setMessage('');
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/movies/${movieId}/import-mal/${malAnimeId}`, {
+            const response = await fetch(`${API_ROOT_URL}/movies/${movieId}/import-mal/${malAnimeId}`, {
                 method: 'POST'
             });
 

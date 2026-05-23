@@ -26,6 +26,10 @@ export const getApiBaseUrl = () => {
   return 'http://localhost:8080';
 };
 
+export const getApiRootUrl = () => {
+  return `${getApiBaseUrl()}/api`;
+};
+
 /**
  * Get SignalR connection URL
  * Returns the HTTP(S) URL for SignalR to use
@@ -37,3 +41,4 @@ export const getWebSocketUrl = () => {
 };
 
 export const API_BASE_URL = getApiBaseUrl();
+export const API_ROOT_URL = getApiRootUrl();
