@@ -303,6 +303,8 @@ function Navigation() {
             </Nav>
         </Container>
       </Navbar>
+
+      <ThemeSettings show={showThemeModal} onHide={() => setShowThemeModal(false)} />
     </>
   );
 }
