@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Spinner, Alert, Row, Col, Badge } from 'react-bootstrap';
+import { API_BASE_URL } from '../utils/apiConfig';
 
 const QuizStatsComponent = () => {
   const [stats, setStats] = useState(null);
@@ -16,7 +17,7 @@ const QuizStatsComponent = () => {
 
   const loadQuizStats = async () => {
     try {
-      const response = await fetch('/api/movies/quiz-stats', {
+      const response = await fetch(`${API_BASE_URL}/api/movies/quiz-stats`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
