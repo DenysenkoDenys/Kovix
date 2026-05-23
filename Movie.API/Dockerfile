@@ -13,6 +13,5 @@ WORKDIR /app
 EXPOSE 8080
 
 COPY --from=build /app/publish .
-COPY wwwroot/ /app/wwwroot/
 
 ENTRYPOINT ["dotnet", "Movie.API.dll"]

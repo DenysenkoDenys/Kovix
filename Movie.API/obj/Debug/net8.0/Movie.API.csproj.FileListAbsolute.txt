@@ -314,4 +314,3 @@ C:\Навчання\Курсова (Моделювання)\Kovix\Movie.API\obj\
 C:\Навчання\Курсова (Моделювання)\Kovix\Movie.API\obj\Debug\net8.0\Movie.API.genruntimeconfig.cache
 C:\Навчання\Курсова (Моделювання)\Kovix\Movie.API\obj\Debug\net8.0\ref\Movie.API.dll
 C:\Навчання\Курсова (Моделювання)\Kovix\Movie.API\bin\Debug\net8.0\Stripe.net.dll
-C:\Навчання\Курсова (Моделювання)\Kovix\Movie.API\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
