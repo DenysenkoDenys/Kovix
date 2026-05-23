@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card, Button, Form, Spinner } from 'react-bootstrap';
 import { moviesAPI } from '../services/api';
+import { resolveMediaUrl } from '../utils/apiConfig';
 import '../style/TierListBuilder.css';
 
 const DEFAULT_TIERS = [
@@ -123,7 +124,7 @@ function TierListBuilder({ items, onItemsChange, tierListId, tiersConfig }) {
     >
       <div className="tier-item-poster" style={{ height: '180px' }}>
         {movie.posterUrl ? (
-          <img src={movie.posterUrl} alt={movie.title} />
+          <img src={resolveMediaUrl(movie.posterUrl)} alt={movie.title} />
         ) : (
           <div className="poster-placeholder" style={{ backgroundColor: 'var(--bg-card)' }}>
             {movie.title}
@@ -145,7 +146,7 @@ function TierListBuilder({ items, onItemsChange, tierListId, tiersConfig }) {
     >
       <div className="tier-item-poster">
         {item.moviePosterUrl ? (
-          <img src={item.moviePosterUrl} alt={item.movieTitle} />
+          <img src={resolveMediaUrl(item.moviePosterUrl)} alt={item.movieTitle} />
         ) : (
           <div className="poster-placeholder" style={{ backgroundColor: 'var(--bg-card)' }}>
             {item.movieTitle}

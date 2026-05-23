@@ -40,5 +40,23 @@ export const getWebSocketUrl = () => {
   return getApiBaseUrl();
 };
 
+export const resolveMediaUrl = (url, fallback = '') => {
+  if (!url) return fallback;
+
+  if (
+    url.startsWith('http://') ||
+    url.startsWith('https://') ||
+    url.startsWith('//') ||
+    url.startsWith('data:') ||
+    url.startsWith('blob:')
+  ) {
+    return url;
+  }
+
+  const normalizedPath = url.replace(/\\/g, '/');
+  const separator = normalizedPath.startsWith('/') ? '' : '/';
+  return `${getApiBaseUrl()}${separator}${normalizedPath}`;
+};
+
 export const API_BASE_URL = getApiBaseUrl();
 export const API_ROOT_URL = getApiRootUrl();

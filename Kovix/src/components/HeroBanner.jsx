@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Carousel, Spinner, Badge } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { moviesAPI } from '../services/api';
+import { resolveMediaUrl } from '../utils/apiConfig';
 import '../style/HeroBanner.css';
 
 function HeroBanner() {
@@ -43,19 +44,21 @@ function HeroBanner() {
                 wrap={true}
                 className="hero-carousel"
             >
-                {latestItems.map((item) => (
+                {latestItems.map((item) => {
+                    const bannerImageUrl = resolveMediaUrl(item.bannerUrl || item.posterUrl, '');
+                    return (
                     <Carousel.Item key={item.id} className="banner-item">
                         <Link to={`/movie/${item.id}`}>
                             <div className="banner-image-wrapper">
                                 <img
                                     className="banner-img-bg"
-                                    src={item.bannerUrl || item.posterUrl}
+                                    src={bannerImageUrl}
                                     alt=""
                                     aria-hidden="true"
                                 />
                                 <img
                                     className="banner-img-poster"
-                                    src={item.bannerUrl || item.posterUrl}
+                                    src={bannerImageUrl}
                                     alt={item.title}
                                 />
                                 <div className="banner-overlay"></div>
@@ -84,7 +87,8 @@ function HeroBanner() {
                             </Carousel.Caption>
                         </Link>
                     </Carousel.Item>
-                ))}
+                    );
+                })}
             </Carousel>
         </div>
     );

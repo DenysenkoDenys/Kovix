@@ -1,6 +1,6 @@
 param(
     [string]$BackupPath = "C:\backups",
-    [string]$ContainerName = "mssql_kovix",
+    [string]$ContainerName = "mssql_kovix_prod",
     [string]$Username = "sa",
     [string]$Password = "KovixStrongPass123!",
     [string]$Database = "KovixDb"
