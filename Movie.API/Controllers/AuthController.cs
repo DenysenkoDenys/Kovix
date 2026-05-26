@@ -598,11 +598,26 @@ namespace Movie.API.Controllers
 
         private async Task<bool> VerifyCaptchaAsync(string token)
         {
+            var secretKey = _configuration["ReCaptcha:SecretKey"];
+
+            if (string.IsNullOrWhiteSpace(secretKey))
+            {
+                var environmentName = _configuration["ASPNETCORE_ENVIRONMENT"];
+                Console.WriteLine("ReCaptcha:SecretKey is not configured.");
+
+                if (string.Equals(environmentName, "Development", StringComparison.OrdinalIgnoreCase))
+                {
+                    Console.WriteLine("Skipping captcha verification in Development because the secret key is missing.");
+                    return true;
+                }
+
+                return false;
+            }
+
             using var client = new HttpClient();
-
-            var secretKey = "6LcFI3UsAAAAAGkQhHzy-pri_rHxlygZs2wt2hMO";
-
-            var response = await client.PostAsync($"https://www.google.com/recaptcha/api/siteverify?secret={secretKey}&response={token}", null);
+            var response = await client.PostAsync(
+                $"https://www.google.com/recaptcha/api/siteverify?secret={secretKey}&response={token}",
+                null);
 
             if (response.IsSuccessStatusCode)
             {

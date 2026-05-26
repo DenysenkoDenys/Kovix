@@ -163,18 +163,25 @@ function NotificationBell() {
     const unreadCount = simpleNotifications.filter(n => !n.isRead).length;
     const totalBadgeCount = incomingRequests.length + unreadCount;
 
+    const handleKeyActivate = (e, cb) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            cb();
+        }
+    };
+
     return (
         <div className="position-relative">
-            <button className="btn position-relative p-0 border-0 notification-btn" onClick={() => setIsOpen(!isOpen)}>
+            <button className="btn position-relative p-0 border-0 notification-btn" onClick={() => setIsOpen(!isOpen)} aria-label="Сповіщення" aria-expanded={isOpen} aria-haspopup="true" aria-controls="notification-menu">
                 <FiBell className={`bell-icon ${totalBadgeCount > 0 ? 'text-primary' : ''}`} style={{ fontSize: '1.5rem', color: 'var(--text-main)' }} />
                 {totalBadgeCount > 0 && <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: '0.6rem' }}>{totalBadgeCount}</span>}
             </button>
 
             {isOpen && (
-                <div className="card position-absolute end-0 mt-2 shadow" style={{ width: '350px', zIndex: 1050, backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
+                <div id="notification-menu" className="card position-absolute end-0 mt-2 shadow" style={{ width: '350px', zIndex: 1050, backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
                     <div className="card-header fw-bold d-flex justify-content-between align-items-center" style={{ backgroundColor: 'var(--bg-panel)', borderBottom: '1px solid var(--border-color)' }}>
                         <span>Сповіщення</span>
-                        {simpleNotifications.length > 0 && <button onClick={handleClearAll} className="btn btn-link btn-sm p-0 text-decoration-none text-muted" style={{ fontSize: '0.8rem' }}>Очистити все</button>}
+                        {simpleNotifications.length > 0 && <button onClick={handleClearAll} className="btn btn-link btn-sm p-0 text-decoration-none text-muted" style={{ fontSize: '0.8rem' }} aria-label="Очистити всі сповіщення">Очистити все</button>}
                     </div>
 
                     <div className="list-group list-group-flush" style={{ maxHeight: '400px', overflowY: 'auto' }}>
@@ -190,7 +197,10 @@ function NotificationBell() {
                                 key={`friend-req-${req.id}`}
                                 className="list-group-item p-3 list-group-item-action"
                                 style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-main)', borderBottom: '1px solid var(--border-color)', cursor: 'pointer' }}
+                                role="button"
+                                tabIndex={0}
                                 onClick={() => goToProfile(req.id)}
+                                onKeyDown={(e) => handleKeyActivate(e, () => goToProfile(req.id))}
                             >
                                 <div className="d-flex align-items-center gap-2 mb-2">
                                     <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style={{ width: 32, height: 32 }}>
@@ -202,11 +212,11 @@ function NotificationBell() {
                                     </div>
                                 </div>
                                 <div className="d-flex gap-2 mt-2">
-                                    <Button size="sm" variant="success" className="flex-grow-1 d-flex align-items-center justify-content-center gap-1" onClick={(e) => handleAccept(e, req.id)}>
-                                        <FiCheck /> Прийняти
+                                    <Button size="sm" variant="success" className="flex-grow-1 d-flex align-items-center justify-content-center gap-1" onClick={(e) => handleAccept(e, req.id)} aria-label={`Прийняти запит від ${req.username}`}>
+                                        <FiCheck aria-hidden="true" /> Прийняти
                                     </Button>
-                                    <Button size="sm" variant="outline-danger" className="flex-grow-1 d-flex align-items-center justify-content-center gap-1" onClick={(e) => handleReject(e, req.id)}>
-                                        <FiX /> Відхилити
+                                    <Button size="sm" variant="outline-danger" className="flex-grow-1 d-flex align-items-center justify-content-center gap-1" onClick={(e) => handleReject(e, req.id)} aria-label={`Відхилити запит від ${req.username}`}>
+                                        <FiX aria-hidden="true" /> Відхилити
                                     </Button>
                                 </div>
                             </div>
@@ -235,6 +245,9 @@ function NotificationBell() {
                                         transition: 'background-color 0.2s'
                                     }}
                                     onClick={() => isClickable && handleNotificationClick(note)}
+                                    role={isClickable ? 'button' : undefined}
+                                    tabIndex={isClickable ? 0 : undefined}
+                                    onKeyDown={isClickable ? (e) => handleKeyActivate(e, () => handleNotificationClick(note)) : undefined}
                                 >
                                     <div className="d-flex gap-2 w-100">
                                         {!note.isRead && (
@@ -254,7 +267,7 @@ function NotificationBell() {
                                         </div>
 
                                         {note.id && (
-                                            <button className="btn btn-link text-danger p-0 ms-2" onClick={(e) => handleDeleteNotification(e, note.id, note.type)}>
+                                            <button className="btn btn-link text-danger p-0 ms-2" onClick={(e) => handleDeleteNotification(e, note.id, note.type)} aria-label="Видалити сповіщення">
                                                 <FiTrash2 />
                                             </button>
                                         )}

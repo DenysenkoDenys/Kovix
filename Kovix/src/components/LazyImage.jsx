@@ -1,14 +1,16 @@
 import { useState } from 'react';
 import CustomSpinner from './CustomSpinner';
 
-function LazyImage({ src, alt, placeholder, className, style, ...props }) {
+function LazyImage({ src, alt, placeholder, className, style, width, height, ...props }) {
   const [loaded, setLoaded] = useState(false);
   const [errored, setErrored] = useState(false);
 
   const displaySrc = errored ? (placeholder || src) : src;
 
-  return (
-    <div className={`lazy-image-wrapper ${className || ''}`} style={{ position: 'relative', overflow: 'hidden', ...style }}>
+    const aspectStyle = (width && height) ? { aspectRatio: `${width} / ${height}` } : {};
+
+    return (
+    <div className={`lazy-image-wrapper ${className || ''}`} style={{ position: 'relative', overflow: 'hidden', ...style, ...aspectStyle }}>
       {!loaded && (
         <div className="lazy-image-loader">
           <CustomSpinner size="small" />
@@ -17,6 +19,8 @@ function LazyImage({ src, alt, placeholder, className, style, ...props }) {
       <img
         src={displaySrc}
         alt={alt}
+        {...(width ? { width } : {})}
+        {...(height ? { height } : {})}
         loading="lazy"
         decoding="async"
         onLoad={() => setLoaded(true)}

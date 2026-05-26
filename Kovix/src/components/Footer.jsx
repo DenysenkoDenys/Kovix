@@ -1,6 +1,6 @@
 import { Container, Row, Col } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { FaEnvelope, FaTelegram, FaGithub, FaInstagram, FaFilm } from 'react-icons/fa';
+import { FaEnvelope, FaTelegram, FaGithub, FaInstagram, FaFilm, FaViber } from 'react-icons/fa';
 
 function Footer() {
     return (
@@ -36,7 +36,7 @@ function Footer() {
                                 <FaEnvelope className="text-primary" /> support@kovix.com
                             </li>
                             <li className="d-flex align-items-center gap-2 text-muted">
-                                <FaTelegram className="text-primary" /> @kovix_support
+                                <FaViber className="text-primary" /> @kovix_support
                             </li>
                         </ul>
                     </Col>
@@ -46,7 +46,7 @@ function Footer() {
                         <div className="d-flex gap-3">
                             <a href="#" className="text-muted hover-primary"><FaGithub size={20} /></a>
                             <a href="#" className="text-muted hover-primary"><FaInstagram size={20} /></a>
-                            <a href="#" className="text-muted hover-primary"><FaTelegram size={20} /></a>
+                            <a href="#" className="text-muted hover-primary"><FaViber size={20} /></a>
                         </div>
                     </Col>
                 </Row>

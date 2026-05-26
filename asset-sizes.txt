@@ -1,0 +1,7 @@
+﻿C:\Навчання\Курсова (Моделювання)\Kovix\Kovix\dist\assets\index-D4rVv9yq.js|1492.95
+C:\Навчання\Курсова (Моделювання)\Kovix\Kovix\dist\assets\closeIcon-CdJIufLG.png|1475.19
+C:\Навчання\Курсова (Моделювання)\Kovix\Kovix\dist\assets\index-Dp9wd0xY.css|270.58
+C:\Навчання\Курсова (Моделювання)\Kovix\Kovix\dist\assets\Logo-BH68JpPl.png|102.69
+C:\Навчання\Курсова (Моделювання)\Kovix\Kovix\dist\assets\NotFoundAvatar-CXthF0zB.png|19
+C:\Навчання\Курсова (Моделювання)\Kovix\Kovix\dist\assets\ajax-loader-BcnMEykj.gif|4.08
+C:\Навчання\Курсова (Моделювання)\Kovix\Kovix\dist\assets\slick-BlzDm7g2.svg|2.1

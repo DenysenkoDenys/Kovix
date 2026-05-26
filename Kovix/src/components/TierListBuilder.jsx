@@ -124,7 +124,7 @@ function TierListBuilder({ items, onItemsChange, tierListId, tiersConfig }) {
     >
       <div className="tier-item-poster" style={{ height: '180px' }}>
         {movie.posterUrl ? (
-          <img src={resolveMediaUrl(movie.posterUrl)} alt={movie.title} />
+          <img src={resolveMediaUrl(movie.posterUrl)} alt={movie.title} width={120} height={180} />
         ) : (
           <div className="poster-placeholder" style={{ backgroundColor: 'var(--bg-card)' }}>
             {movie.title}
@@ -146,7 +146,7 @@ function TierListBuilder({ items, onItemsChange, tierListId, tiersConfig }) {
     >
       <div className="tier-item-poster">
         {item.moviePosterUrl ? (
-          <img src={resolveMediaUrl(item.moviePosterUrl)} alt={item.movieTitle} />
+          <img src={resolveMediaUrl(item.moviePosterUrl)} alt={item.movieTitle} width={120} height={180} />
         ) : (
           <div className="poster-placeholder" style={{ backgroundColor: 'var(--bg-card)' }}>
             {item.movieTitle}

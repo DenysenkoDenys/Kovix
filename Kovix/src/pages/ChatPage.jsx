@@ -588,7 +588,7 @@ function ChatPage() {
                                                     }}
                                                 >
                                                     {friend.avatarUrl ? (
-                                                        <img src={`${getApiBaseUrl()}${friend.avatarUrl}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                        <img src={`${getApiBaseUrl()}${friend.avatarUrl}`} alt="" width={45} height={45} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                                     ) : (friend.username[0].toUpperCase())}
                                                 </div>
                                             </div>
@@ -846,13 +846,13 @@ function ChatPage() {
                             </div>
 
                             <div className="p-3" style={{ backgroundColor: 'var(--bg-card)', borderTop: '1px solid var(--border-color)' }}>
-                                {editingId && <div className="d-flex justify-content-between small text-primary mb-2"><span>✏️ Редагування...</span><span onClick={cancelEditing} style={{ cursor: 'pointer' }}>✖</span></div>}
+                                {editingId && <div className="d-flex justify-content-between small text-primary mb-2"><span>✏️ Редагування...</span><button type="button" className="btn btn-link p-0" aria-label="Скасувати редагування" onClick={cancelEditing}>✖</button></div>}
                                 {replyingTo && (
                                     <div className="d-flex justify-content-between align-items-center small mb-2 p-2 rounded" style={{ backgroundColor: 'rgba(33, 150, 243, 0.1)', borderLeft: '3px solid var(--primary-color)' }}>
                                         <div>
                                             <span className="fw-bold" style={{ color: 'var(--primary-color)' }}>↩️ Відповідь для: {replyingTo.name}</span>
                                         </div>
-                                        <span onClick={() => setReplyingTo(null)} style={{ cursor: 'pointer', fontSize: '1.1rem', color: 'var(--text-secondary)' }}>✖</span>
+                                        <button type="button" className="btn btn-link p-0" aria-label="Скасувати відповідь" onClick={() => setReplyingTo(null)} style={{ fontSize: '1.1rem', color: 'var(--text-secondary)' }}>✖</button>
                                     </div>
                                 )}
 

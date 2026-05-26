@@ -7,7 +7,7 @@ import ThemeSettings from './ThemeSettings';
 import { authAPI, moviesAPI } from '../services/api';
 import NotificationBell from './NotificationBell';
 import { useTheme } from '../contexts/ThemeContext';
-import { FaNewspaper } from 'react-icons/fa';
+import { FaNewspaper, FaChevronDown } from 'react-icons/fa';
 import '../style/App.css';
 import defaultAvatarImg from '../assets/NotFoundAvatar.png';
 import { API_BASE_URL } from '../utils/apiConfig';
@@ -114,6 +114,7 @@ function Navigation() {
                   as={Link}
                   to="/chat"
                   title="Чат"
+                  aria-label="Чат"
                   className="fs-5"
                 >
                   💬
@@ -126,9 +127,11 @@ function Navigation() {
                 onClick={handleRandomMovie}
                 disabled={randomLoading}
                 className="d-flex align-items-center gap-1"
+                aria-label={randomLoading ? 'Завантаження випадкового фільму' : 'Випадковий фільм'}
+                aria-busy={randomLoading}
               >
                 {randomLoading
-                  ? <span className="spinner-border spinner-border-sm" />
+                  ? <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
                   : <>🎲 <span className="d-none d-md-inline">Рандом</span></>
                 }
               </Button>
@@ -138,6 +141,7 @@ function Navigation() {
                 className="fs-5 text-decoration-none"
                 onClick={() => setShowThemeModal(true)}
                 title="Тема"
+                aria-label="Тема"
               >
                 🎨
               </Button>
@@ -160,21 +164,23 @@ function Navigation() {
                   <NavDropdown
                     align="end"
                     id="profile-dropdown"
+                    className="profile-dropdown"
                     title={
                       <div className="d-flex align-items-center gap-2">
 
                         <img
                           src={userAvatar ? `${API_BASE_URL}${userAvatar}` : DEFAULT_AVATAR}
-                          alt="avatar"
+                          alt={user ? `${user.username} avatar` : 'avatar'}
                           className="rounded-circle border border-secondary"
                           style={{ width: 32, height: 32, objectFit: 'cover' }}
                           onError={(e) => { e.target.src = DEFAULT_AVATAR; }}
                         />
-                        <span className="d-none d-md-inline fw-semibold">
+                        <span className="d-none d-md-inline-flex fw-semibold align-items-center">
                           {user.username}
                           {user.isPremium && (
                             <span className="ms-1" title="Kovix Premium">👑</span>
                           )}
+                          <FaChevronDown className="profile-chevron ms-2" />
                         </span>
                       </div>
                     }
@@ -218,10 +224,6 @@ function Navigation() {
                     {isAdmin() && (
                       <>
                         <NavDropdown.Divider />
-
-                        <NavDropdown.Item as={Link} to="/admin">
-                          ⚙️ Адмін панель
-                        </NavDropdown.Item>
 
                         <NavDropdown.Item
                           onClick={() => setShowAddModal(true)}
@@ -305,6 +307,16 @@ function Navigation() {
       </Navbar>
 
       <ThemeSettings show={showThemeModal} onHide={() => setShowThemeModal(false)} />
+
+      <AdminMovieModal
+        show={showAddModal}
+        onHide={() => setShowAddModal(false)}
+        movieToEdit={null}
+        onSuccess={() => {
+          setShowAddModal(false);
+          try { window.location.reload(); } catch (e) {  }
+        }}
+      />
     </>
   );
 }

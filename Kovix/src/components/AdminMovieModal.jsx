@@ -488,16 +488,16 @@ function AdminMovieModal({ show, onHide, movieToEdit, onSuccess }) {
                   <Col xs={12}>
                     {(selectedTmdbId || selectedMalId) && (
                       <Alert variant="info" className="mb-0">
-                        {selectedTmdbId && (
+                            {selectedTmdbId && (
                           <div className="d-flex justify-content-between align-items-center mb-2">
                             <span>🎬 TMDB ID: <strong>{selectedTmdbId}</strong></span>
-                            <Button variant="sm" size="sm" onClick={() => setSelectedTmdbId(null)}>✕</Button>
+                            <Button variant="sm" size="sm" onClick={() => setSelectedTmdbId(null)} aria-label="Очистити TMDB ID">✕</Button>
                           </div>
                         )}
                         {selectedMalId && (
                           <div className="d-flex justify-content-between align-items-center">
                             <span>📚 MAL ID: <strong>{selectedMalId}</strong></span>
-                            <Button variant="sm" size="sm" onClick={() => setSelectedMalId(null)}>✕</Button>
+                            <Button variant="sm" size="sm" onClick={() => setSelectedMalId(null)} aria-label="Очистити MAL ID">✕</Button>
                           </div>
                         )}
                       </Alert>
@@ -619,7 +619,7 @@ function AdminMovieModal({ show, onHide, movieToEdit, onSuccess }) {
                   {movieCast.length > 0 ? movieCast.map((item, index) => (
                     <ListGroup.Item key={`${item.actorId}-${index}`} className="d-flex justify-content-between align-items-center bg-card text-main border-secondary">
                       <div><strong className="text-info">{item.name}</strong> <span className="text-muted ms-2 small">як {item.role}</span></div>
-                      <Button variant="outline-danger" size="sm" onClick={() => handleRemoveActor(item.actorId)} disabled={isImporting}>✖</Button>
+                      <Button variant="outline-danger" size="sm" onClick={() => handleRemoveActor(item.actorId)} disabled={isImporting} aria-label={`Видалити актора ${item.name || ''}`}>✖</Button>
                     </ListGroup.Item>
                   )) : <p className="text-center text-muted mt-2">Список акторів порожній</p>}
                 </ListGroup>

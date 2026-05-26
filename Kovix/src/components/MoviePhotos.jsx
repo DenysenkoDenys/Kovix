@@ -477,8 +477,8 @@ const MoviePhotos = ({ movieId, movieTitle }) => {
                                     <div className="d-flex flex-wrap gap-2">
                                         {selectedFiles.map((file, index) => (
                                             <div key={index} className="position-relative rounded" style={{ width: '80px', height: '80px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
-                                                <img src={URL.createObjectURL(file)} alt="preview" className="w-100 h-100" style={{ objectFit: 'cover' }} />
-                                                <Button variant="danger" size="sm" className="position-absolute top-0 end-0 m-1 p-1 d-flex align-items-center justify-content-center" style={{ width: '20px', height: '20px', fontSize: '10px' }} onClick={(e) => { e.stopPropagation(); removeSelectedFile(index); }}>
+                                                <img src={URL.createObjectURL(file)} alt="preview" width={80} height={80} className="w-100 h-100" style={{ objectFit: 'cover' }} />
+                                                <Button variant="danger" size="sm" aria-label="Видалити обране фото" className="position-absolute top-0 end-0 m-1 p-1 d-flex align-items-center justify-content-center" style={{ width: '20px', height: '20px', fontSize: '10px' }} onClick={(e) => { e.stopPropagation(); removeSelectedFile(index); }}>
                                                     <FaTrash />
                                                 </Button>
                                             </div>

@@ -68,6 +68,8 @@ function MovieCard({ movie, disableLink = false, hideMeta = false, isNew = false
           alt={movie.title}
           placeholder={defaultPosterImg}
           className="movie-card-img"
+          width={300}
+          height={450}
         />
       </div>
 

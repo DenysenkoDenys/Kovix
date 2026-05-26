@@ -33,6 +33,19 @@ function EditTierListPage() {
   const [showTiersModal, setShowTiersModal] = useState(false);
   const [editingTier, setEditingTier] = useState(null);
 
+  const getFallbackTierId = (tiers) => tiers[0]?.id || 'S';
+
+  const normalizeItemsToTiers = (listItems, tiers) => {
+    const validTierIds = new Set(tiers.map(t => t.id));
+    const fallbackTierId = getFallbackTierId(tiers);
+
+    return listItems.map((item) => (
+      validTierIds.has(item.tier)
+        ? item
+        : { ...item, tier: fallbackTierId }
+    ));
+  };
+
   useEffect(() => {
     loadTierList();
   }, [id]);
@@ -82,9 +95,10 @@ function EditTierListPage() {
     setError('');
     
     try {
+      const safeItems = normalizeItemsToTiers(items, tiersConfig);
       const itemsDto = items.map((item, index) => ({
         movieId: item.movieId,
-        tier: item.tier,
+        tier: safeItems[index]?.tier ?? item.tier,
         position: index
       }));
 
@@ -147,7 +161,15 @@ function EditTierListPage() {
   };
 
   const handleAddTier = () => {
-    const newId = String.fromCharCode(65 + tiersConfig.length); // A, B, C, ...
+    const usedIds = new Set(tiersConfig.map(t => t.id));
+    let newId = 'T1';
+    for (let i = 1; i <= 99; i++) {
+      const candidate = `T${i}`;
+      if (!usedIds.has(candidate)) {
+        newId = candidate;
+        break;
+      }
+    }
     const newTier = {
       id: newId,
       name: newId,
@@ -161,7 +183,16 @@ function EditTierListPage() {
       alert('Повинен бути хоча б один рівень');
       return;
     }
-    setTiersConfig(tiersConfig.filter(t => t.id !== tierId));
+    const nextTiers = tiersConfig.filter(t => t.id !== tierId);
+    const fallbackTierId = getFallbackTierId(nextTiers);
+
+    setTiersConfig(nextTiers);
+    setItems(prevItems => normalizeItemsToTiers(
+      prevItems.map(item => (
+        item.tier === tierId ? { ...item, tier: fallbackTierId } : item
+      )),
+      nextTiers
+    ));
   };
 
   const handleUpdateTier = (tierId, field, value) => {

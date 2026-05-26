@@ -466,9 +466,9 @@ function ProfilePage() {
                           />
                         </div>
                       </Link>
-                      <div className="d-flex gap-2">
-                        <Button size="sm" variant="success" onClick={() => handleAccept(req.id)}>✅</Button>
-                        <Button size="sm" variant="danger" onClick={() => handleRemove(req.id)}>❌</Button>
+                        <div className="d-flex gap-2">
+                        <Button size="sm" variant="success" onClick={() => handleAccept(req.id)} aria-label={`Прийняти запит від ${req.username}`}>✅</Button>
+                        <Button size="sm" variant="danger" onClick={() => handleRemove(req.id)} aria-label={`Відхилити запит від ${req.username}`}>❌</Button>
                       </div>
                     </div>
                   ))}
@@ -585,9 +585,9 @@ function ProfilePage() {
                 </label>
               </div>
 
-              {previewUrl && (
+                  {previewUrl && (
                 <div className="mt-3 d-flex align-items-center gap-3 p-3 rounded" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-                  <img src={previewUrl} alt="preview" className="rounded" style={{ width: 80, height: 80, objectFit: 'cover' }} />
+                  <img src={previewUrl} alt="preview" width={80} height={80} className="rounded" style={{ width: 80, height: 80, objectFit: 'cover' }} />
                   <div>
                     <div style={{ color: 'var(--text-main)', fontWeight: '500', marginBottom: '8px' }}>✅ Новий аватар готовий</div>
                     <Button variant="danger" size="sm" onClick={handleDeletePhoto}>🗑️ Видалити</Button>

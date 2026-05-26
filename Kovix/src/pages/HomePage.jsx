@@ -1,23 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Container, Button, Spinner, Alert, Modal } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { moviesAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import MovieCard from '../components/MovieCard';
-import RecentlyViewed from '../components/RecentlyViewed';
-import PopularActors from '../components/PopularActors';
-import HeroBanner from '../components/HeroBanner';
-import RecommendedSection from '../components/RecommendedSection';
-import ComingSoonBlog from '../components/ComingSoonBlog';
-import SlickSlider from "react-slick";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
+const RecentlyViewed = lazy(() => import('../components/RecentlyViewed'));
+const PopularActors = lazy(() => import('../components/PopularActors'));
+const HeroBanner = lazy(() => import('../components/HeroBanner'));
+const RecommendedSection = lazy(() => import('../components/RecommendedSection'));
+const ComingSoonBlog = lazy(() => import('../components/ComingSoonBlog'));
+const SlickSlider = lazy(() => import('react-slick'));
 import '../style/HomePage.css';
-import closeIcon from '../assets/closeIcon.png';
+import { FiX } from 'react-icons/fi';
 import { getApiBaseUrl } from '../utils/apiConfig';
 import defaultPosterImg from '../assets/NotFoundPoster.webp';
 
-const Slider = SlickSlider.default ? SlickSlider.default : SlickSlider;
+const Slider = SlickSlider;
 
 function HomePage() {
   const { user } = useAuth();
@@ -31,6 +29,8 @@ function HomePage() {
 
   useEffect(() => {
     loadData();
+    import('slick-carousel/slick/slick.css').catch(() => {});
+    import('slick-carousel/slick/slick-theme.css').catch(() => {});
   }, []);
 
   const loadData = async () => {
@@ -276,13 +276,21 @@ function HomePage() {
         </Link>
       </div>
 
-      <RecentlyViewed />
+      <Suspense fallback={<div /> }>
+        <RecentlyViewed />
+      </Suspense>
 
-      <PopularActors />
+      <Suspense fallback={<div /> }>
+        <PopularActors />
+      </Suspense>
 
-      <RecommendedSection />
+      <Suspense fallback={<div /> }>
+        <RecommendedSection />
+      </Suspense>
 
-      <ComingSoonBlog />
+      <Suspense fallback={<div /> }>
+        <ComingSoonBlog />
+      </Suspense>
 
       <Modal
         show={showTrailer}
@@ -295,8 +303,9 @@ function HomePage() {
           <button
             onClick={closeTrailer}
             className="trailer-close-btn"
+            aria-label="Закрити трейлер"
           >
-            <img src={closeIcon} alt="Close" />
+            <FiX aria-hidden="true" size={20} />
           </button>
 
           {activeTrailer && (

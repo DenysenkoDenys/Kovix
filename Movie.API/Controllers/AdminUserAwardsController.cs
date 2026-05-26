@@ -5,6 +5,7 @@ using Movie.API.Data;
 using Movie.API.DTOs;
 using Movie.API.Models;
 using Movie.API.Hubs;
+using Microsoft.EntityFrameworkCore;
 
 namespace Movie.API.Controllers
 {
@@ -30,13 +31,28 @@ namespace Movie.API.Controllers
             var user = await _context.Users.FindAsync(dto.UserId);
             if (user == null) return NotFound("Користувача не знайдено.");
 
-                var award = new UserAward
-                {
-                    UserId = dto.UserId,
-                    Name = dto.Name,
-                    Icon = dto.Icon,
-                    Description = dto.Description
-                };
+            if (string.IsNullOrWhiteSpace(dto.Name))
+            {
+                return BadRequest("Назва досягнення обов'язкова.");
+            }
+
+            var normalizedName = (dto.Name ?? string.Empty).Trim().ToLower();
+            bool alreadyHas = await _context.UserAwards
+                .AnyAsync(ua => ua.UserId == dto.UserId && ua.Name != null && ua.Name.ToLower() == normalizedName);
+
+            if (alreadyHas)
+            {
+                _logger.LogInformation($"🛑 Користувач {dto.UserId} вже має досягнення: {dto.Name}");
+                return Conflict("Користувач вже має це досягнення.");
+            }
+
+            var award = new UserAward
+            {
+                UserId = dto.UserId,
+                Name = dto.Name!.Trim(),
+                Icon = dto.Icon,
+                Description = dto.Description
+            };
 
             _context.UserAwards.Add(award);
             await _context.SaveChangesAsync();
@@ -61,7 +77,7 @@ namespace Movie.API.Controllers
                 _logger.LogError($"Помилка відправки SignalR: {ex.Message}");
             }
 
-            return Ok(new { message = "Досягнення успішно видано!" });
+            return Ok("Досягнення успішно видано!");
         }
 
         [HttpPut("{id}")]
@@ -76,14 +92,14 @@ namespace Movie.API.Controllers
                 return NotFound("Досягнення не знайдено.");
             }
 
-            award.Name = dto.Name;
+            award.Name = dto.Name!;
             award.Icon = dto.Icon;
             award.Description = dto.Description;
 
             await _context.SaveChangesAsync();
             
             Console.WriteLine($"Досягнення оновлено: {id}");
-            return Ok(new { message = "Досягнення оновлено!" });
+            return Ok("Досягнення оновлено!");
         }
 
         [HttpDelete("{id}")]
@@ -102,7 +118,7 @@ namespace Movie.API.Controllers
             await _context.SaveChangesAsync();
             
             Console.WriteLine($"Досягнення видалено: {id}");
-            return Ok(new { message = "Досягнення видалено." });
+            return Ok("Досягнення видалено.");
         }
     }
 }

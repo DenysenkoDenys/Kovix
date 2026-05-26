@@ -94,7 +94,7 @@ export default function AllNewsPage() {
                                 <Col key={item.id} xs={12} md={4} className="mb-4">
                                     <Card className="h-100 shadow-sm border-0 news-card" style={{ backgroundColor: 'var(--bg-card)', borderRadius: '12px', overflow: 'hidden' }}>
                                         <div style={{ height: '200px', overflow: 'hidden' }}>
-                                            <img src={imageUrl} alt={item.title} className="w-100 h-100" style={{ objectFit: 'cover' }} />
+                                            <img src={imageUrl} alt={item.title} width={400} height={200} className="w-100 h-100" style={{ objectFit: 'cover' }} />
                                         </div>
                                         <Card.Body className="d-flex flex-column">
                                             <small className="text-muted mb-2">📅 {new Date(item.createdAt).toLocaleDateString('uk-UA')}</small>

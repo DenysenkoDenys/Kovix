@@ -114,7 +114,7 @@ namespace Movie.API.Controllers
                     query = query.OrderBy(m => m.CreatedAt);
                     break;
                 case "ratingDesc":
-                    query = query.OrderByDescending(m => m.AverageRating);
+                    query = query.OrderByDescending(m => m.AverageRating + (double)m.TotalReviews / (m.TotalReviews + 10));
                     break;
                 case "viewsDesc":
                     query = query.OrderByDescending(m => m.ViewsCount);
@@ -377,7 +377,8 @@ namespace Movie.API.Controllers
             }
 
             var movies = await query
-                .OrderByDescending(m => m.AverageRating)
+                // Apply same composite ordering as in GetAll for consistency
+                .OrderByDescending(m => m.AverageRating + (double)m.TotalReviews / (m.TotalReviews + 10))
                 .Take(10)
                 .Select(m => new MovieDetailDto
                 {

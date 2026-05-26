@@ -13,7 +13,7 @@ function HeroBanner() {
         const fetchLatest = async () => {
             try {
                 const res = await moviesAPI.getLatestReleases();
-                setLatestItems(res.data);
+                setLatestItems((res.data || []).slice(0, 3));
             } catch (error) {
                 console.error("Помилка завантаження банера:", error);
             } finally {
@@ -54,6 +54,7 @@ function HeroBanner() {
                                     className="banner-img-bg"
                                     src={bannerImageUrl}
                                     alt=""
+                                    fetchpriority="high"
                                     aria-hidden="true"
                                 />
                                 <img

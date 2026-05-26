@@ -129,7 +129,7 @@ export default function LeaderboardPage() {
                                                         }}
                                                     >
                                                         {user.avatarUrl ? (
-                                                            <img src={`${getApiBaseUrl()}${user.avatarUrl}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                            <img src={`${getApiBaseUrl()}${user.avatarUrl}`} alt="" width={isTop3 ? 55 : 45} height={isTop3 ? 55 : 45} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                                         ) : (
                                                             user.username[0].toUpperCase()
                                                         )}

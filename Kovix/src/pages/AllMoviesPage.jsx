@@ -209,7 +209,9 @@ function AllMoviesPage() {
                     src={imageUrl}
                     alt={movie.title}
                     placeholder={PLACEHOLDER_IMG}
-                    style={{ width: '100%', height: '100%' }}
+                        width={150}
+                        height={225}
+                        style={{ width: '100%', height: '100%' }}
                   />
               </Link>
             </div>

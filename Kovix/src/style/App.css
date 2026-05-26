@@ -509,7 +509,7 @@ img[src*="Logo"] {
 .reaction-count {
   font-weight: 700;
   font-size: 13px;
-  margin-left: 6px;
+  margin-left: 4px;
   color: inherit;
 }
 
@@ -841,15 +841,24 @@ img[src*="Logo"] {
   align-items: center;
   gap: 0.75rem;
   color: var(--spinner-color);
-  font-weight: 600;
-  user-select: none;
+.profile-chevron {
+  display: inline-flex;
+  align-items: center;
+  transition: transform 220ms cubic-bezier(.2,.8,.2,1), opacity 160ms ease;
+  transform-origin: 50% 45%;
+  font-size: 0.9rem;
+  margin-left: 6px;
+  position: relative;
+  top: 2px;
 }
 
-.custom-spinner__svg {
-  width: 48px;
-  height: 48px;
-  transform-origin: center;
-  animation: custom-spinner-rotate 1.2s linear infinite;
+.profile-dropdown.show .profile-chevron {
+  transform: rotate(180deg);
+}
+
+.profile-chevron:hover {
+  transform: translateY(-1px) rotate(0deg);
+}
 }
 
 .custom-spinner__ring {
@@ -906,6 +915,28 @@ img[src*="Logo"] {
 
 .dropdown-toggle::after {
   margin-left: 6px;
+}
+
+.profile-dropdown .dropdown-toggle::after,
+.profile-dropdown .nav-link::after,
+.profile-dropdown .btn::after {
+  display: none !important;
+}
+
+.profile-chevron {
+  display: inline-block;
+  transition: transform 220ms cubic-bezier(.2,.8,.2,1), opacity 160ms ease;
+  transform-origin: 50% 45%;
+  font-size: 0.9rem;
+  vertical-align: baseline;
+}
+
+.profile-dropdown.show .profile-chevron {
+  transform: rotate(180deg);
+}
+
+.profile-chevron:hover {
+  transform: translateY(-1px) rotate(0deg);
 }
 
 .btn-banner-light {
