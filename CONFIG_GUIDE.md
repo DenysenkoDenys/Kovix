@@ -16,10 +16,8 @@ The project has been configured to use port **8080** for the API backend instead
 The API base URL is managed in `src/utils/apiConfig.js` and uses the `VITE_API_BASE_URL` environment variable.
 
 ```javascript
-// In any component:
 import { API_BASE_URL } from '../utils/apiConfig';
 
-// Usage
 const response = await fetch(`${API_BASE_URL}/api/endpoint`);
 ```
 

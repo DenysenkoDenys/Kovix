@@ -171,7 +171,7 @@ const ModeratorPage = () => {
 
         try {
             setActionInProgress(true);
-            await moderatorAPI.resolveReport(selectedReport.id, 1, reportComment); // 1 = Resolved
+            await moderatorAPI.resolveReport(selectedReport.id, 1, reportComment);
             alert('Звіт розглянут');
             setShowReportModal(false);
             setReportComment('');
