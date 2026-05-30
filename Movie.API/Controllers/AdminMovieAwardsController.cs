@@ -78,6 +78,5 @@ namespace Movie.API.Controllers
 
             return Ok(new { message = "Нагороду успішно оновлено!" });
         }
-
     }
 }

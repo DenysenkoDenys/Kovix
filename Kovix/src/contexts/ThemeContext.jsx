@@ -60,7 +60,7 @@ export const ThemeProvider = ({ children }) => {
     <ThemeContext.Provider value={{ 
       currentTheme, 
       changeTheme, 
-      themeMode: (allThemes[currentTheme] || {}).colors?.['--bg-main'] === '#f8f9fa' ? 'light' : 'dark', // Для навігації
+      themeMode: (allThemes[currentTheme] || {}).colors?.['--bg-main'] === '#f8f9fa' ? 'light' : 'dark',
       addCustomTheme, 
       removeCustomTheme, 
       themes: allThemes 

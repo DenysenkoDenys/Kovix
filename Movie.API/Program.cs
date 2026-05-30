@@ -115,6 +115,8 @@ builder.Services.AddHttpClient<MalIntegrationService>();
 
 builder.Services.AddScoped<MalIntegrationService>();
 
+builder.Services.AddScoped<TmdbService>();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

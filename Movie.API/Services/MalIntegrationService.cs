@@ -25,12 +25,12 @@ namespace Movie.API.Services
         {
             try
             {
-                Console.WriteLine($"\n⏳ Починаємо імпорт з MAL для аніме ID: {malAnimeId}");
+                Console.WriteLine($"\nПочинаємо імпорт з MAL для аніме ID: {malAnimeId}");
                 var response = await _httpClient.GetAsync($"https://api.jikan.moe/v4/anime/{malAnimeId}/characters");
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine($"❌ Помилка Jikan API: {response.StatusCode}");
+                    Console.WriteLine($"Помилка Jikan API: {response.StatusCode}");
                     return false;
                 }
 
@@ -39,12 +39,12 @@ namespace Movie.API.Services
 
                 if (jikanData?.Data == null || !jikanData.Data.Any())
                 {
-                    Console.WriteLine("❌ Jikan API не повернув жодного персонажа.");
+                    Console.WriteLine("Jikan API не повернув жодного персонажа.");
                     return false;
                 }
 
                 var charactersToImport = jikanData.Data.Take(15).ToList();
-                Console.WriteLine($"✅ Знайдено персонажів: {charactersToImport.Count}. Зберігаємо в БД...");
+                Console.WriteLine($"Знайдено персонажів: {charactersToImport.Count}. Зберігаємо в БД...");
 
                 foreach (var item in charactersToImport)
                 {
@@ -56,7 +56,7 @@ namespace Movie.API.Services
                     bool isMainRole = !string.IsNullOrEmpty(item.Role) && 
                                       item.Role.Equals("Main", StringComparison.OrdinalIgnoreCase);
 
-                    Console.WriteLine($"  📍 Персонаж: {charName} | Роль: {item.Role ?? "Unknown"} | IsMain: {isMainRole}");
+                    Console.WriteLine($"  Персонаж: {charName} | Роль: {item.Role ?? "Unknown"} | IsMain: {isMainRole}");
 
                     var character = await _context.Characters.FirstOrDefaultAsync(c => c.Name == charName);
                     if (character == null)
@@ -106,7 +106,7 @@ namespace Movie.API.Services
                 }
 
                 await _context.SaveChangesAsync();
-                Console.WriteLine("🎉 Імпорт успішно завершено!");
+                Console.WriteLine("Імпорт успішно завершено!");
                 return true;
             }
             catch (Exception ex)

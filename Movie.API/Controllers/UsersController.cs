@@ -447,7 +447,7 @@ namespace Movie.API.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"\n❌ ПОМИЛКА СТАТИСТИКИ: {ex.Message}");
+                Console.WriteLine($"\nПОМИЛКА СТАТИСТИКИ: {ex.Message}");
                 if (ex.InnerException != null) Console.WriteLine($"🔍 ДЕТАЛІ: {ex.InnerException.Message}");
                 return StatusCode(500, new { message = "Помилка при розрахунку статистики", details = ex.Message });
             }
@@ -508,9 +508,9 @@ namespace Movie.API.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"\n❌ ПОМИЛКА ЛІДЕРБОРДУ: {ex.Message}");
+                Console.WriteLine($"\nПОМИЛКА ЛІДЕРБОРДУ: {ex.Message}");
                 if (ex.InnerException != null)
-                    Console.WriteLine($"🔍 ДЕТАЛІ SQL: {ex.InnerException.Message}");
+                    Console.WriteLine($"ДЕТАЛІ SQL: {ex.InnerException.Message}");
 
                 return StatusCode(500, new { message = "Помилка сервера", details = ex.Message });
             }
